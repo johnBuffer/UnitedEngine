@@ -59,7 +59,6 @@ void U_2DBody::updatePosition(double timeStep)
     }
 
     m_acceleration = {};
-    //m_pressure = 0;
 }
 
 U_2DCoord U_2DBody::getVelocity() const
