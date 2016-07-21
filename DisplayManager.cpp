@@ -76,15 +76,15 @@ void DisplayManager::draw(bool showInner)
 
     int n_constr = m_collisionManager->getConstraintsCount();
     sf::VertexArray constrs(sf::Lines, 2*n_constr);
-    for (int i(0); i<n_constr; ++i)
+    int i(0);
+    for (auto& ctr : m_collisionManager->getConstraints())
     {
-        U_2DConstraint* cstr = m_collisionManager->getConstraintAt(i);
-
-        U_2DCoord viewCoord1 = worldCoordToDisplayCoord(cstr->getBody1Pos());
-        U_2DCoord viewCoord2 = worldCoordToDisplayCoord(cstr->getBody2Pos());
+        U_2DCoord viewCoord1 = worldCoordToDisplayCoord(ctr->getBody1Pos());
+        U_2DCoord viewCoord2 = worldCoordToDisplayCoord(ctr->getBody2Pos());
 
         constrs[2*i].position = sf::Vector2f(viewCoord1.x, viewCoord1.y);
         constrs[2*i+1].position = sf::Vector2f(viewCoord2.x, viewCoord2.y);
+        ++i;
     }
     m_window->draw(constrs);
 
