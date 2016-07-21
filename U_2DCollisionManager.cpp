@@ -133,7 +133,7 @@ U_2DRigidBody* U_2DCollisionManager::getRigidBodyAt(int i)
     return m_rigidBodies[i];
 }
 
-int U_2DCollisionManager::convertPosToHash(int x, int y)
+long U_2DCollisionManager::convertPosToHash(int x, int y) const
 {
     return x+y*1000000+100;
 }
@@ -306,7 +306,7 @@ void U_2DCollisionManager::update()
 
 void U_2DCollisionManager::solveConstraints()
 {
-    int n_constraints = m_constraints.size();
+    /*int n_constraints = m_constraints.size();
     for (int i=0; i<n_constraints; ++i)
     {
         if (!m_constraints[i]->isBroken())
@@ -317,7 +317,15 @@ void U_2DCollisionManager::solveConstraints()
             n_constraints--;
             i--;
         }
+    }*/
+
+    for (auto& ctr : m_constraints)
+    {
+        if (!ctr->isBroken())
+            ctr->applyConstraint();
     }
+
+    m_constraints.remove_if([](U_2DConstraint*& c) {return c->isBroken();});
 }
 
 U_2DConstraint* U_2DCollisionManager::addConstraint(U_2DBody* b1, U_2DBody* b2, double length)
