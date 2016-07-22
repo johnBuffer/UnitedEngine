@@ -10,20 +10,20 @@
 
 int main(int argn, char* args[])
 {
-    int window_width = 1000;
-    int window_height = 700;
+    int window_width = 1600;
+    int window_height = 900;
 
     sf::ContextSettings settings;
     settings.antialiasingLevel = 4;
     sf::RenderWindow window(sf::VideoMode(window_width, window_height), "TEST", sf::Style::Default, settings);
     window.setVerticalSyncEnabled(true);
 
-    int bodyRadius = 7;
-    int mapSizeX = 1000;
-    int mapSizeY = 1000;
+    int bodyRadius = 20;
+    int mapSizeX = 10000;
+    int mapSizeY = 10000;
 
     U_2DCollisionManager phyManager(0.016, bodyRadius, U_2DCoord(mapSizeX, mapSizeY));
-    phyManager.setPrecision(8);
+    phyManager.setPrecision(1);
     phyManager.setGravity(U_2DCoord(0, 10));
     DisplayManager displayManager(&window, &phyManager);
     displayManager.setOffset(-mapSizeX/2, -0.75*mapSizeY);
@@ -44,9 +44,9 @@ int main(int argn, char* args[])
     body.setTextureRect(sf::IntRect(126, 51, 45, 72));
 
     arm1.setTexture(characterTexture);
-    arm1.setTextureRect(sf::IntRect(25, 94, 15, 32));
+    arm1.setTextureRect(sf::IntRect(101, 59, 18, 35));
     hand1.setTexture(characterTexture);
-    hand1.setTextureRect(sf::IntRect(61, 82, 19, 66));
+    hand1.setTextureRect(sf::IntRect(99, 98, 25, 67));
 
     arm2.setTexture(characterTexture);
     arm2.setTextureRect(sf::IntRect(21, 166, 15, 32));
@@ -67,8 +67,8 @@ int main(int argn, char* args[])
     bool upPhy = false;
     bool soft = false;
 
-    U_2DBody* b1 = phyManager.addBody(U_2DCoord(430, 480), 0, 1);
-    U_2DBody* b2 = phyManager.addBody(U_2DCoord(500, 520), 1);
+    /*U_2DBody* b1 = phyManager.addBody(U_2DCoord(430, 480), 0, 1);
+    U_2DBody* b2 = phyManager.addBody(U_2DCoord(465, 520), 1);
     U_2DBody* b3 = phyManager.addBody(U_2DCoord(400, 520), 1);
     U_2DBody* b4 = phyManager.addBody(U_2DCoord(300, 520), 1);
     U_2DBody* b5 = phyManager.addBody(U_2DCoord(370, 480), 0, 1);
@@ -84,6 +84,19 @@ int main(int argn, char* args[])
     phyManager.addConstraint(b5, b3);
     U_2DConstraint* c1 = phyManager.addConstraint(b5, b1);
     c1->setOnlyTension(true);
+
+    displayManager.addPSprite(PSprite(arm1, b2, b3));
+    displayManager.addPSprite(PSprite(hand1, b3, b4));*/
+
+    U_2DRigidBody tower(20, 80);
+    //phyManager.addRigidBody(tower, U_2DCoord(1000, 10000-bodyRadius*2*tower.getHeight()), 1.2);
+    //phyManager.addRigidBody(tower, U_2DCoord(2000, 10000-bodyRadius*2*tower.getHeight()), 1.2);
+    phyManager.addRigidBody(tower, U_2DCoord(3000, 10000-bodyRadius*2*tower.getHeight()), 1.2);
+    phyManager.addRigidBody(tower, U_2DCoord(4000, 10000-bodyRadius*2*tower.getHeight()), 1.2);
+    phyManager.addRigidBody(tower, U_2DCoord(5000, 10000-bodyRadius*2*tower.getHeight()), 1.2);
+    phyManager.addRigidBody(tower, U_2DCoord(6000, 10000-bodyRadius*2*tower.getHeight()), 1.2);
+    //phyManager.addRigidBody(tower, U_2DCoord(7000, 10000-bodyRadius*2*tower.getHeight()), 1.2);
+    //phyManager.addRigidBody(tower, U_2DCoord(8000, 10000-bodyRadius*2*tower.getHeight()), 1.2);
 
     while (window.isOpen())
     {
@@ -102,17 +115,6 @@ int main(int argn, char* args[])
 					else if ((event.key.code == sf::Keyboard::A))
                     {
                         soft = !soft;
-
-                        /*if (soft)
-                        {
-                            for (U_2DSpring* spring : springs)
-                                spring->strengthFactor(0.01);
-                        }
-                        else
-                        {
-                            for (U_2DSpring* spring : springs)
-                                spring->strengthFactor(100);
-                        }*/
                     }
                     break;
 				case sf::Event::MouseWheelMoved:
@@ -136,10 +138,14 @@ int main(int argn, char* args[])
                     break;
                 case sf::Event::MouseButtonReleased:
                     mouseButtonPressed = false;
-                    if (clicPosition == mousePosition && selectedBody == NULL)
+                    if (clicPosition == mousePosition)
                     {
-                        //U_2DCoord worldPos = displayManager.displayCoordToWorldCoord(U_2DCoord(mousePosition.x, mousePosition.y));
-                        //phyManager.addBody(worldPos, 20);
+                        for (int i(5); --i;)
+                        {
+                            U_2DCoord pos(mousePosition.x+rand()%10, mousePosition.y+rand()%10);
+                            U_2DCoord worldPos = displayManager.displayCoordToWorldCoord(pos);
+                            phyManager.addBody(worldPos, 20);
+                        }
                     }
 
                     selectedBody = NULL;
@@ -164,12 +170,6 @@ int main(int argn, char* args[])
             U_2DCoord f = mouseWorldPos - selectedBody->getPosition();
             selectedBody->move2D(U_2DCoord(0.01*f.x, 0.01*f.y));
         }
-
-        /*if (n < 1000)
-        {
-            phyManager.addBody(U_2DCoord(50+rand()%10, 20), rand()%5+2, 1);
-            n++;
-        }*/
 
         if (upPhy)
             phyManager.update();
