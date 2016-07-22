@@ -48,9 +48,17 @@ void U_2DBody::accelerate2D(U_2DCoord vec)
 
 void U_2DBody::updatePosition(double timeStep)
 {
+    double vx = m_position.x-m_lastPosition.x;
+    double vy = m_position.y-m_lastPosition.y;
+
+    double airFrictionX = -vx*0.25;
+    double airFrictionY = -vy*0.25;
+
+    accelerate2D(U_2DCoord(airFrictionX, airFrictionY));
+
     U_2DCoord newPosition;
-    newPosition.x = m_position.x+(m_position.x-m_lastPosition.x)+timeStep*m_acceleration.x;
-    newPosition.y = m_position.y+(m_position.y-m_lastPosition.y)+timeStep*m_acceleration.y;
+    newPosition.x = m_position.x+vx+timeStep*m_acceleration.x;
+    newPosition.y = m_position.y+vy+timeStep*m_acceleration.y;
 
     if (!m_static)
     {
@@ -59,9 +67,10 @@ void U_2DBody::updatePosition(double timeStep)
     }
 
     m_acceleration = {};
+    m_pressure = 0;
 }
 
-U_2DCoord U_2DBody::getVelocity() const
+const U_2DCoord U_2DBody::getVelocity() const
 {
     return U_2DCoord(m_position.x - m_lastPosition.x, m_position.y - m_lastPosition.y);
 }
