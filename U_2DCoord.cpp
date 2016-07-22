@@ -17,7 +17,7 @@ void U_2DCoord::move2D(U_2DCoord& vec)
     this->y += vec.y;
 }
 
-double U_2DCoord::getNorm()
+double U_2DCoord::getNorm() const
 {
     return sqrt(x*x+y*y);
 }

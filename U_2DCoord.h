@@ -9,7 +9,7 @@ public:
     U_2DCoord(double x, double y);
 
     void move2D(U_2DCoord& vec);
-    double getNorm();
+    double getNorm() const;
 
     double x, y;
 
