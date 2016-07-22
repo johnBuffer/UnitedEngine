@@ -1,6 +1,7 @@
 #include "PSprite.h"
+#include <iostream>
 
-PSprite::PSprite(sf::Sprite sprite, U_2DBody* pin1, U_2DBody* pin2)
+PSprite::PSprite(sf::Sprite& sprite, U_2DBody* pin1, U_2DBody* pin2)
 {
     m_sprite = sprite;
 
@@ -15,7 +16,8 @@ PSprite::PSprite(sf::Sprite sprite, U_2DBody* pin1, U_2DBody* pin2)
     m_sprite.setOrigin(l/2, h/2);
 
     m_scale = 1.2*m_initial_length/h;
-    m_sprite.setScale(m_scale, m_scale);
+
+    std::cout << 1.2*m_initial_length/h << std::endl;
 }
 
 void PSprite::update()
@@ -37,6 +39,7 @@ void PSprite::update()
     double y = (c1.y+c2.y)/2.0;
 
     m_sprite.setPosition(x, y);
+    m_sprite.setScale(m_scale, m_scale);
 }
 
 void PSprite::draw(sf::RenderWindow &window)

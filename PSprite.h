@@ -7,7 +7,7 @@
 class PSprite
 {
 public:
-    PSprite(sf::Sprite sprite, U_2DBody *pin1, U_2DBody *pin2);
+    PSprite(sf::Sprite& sprite, U_2DBody *pin1, U_2DBody *pin2);
 
     sf::Sprite& getSprite() {return m_sprite;}
     void update();
