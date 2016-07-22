@@ -12,6 +12,17 @@
 #include<cmath>
 #include<list>
 
+struct GridCell
+{
+    std::array<U_2DBody*, 100> _bodies;
+
+    int _maxIndex;
+
+    GridCell() : _maxIndex(0) {}
+    void add(U_2DBody* body) {_bodies[_maxIndex] = body; ++_maxIndex;}
+    void reset() {_maxIndex = 0;}
+};
+
 class U_2DCollisionManager
 {
 public:
@@ -32,7 +43,7 @@ public:
 
     const std::list<U_2DConstraint*> getConstraints() const {return m_constraints;}
 
-    void addRigidBody(U_2DRigidBody &rigidBody, U_2DCoord position);
+    void addRigidBody(U_2DRigidBody &rigidBody, U_2DCoord position, double strength=0);
     void setGravity(U_2DCoord gravityVec) {m_gravity = gravityVec;};
     void setPrecision(unsigned int iterationCount) {m_iterationCount = iterationCount;};
     void addAttraction(U_2DBody* b1, U_2DBody* b2, double strength);
@@ -52,18 +63,22 @@ private:
     int       m_nCollisionChecked, m_iterationCount;
     U_2DCoord m_mapSize, m_gravity;
 
+    long m_currentIteration;
+
+    int m_newHash;
+
     std::vector<U_2DBody*>       m_bodies;
     std::vector<U_2DRigidBody*>  m_rigidBodies;
     std::list<U_2DConstraint*>   m_constraints;
     std::vector<U_2DAttraction*> m_attractions;
     std::vector<U_2DSpring*>     m_springs;
 
-    std::map<int, std::vector<U_2DBody*> > m_grid;
+    std::map<long, GridCell> m_grid;
 
     void addBodyToGrid(U_2DBody* body);
     long convertPosToHash(int x, int y) const;
     void applyGravity();
-    void solveGridCollisions(std::vector<U_2DBody*> &bodies);
+    void solveGridCollisions(GridCell& cell);
     void solveCollisions();
     void solveAttractions();
     void solveBoundCollisions(U_2DBody* body);

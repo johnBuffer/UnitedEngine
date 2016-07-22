@@ -10,6 +10,7 @@ U_2DCollisionManager::U_2DCollisionManager()
     m_mapSize = U_2DCoord();
 
     m_iterationCount = 0;
+    m_currentIteration = 0;
 
     m_gravity = U_2DCoord();
 }
@@ -21,6 +22,7 @@ U_2DCollisionManager::U_2DCollisionManager(double timeStep, double bodyRadius, U
     m_mapSize = mapSize;
 
     m_iterationCount = 2;
+    m_currentIteration = 0;
 
     m_gravity = U_2DCoord(0, 100);
 }
@@ -41,7 +43,7 @@ U_2DBody* U_2DCollisionManager::addBody(U_2DCoord coord, double radius, double m
     return newBody;
 }
 
-void U_2DCollisionManager::addRigidBody(U_2DRigidBody &rigidBodyOriginal, U_2DCoord position)
+void U_2DCollisionManager::addRigidBody(U_2DRigidBody &rigidBodyOriginal, U_2DCoord position, double strength)
 {
     U_2DBody *b1(NULL), *b2(NULL), *b3(NULL), *b4(NULL);
     U_2DBody *currentBody(NULL);
@@ -83,13 +85,13 @@ void U_2DCollisionManager::addRigidBody(U_2DRigidBody &rigidBodyOriginal, U_2DCo
     for (int y=1; y<height; ++y)
     {
         int i = n_bodies+y;
-        m_constraints.push_back(new U_2DConstraint(m_bodies[i], m_bodies[i-1]));
+        m_constraints.push_back(new U_2DConstraint(m_bodies[i], m_bodies[i-1], strength));
     }
 
     for (int x=1; x<width; ++x)
     {
         int i = n_bodies+x*height;
-        m_constraints.push_back(new U_2DConstraint(m_bodies[i], m_bodies[i-height]));
+        m_constraints.push_back(new U_2DConstraint(m_bodies[i], m_bodies[i-height], strength));
     }
 
     for (int x=1; x<width; ++x)
@@ -101,9 +103,9 @@ void U_2DCollisionManager::addRigidBody(U_2DRigidBody &rigidBodyOriginal, U_2DCo
             int i3 = n_bodies+(x-1)*height+(y-1);
             int i4 = n_bodies+x*height+(y-1);
 
-            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i2]));
-            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i3]));
-            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i4]));
+            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i2], strength));
+            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i3], strength));
+            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i4], strength));
         }
     }
 
@@ -116,9 +118,9 @@ void U_2DCollisionManager::addRigidBody(U_2DRigidBody &rigidBodyOriginal, U_2DCo
             int i3 = n_bodies+(x+1)*height+(y+1);
             int i4 = n_bodies+x*height+(y+1);
 
-            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i2]));
-            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i3]));
-            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i4]));
+            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i2], strength));
+            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i3], strength));
+            m_constraints.push_back(new U_2DConstraint(m_bodies[i1], m_bodies[i4], strength));
         }
     }
 }
@@ -135,7 +137,7 @@ U_2DRigidBody* U_2DCollisionManager::getRigidBodyAt(int i)
 
 long U_2DCollisionManager::convertPosToHash(int x, int y) const
 {
-    return x+y*1000000+100;
+    return x+y*1000000000L;
 }
 
 void U_2DCollisionManager::addBodyToGrid(U_2DBody* body)
@@ -147,34 +149,41 @@ void U_2DCollisionManager::addBodyToGrid(U_2DBody* body)
     int gridY = bodyY/caseSize;
     int midGrid = caseSize/2;
 
-    m_grid[convertPosToHash(gridX, gridY)].push_back(body);
+    long newHash = convertPosToHash(gridX, gridY);
+    /*if (body->lastHash != newHash)
+    {
+        m_newHash++;
+        body->lastHash = newHash;
+    }*/
+
+    m_grid[newHash].add(body);
 
     if (bodyX%caseSize > midGrid)
     {
-        m_grid[convertPosToHash(gridX+1, gridY)].push_back(body);
+        m_grid[convertPosToHash(gridX+1, gridY)].add(body);
         if (bodyY%caseSize > midGrid)
         {
-            m_grid[convertPosToHash(gridX, gridY+1)].push_back(body);
-            m_grid[convertPosToHash(gridX+1, gridY+1)].push_back(body);
+            m_grid[convertPosToHash(gridX, gridY+1)].add(body);
+            m_grid[convertPosToHash(gridX+1, gridY+1)].add(body);
         }
         else
         {
-            m_grid[convertPosToHash(gridX, gridY-1)].push_back(body);
-            m_grid[convertPosToHash(gridX+1, gridY-1)].push_back(body);
+            m_grid[convertPosToHash(gridX, gridY-1)].add(body);
+            m_grid[convertPosToHash(gridX+1, gridY-1)].add(body);
         }
     }
     else
     {
-        m_grid[convertPosToHash(gridX-1, gridY)].push_back(body);
+        m_grid[convertPosToHash(gridX-1, gridY)].add(body);
         if (bodyY%caseSize > midGrid)
         {
-            m_grid[convertPosToHash(gridX-1, gridY+1)].push_back(body);
-            m_grid[convertPosToHash(gridX, gridY+1)].push_back(body);
+            m_grid[convertPosToHash(gridX-1, gridY+1)].add(body);
+            m_grid[convertPosToHash(gridX, gridY+1)].add(body);
         }
         else
         {
-            m_grid[convertPosToHash(gridX-1, gridY-1)].push_back(body);
-            m_grid[convertPosToHash(gridX, gridY-1)].push_back(body);
+            m_grid[convertPosToHash(gridX-1, gridY-1)].add(body);
+            m_grid[convertPosToHash(gridX, gridY-1)].add(body);
         }
     }
 }
@@ -195,44 +204,35 @@ void U_2DCollisionManager::solveBoundCollisions(U_2DBody* body)
     int bodyY = body->getPosition().y;
 
     int radius = body->getRadius();
-    //bool hitBound = false;
 
     if (bodyY+radius+1 > maxY)
     {
-        //double delta = maxY-bodyY-radius;
         body->setY(maxY-radius);
-        //hitBound = true;
     }
     if (bodyX+radius+1 > maxX)
     {
-        //double delta = maxX-bodyX-radius;
         body->setX(maxX-radius);
-        //hitBound = true;
     }
 
     if (bodyY-radius-1 < 0)
     {
         double delta = -bodyY+radius;
         body->move2D(U_2DCoord(0, delta));
-        //hitBound = true;
     }
 
     if (bodyX-radius < 0)
     {
-        //double delta = -bodyX+radius;
         body->setX(radius);
-        //hitBound = true;
     }
-
-    //if (hitBound)
-        //body->setStatic(true);
 }
 
-void U_2DCollisionManager::solveGridCollisions(std::vector<U_2DBody*> &bodies)
+void U_2DCollisionManager::solveGridCollisions(GridCell& cell)
 {
     double coeff = 1.0;
 
-    int n_bodies = bodies.size();
+    int n_bodies = cell._maxIndex;
+    U_2DBody** bodies = cell._bodies.data();
+
     for (int i(0); i<n_bodies; ++i)
     {
         U_2DBody* currentBody = bodies[i];
@@ -243,10 +243,10 @@ void U_2DCollisionManager::solveGridCollisions(std::vector<U_2DBody*> &bodies)
         for (int k(i+1); k<n_bodies; k++)
         {
             U_2DBody* collider = bodies[k];
-            double colliderRadius = collider->getRadius();
-            m_nCollisionChecked++;
 
+            double colliderRadius = collider->getRadius();
             double minDist = currentRadius+colliderRadius;
+
             double vx, vy, dist2;
 
             vx = currentX-collider->getPosition().x;
@@ -254,19 +254,21 @@ void U_2DCollisionManager::solveGridCollisions(std::vector<U_2DBody*> &bodies)
 
             dist2 = vx*vx+vy*vy;
 
-            if (dist2 > 0 && dist2 < minDist*minDist)
+            if (dist2 && dist2 < minDist*minDist)
             {
                 double dist = sqrt(dist2);
                 double deltaDist = minDist-dist;
 
-                vx *= 0.5*coeff*deltaDist/(dist);
-                vy *= 0.5*coeff*deltaDist/(dist);
+                double responseVelocity = std::min(0.5*coeff*deltaDist/(dist), m_bodySize*0.5*m_timeStep);
 
-                currentBody->move2D(U_2DCoord(vx, vy));
-                currentBody->addPressure(deltaDist);
+                vx *= responseVelocity;
+                vy *= responseVelocity;
 
-                collider->move2D(U_2DCoord(-vx, -vy));
-                collider->addPressure(deltaDist);
+                currentBody->move2D(U_2DCoord( vx,  vy));
+                collider   ->move2D(U_2DCoord(-vx, -vy));
+
+                currentBody->addPressure(deltaDist*0.5);
+                collider   ->addPressure(deltaDist*0.5);
             }
         }
     }
@@ -280,14 +282,20 @@ void U_2DCollisionManager::solveCollisions()
 
 void U_2DCollisionManager::update()
 {
+    m_currentIteration++;
+
     m_nCollisionChecked = 0;
+    m_newHash = 0;
     applyGravity();
 
-    sf::Clock c1;
+    sf::Clock c1, c2;
 
-    m_grid.clear();
+    c1.restart();
+    for (auto &elem : m_grid) elem.second.reset();
     for (auto &body : m_bodies) addBodyToGrid(body);
+    std::cout << "parse time " << c2.getElapsedTime().asMilliseconds() << " ";// << "ms for " << int(100*m_newHash/double(m_bodies.size())) << "%" << std::endl;
 
+    c2.restart();
     for (int i(0); i<m_iterationCount; ++i)
     {
         solveConstraints();
@@ -296,33 +304,16 @@ void U_2DCollisionManager::update()
         solveSprings();
     }
 
-    //std::cout << c1.getElapsedTime().asMilliseconds() << std::endl;
+    for (auto& body : m_bodies) body->updatePosition(m_timeStep);
 
-    int n_bodies = m_bodies.size();
-    for (int i(0); i<n_bodies; ++i) m_bodies[i]->updatePosition(m_timeStep);
-
-    //std::cout << n_bodies << " bodies : " << m_nCollisionChecked/m_iterationCount << " check in " << c1.getElapsedTime().asMilliseconds() << " ms" << std::endl;
+    std::cout << "phys time " << c2.getElapsedTime().asMilliseconds() << " ms" << std::endl;
 }
 
 void U_2DCollisionManager::solveConstraints()
 {
-    /*int n_constraints = m_constraints.size();
-    for (int i=0; i<n_constraints; ++i)
-    {
-        if (!m_constraints[i]->isBroken())
-            m_constraints[i]->applyConstraint();
-        else
-        {
-            m_constraints.erase(m_constraints.begin()+i);
-            n_constraints--;
-            i--;
-        }
-    }*/
-
     for (auto& ctr : m_constraints)
     {
-        if (!ctr->isBroken())
-            ctr->applyConstraint();
+        ctr->applyConstraint();
     }
 
     m_constraints.remove_if([](U_2DConstraint*& c) {return c->isBroken();});
@@ -347,7 +338,6 @@ U_2DConstraint* U_2DCollisionManager::addConstraint(U_2DBody* b1, U_2DBody* b2, 
     m_constraints.push_back(newConstraint);
     return newConstraint;
 }
-
 
 void U_2DCollisionManager::addAttraction(U_2DBody* b1, U_2DBody* b2, double strength)
 {
