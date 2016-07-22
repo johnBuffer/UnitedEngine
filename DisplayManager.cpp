@@ -13,6 +13,8 @@ DisplayManager::DisplayManager(sf::RenderWindow *window, U_2DCollisionManager *c
 
     m_windowOffsetX = m_window->getSize().x/2;
     m_windowOffsetY = m_window->getSize().y/2;
+
+    m_bodyTexture.loadFromFile("circle.png");
 }
 
 U_2DCoord DisplayManager::worldCoordToDisplayCoord(const U_2DCoord& worldCoord)
@@ -47,32 +49,26 @@ void DisplayManager::draw(bool showInner)
 
     // draw the guys
     int bodyCount = m_collisionManager->getBodiesCount();
+    sf::VertexArray bodies(sf::Quads, 4*bodyCount);
     for (int i(0); i<bodyCount; ++i)
     {
         U_2DBody* currentBody = m_collisionManager->getBodyAt(i);
 
         double radius = currentBody->getRadius()*m_zoom;
-        sf::CircleShape guyRepresentation(radius);
-        guyRepresentation.setOrigin(radius, radius);
-        //double pressure = currentBody->getPressure();
 
         U_2DCoord viewCoord = worldCoordToDisplayCoord(currentBody->getPosition());
 
-        guyRepresentation.setPosition(viewCoord.x, viewCoord.y);
-        guyRepresentation.setFillColor(sf::Color::White);
-        if (!currentBody->isIncluded())
-            m_window->draw(guyRepresentation);
-        else if (showInner)
-        {
-            int c = 255-currentBody->getPressure();
-            c *= 10;
-            if (c<0) c = 0;
+        bodies[4*i  ].position = sf::Vector2f(viewCoord.x-radius, viewCoord.y-radius);
+        bodies[4*i+1].position = sf::Vector2f(viewCoord.x+radius, viewCoord.y-radius);
+        bodies[4*i+2].position = sf::Vector2f(viewCoord.x+radius, viewCoord.y+radius);
+        bodies[4*i+3].position = sf::Vector2f(viewCoord.x-radius, viewCoord.y+radius);
 
-            guyRepresentation.setFillColor(sf::Color(0, 255, 0));
-            m_window->draw(guyRepresentation);
-        }
-        currentBody->setPressure(0);
+        bodies[4*i  ].texCoords = sf::Vector2f(0, 0);
+        bodies[4*i+1].texCoords = sf::Vector2f(512, 0);
+        bodies[4*i+2].texCoords = sf::Vector2f(512, 512);
+        bodies[4*i+3].texCoords = sf::Vector2f(0, 512);
     }
+    m_window->draw(bodies, &m_bodyTexture);
 
     int n_constr = m_collisionManager->getConstraintsCount();
     sf::VertexArray constrs(sf::Lines, 2*n_constr);
@@ -110,7 +106,7 @@ void DisplayManager::draw(bool showInner)
         sf::Sprite& sp = ps.getSprite();
         sf::Vector2f pos = sp.getPosition();
         U_2DCoord viewPos = worldCoordToDisplayCoord(U_2DCoord(pos.x, pos.y));
-        sp.setScale(1.1*m_zoom, 1.1*m_zoom);
+        sp.scale(1.1*m_zoom, 1.1*m_zoom);
         sp.setPosition(viewPos.x, viewPos.y);
         m_window->draw(sp);
     }

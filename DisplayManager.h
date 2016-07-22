@@ -40,6 +40,7 @@ private:
     U_2DCollisionManager* m_collisionManager;
     sf::RenderWindow* m_window;
     std::vector<PSprite> _psprites;
+    sf::Texture m_bodyTexture;
 
     double m_zoom, m_offsetX, m_offsetY, m_windowOffsetX, m_windowOffsetY;
 };
