@@ -14,7 +14,7 @@ public:
 	UnitedSolver(const Vec2& dimension, const Vec2& gravity = Vec2(0.0f,0.0f)) :
 		_dimension(dimension),
 		_gravity(gravity),
-		_precision(4)
+		_precision(1)
 	{}
 
 	void addBody(const Body& body)
