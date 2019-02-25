@@ -1,10 +1,20 @@
 #include <SFML/Graphics.hpp>
 
+#include "united_solver.h"
+
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-	sf::CircleShape shape(100.f);
-	shape.setFillColor(sf::Color::Green);
+	const uint32_t win_height = 800;
+	sf::RenderWindow window(sf::VideoMode(1000, win_height), "UE2");
+	window.setVerticalSyncEnabled(false);
+
+	UnitedSolver solver({ 1000.0f, float(win_height) }, { 0.0f, 9.8f/0.016f });
+
+	uint32_t n = 500;
+	for (int i(n); i--;)
+	{
+		solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 12.0f, 1.0f });
+	}
 
 	while (window.isOpen())
 	{
@@ -15,8 +25,21 @@ int main()
 				window.close();
 		}
 
+		solver.update(0.016f);
+
 		window.clear();
-		window.draw(shape);
+
+		const std::vector<Body>& bodies = solver.bodies();
+		for (const Body& b : bodies)
+		{
+			float radius = b.radius();
+			sf::CircleShape c(radius);
+			c.setOrigin(radius, radius);
+			c.setFillColor(sf::Color::Green);
+			c.setPosition(b.position().x, b.position().y);
+			window.draw(c);
+		}
+
 		window.display();
 	}
 

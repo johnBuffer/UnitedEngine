@@ -16,6 +16,8 @@ struct Vec2
 		_length(-1.0)
 	{}
 
+	~Vec2() noexcept = default;
+
 	float length() const
 	{
 		if (_length < 0.0f)
@@ -23,10 +25,25 @@ struct Vec2
 		return _length;
 	}
 
-	float normalize()
+	float length2() const
 	{
-		x /= length();
-		y /= length();
+		return x*x + y*y;
+	}
+
+	void normalize()
+	{
+		float l = length();
+
+		x /= l;
+		y /= l;
+
+		_length = 1.0f;
+	}
+
+	void operator+=(const Vec2& v)
+	{
+		x += v.x;
+		y += v.y;
 	}
 
 	float x, y;
