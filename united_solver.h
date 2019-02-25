@@ -3,6 +3,8 @@
 #include "FastVersatileArray.hpp"
 #include "Body.h"
 #include <vector>
+#include <SFML/System/Clock.hpp>
+#include <iostream>
 
 class UnitedSolver
 {
@@ -10,7 +12,8 @@ public:
 	UnitedSolver() = default;
 	UnitedSolver(const Vec2& dimension, const Vec2& gravity = Vec2(0.0f,0.0f)) :
 		_dimension(dimension),
-		_gravity(gravity)
+		_gravity(gravity),
+		_precision(4)
 	{}
 
 	void addBody(const Body& body)
@@ -54,6 +57,9 @@ public:
 
 	void solveInterbodiesCollisions()
 	{
+		sf::Clock clock;
+		
+		float precision_factor = 1.0f / float(_precision);
 		for (Body& b1 : _bodies)
 		{
 			for (Body& b2 : _bodies)
@@ -66,7 +72,7 @@ public:
 
 				if (col_axe.length2() < col_radius*col_radius)
 				{
-					float delta_col = 0.5f * (col_radius - col_axe.length());
+					float delta_col = precision_factor * 0.5f * (col_radius - col_axe.length());
 					col_axe.normalize();
 
 					b1.move(col_axe*delta_col);
@@ -74,13 +80,15 @@ public:
 				}
 			}
 		}
+		const float update_time = clock.getElapsedTime().asMilliseconds();
+		std::cout << "Collision time: " << update_time << "ms" << std::endl;
 	}
 
 	void update(float dt)
 	{
 		applyGravity();
 
-		for (int i(4); i--;)
+		for (int i(_precision); i--;)
 		{
 			solveInterbodiesCollisions();
 		}
@@ -99,6 +107,7 @@ public:
 	}
 
 private:
+	uint32_t _precision;
 	Vec2 _dimension;
 	Vec2 _gravity;
 	std::vector<Body> _bodies;
