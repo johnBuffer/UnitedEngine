@@ -29,7 +29,7 @@ public:
 
 	void update(float dt)
 	{
-		float anti_pressure_factor = std::pow(1.0f / (1.0f + _pressure), 2);
+		float anti_pressure_factor = std::pow(1.0f / (1.0f + _pressure), 4);
 		Vec2 new_pos = _position + (_position - _old_position) + (_acceleration * anti_pressure_factor) * dt * dt;
 		_old_position = _position;
 		_position = new_pos;
@@ -75,7 +75,7 @@ public:
 
 	float mass() const
 	{
-		return _mass + _pressure;
+		return _mass * (_pressure+1.0f);
 	}
 
 private:
@@ -84,7 +84,6 @@ private:
 	Vec2 _acceleration;
 
 	float _pressure;
-
 	float _radius;
 	float _mass;
 };

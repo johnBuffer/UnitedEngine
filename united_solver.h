@@ -15,8 +15,8 @@ public:
 	UnitedSolver(const Vec2& dimension, const Vec2& gravity = Vec2(0.0f,0.0f)) :
 		_dimension(dimension),
 		_gravity(gravity),
-		_precision(2),
-		_grid(dimension, 10)
+		_precision(1),
+		_grid(dimension, 20)
 	{}
 
 	void addBody(const Body& body)
@@ -59,16 +59,17 @@ public:
 	}
 
 	void solveInterbodiesCollisions(float dt)
-	{
-		sf::Clock clock;
-		
+	{	
 		for (GridCell* gc : _grid.nonEmpty())
 		{
-			std::array<Body*, 20>& bodies = gc->items;
+			std::array<Body*, 10>& bodies = gc->items;
 
 			float smooth_coef = 1.0f;
 			float precision_factor = 1.0f / float(_precision);
 			uint8_t size = gc->items_count;
+
+			if (test_pressure)
+				std::cout << "Size: " << uint32_t(size) << std::endl;
 
 			for (uint8_t i(0); i<size; ++i)
 			{
@@ -92,24 +93,19 @@ public:
 						b1.move(col_axe*(final_delta*mass_factor_2));
 						b2.move(col_axe*(-final_delta * mass_factor_1));
 
-						if (test_pressure)
-						{
-							b1.addPressure(delta_col);
-							b2.addPressure(delta_col);
-						}
+						b1.addPressure(delta_col);
+						b2.addPressure(delta_col);
 					}
 				}
 			}
 		}
-
-		const float update_time = clock.getElapsedTime().asMilliseconds();
-		std::cout << "Collision time: " << update_time << "ms" << std::endl;
 	}
 
 	void update(float dt)
 	{
 		applyGravity();
 
+		sf::Clock clock;
 		for (int i(_precision); i--;)
 		{
 			_grid.clear();
@@ -120,6 +116,8 @@ public:
 
 			solveInterbodiesCollisions(dt);
 		}
+		const float update_time = clock.getElapsedTime().asMilliseconds();
+		std::cout << "Collision time: " << update_time << "ms" << std::endl;
 
 		solveBoundaryCollisions();
 

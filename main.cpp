@@ -11,9 +11,9 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(1000, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
-	UnitedSolver solver({ 1000.0f, float(win_height) }, { 0.0f, 980.0f });
+	UnitedSolver solver({ 10000.0f, 10000.0f }, { 0.0f, 980.0f });
 
-	uint32_t n = 3000;
+	uint32_t n = 8000;
 	uint32_t i = 0;
 	
 	while (window.isOpen())
@@ -34,7 +34,9 @@ int main()
 
 		if (i < n)
 		{
-			i += 3;
+			i += 5;
+			solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
+			solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
 			solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
 			solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
 			solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });

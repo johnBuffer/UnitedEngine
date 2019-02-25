@@ -12,12 +12,15 @@ struct GridCell
 
 	void add(Body& b)
 	{
-		items[items_count++] = &b;
+		if (items_count < 10)
+		{
+			items[items_count++] = &b;
+		}
 	}
 
 	void clear()
 	{
-		for (uint8_t i(20); i--;)
+		for (uint8_t i(10); i--;)
 		{
 			items[i] = nullptr;
 		}
@@ -25,7 +28,7 @@ struct GridCell
 		items_count = 0;
 	}
 
-	std::array<Body*, 20> items;
+	std::array<Body*, 10> items;
 	uint8_t items_count;
 };
 
@@ -66,21 +69,14 @@ public:
 		uint32_t mid_grid = _cell_size / 2;
 
 		addToCell(grid_x, grid_y, b);
-		addToCell(grid_x, grid_y - 1, b);
-		addToCell(grid_x, grid_y + 1, b);
 
-		addToCell(grid_x + 1, grid_y, b);
-		addToCell(grid_x + 1, grid_y + 1, b);
-		addToCell(grid_x + 1, grid_y - 1, b);
+		uint32_t in_cell_x = body_x % _cell_size;
+		uint32_t in_cell_y = body_y % _cell_size;
 
-		addToCell(grid_x - 1, grid_y, b);
-		addToCell(grid_x - 1, grid_y + 1, b);
-		addToCell(grid_x - 1, grid_y - 1, b);
-
-		/*if (body_x%_cell_size > mid_grid)
+		if (in_cell_x > mid_grid)
 		{
 			addToCell(grid_x + 1, grid_y, b);
-			if (body_y%_cell_size > mid_grid)
+			if (in_cell_y > mid_grid)
 			{
 				addToCell(grid_x    , grid_y + 1, b);
 				addToCell(grid_x + 1, grid_y + 1, b);
@@ -94,7 +90,7 @@ public:
 		else
 		{
 			addToCell(grid_x - 1, grid_y, b);
-			if (body_y%_cell_size > mid_grid)
+			if (in_cell_y > mid_grid)
 			{
 				addToCell(grid_x, grid_y + 1, b);
 				addToCell(grid_x - 1, grid_y + 1, b);
@@ -104,7 +100,7 @@ public:
 				addToCell(grid_x, grid_y - 1, b);
 				addToCell(grid_x - 1, grid_y - 1, b);
 			}
-		}*/
+		}
 	}
 
 	std::vector<GridCell*>& nonEmpty()
