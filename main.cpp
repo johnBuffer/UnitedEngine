@@ -13,13 +13,13 @@ int main()
 	window.setVerticalSyncEnabled(true);
 
 	Vec2 world_dimension(5000.0f, 10000.0f);
-	UnitedSolver solver(world_dimension, 25, { 0.0f, 980.0f });
+	UnitedSolver solver(world_dimension, 5, { 0.0f, 200.0f });
 
 	DisplayManager displayManager(&window, &solver);
 	displayManager.setOffset(-world_dimension.x / 2, -0.75*world_dimension.y);
 	displayManager.setZoom(0.5);
 
-	uint32_t n = 8000;
+	uint32_t n = 2000;
 	uint32_t i = 0;
 
 	bool emit = false;
@@ -62,7 +62,7 @@ int main()
 				{
 					for (int i(500); --i;)
 					{
-						Vec2 pos(mousePosition.x + rand() % 200, mousePosition.y + rand() % 200);
+						Vec2 pos(mousePosition.x + rand() % 50, mousePosition.y + rand() % 50);
 						Vec2 worldPos = displayManager.displayCoordToWorldCoord(pos);
 						solver.addBody(worldPos);
 					}

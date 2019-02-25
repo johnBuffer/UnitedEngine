@@ -77,9 +77,6 @@ public:
 			float smooth_coef = 1.0f;
 			float precision_factor = 1.0f / float(_precision);
 			
-			if (test_pressure)
-				std::cout << "Size: " << uint32_t(size) << std::endl;
-
 			for (uint8_t i(0); i<size; ++i)
 			{
 				Body& b1 = *bodies[i];
@@ -128,7 +125,7 @@ public:
 			solveInterbodiesCollisions(dt);
 		}
 		const float update_time = clock.getElapsedTime().asMilliseconds();
-		std::cout << "Collision time: " << update_time << "ms" << std::endl;
+		std::cout << "Collision time: " << update_time << "ms (" << _bodies.size() << " bodies)" << std::endl;
 
 		solveBoundaryCollisions();
 
