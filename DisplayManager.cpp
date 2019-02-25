@@ -66,6 +66,18 @@ void DisplayManager::draw(bool showInner)
         bodies[4*i+2].texCoords = sf::Vector2f(512, 512);
         bodies[4*i+3].texCoords = sf::Vector2f(0, 512);
 
+		const float pi = 3.1415926f;
+
+		float t = body.id() / 1000.0f;
+		float r = sin(t)*sin(t);
+		float g = sin(t + 0.5f*pi)*sin(t + 0.5f*pi);
+		float b = sin(0.1*t)*sin(0.1*t);
+		sf::Color color(255*r, 255*g, 255*b);
+		bodies[4 * i].color = color;
+		bodies[4 * i + 1].color = color;
+		bodies[4 * i + 2].color = color;
+		bodies[4 * i + 3].color = color;
+
 		++i;
     }
     m_window->draw(bodies, &m_bodyTexture);

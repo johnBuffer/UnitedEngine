@@ -42,7 +42,7 @@ public:
 		_height(dimension.y / cell_size + 10)
 	{
 		_cells.resize(_width);
-		for (std::vector<GridCell<7>>& column : _cells)
+		for (std::vector<GridCell<10>>& column : _cells)
 		{
 			column.resize(_height);
 		}
@@ -53,7 +53,7 @@ public:
 		/*if (grid_cell_x < 0 || grid_cell_x > _width || grid_cell_y < 0 || grid_cell_y > _height)
 			return;*/
 
-		GridCell<7>& current_cell = _cells[grid_cell_x][grid_cell_y];
+		GridCell<10>& current_cell = _cells[grid_cell_x][grid_cell_y];
 		if (!current_cell.items_count)
 			_non_empty.push_back(&current_cell);
 
@@ -104,7 +104,7 @@ public:
 		}
 	}
 
-	std::vector<GridCell<7>*>& nonEmpty()
+	std::vector<GridCell<10>*>& nonEmpty()
 	{
 		return _non_empty;
 	}
@@ -113,9 +113,9 @@ public:
 	{
 		_non_empty.clear();
 
-		for (std::vector<GridCell<7>>& column : _cells)
+		for (std::vector<GridCell<10>>& column : _cells)
 		{
-			for (GridCell<7>& cell : column)
+			for (GridCell<10>& cell : column)
 			{
 				cell.clear();
 			}
@@ -127,6 +127,6 @@ private:
 	uint32_t _width;
 	uint32_t _height;
 
-	std::vector< std::vector<GridCell<7>> > _cells;
-	std::vector< GridCell<7>* > _non_empty;
+	std::vector< std::vector<GridCell<10>> > _cells;
+	std::vector< GridCell<10>* > _non_empty;
 };

@@ -13,7 +13,7 @@ int main()
 	window.setVerticalSyncEnabled(false);
 
 	Vec2 world_dimension(10000.0f, 10000.0f);
-	UnitedSolver solver(world_dimension, { 0.0f, 980.0f });
+	UnitedSolver solver(world_dimension, 25, { 0.0f, 980.0f });
 
 	DisplayManager displayManager(&window, &solver);
 	displayManager.setOffset(-world_dimension.x / 2, -0.75*world_dimension.y);
@@ -21,6 +21,8 @@ int main()
 
 	uint32_t n = 32000;
 	uint32_t i = 0;
+
+	bool emit = false;
 
 	bool mouseButtonPressed = false;
 	sf::Vector2i dragClicPosition, clicPosition;
@@ -39,6 +41,7 @@ int main()
 				else if ((event.key.code == sf::Keyboard::Subtract)) displayManager.zoom(0.8);
 				else if ((event.key.code == sf::Keyboard::Add)) displayManager.zoom(1.2);
 				else if ((event.key.code == sf::Keyboard::A)) solver.test_pressure = !solver.test_pressure;
+				else if ((event.key.code == sf::Keyboard::Space)) emit = !emit;
 				break;
 			case sf::Event::MouseWheelMoved:
 				// this is an amazing zoom
@@ -79,7 +82,7 @@ int main()
 			}
 		}
 
-		if (i < n)
+		if (i < n && emit)
 		{
 			i += 10;
 			solver.addBody({ float(rand() % 1000 + 4500), float(rand() % 100 + 9900) });
@@ -93,6 +96,17 @@ int main()
 			solver.addBody({ float(rand() % 1000 + 4500), float(rand() % 100 + 9900) });
 			solver.addBody({ float(rand() % 1000 + 4500), float(rand() % 100 + 9900) });
 			solver.addBody({ float(rand() % 1000 + 4500), float(rand() % 100 + 9900) });
+
+			/*solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });
+			solver.addBody({ float(rand() % 100 + 50), float(rand() % 200 + 5000) });*/
 		}
 
 		solver.update(0.016f);

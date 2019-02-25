@@ -12,17 +12,17 @@ class UnitedSolver
 {
 public:
 	UnitedSolver() = default;
-	UnitedSolver(const Vec2& dimension, const Vec2& gravity = Vec2(0.0f,0.0f)) :
+	UnitedSolver(const Vec2& dimension, uint32_t body_radius, const Vec2& gravity = Vec2(0.0f,0.0f)) :
 		_dimension(dimension),
 		_gravity(gravity),
-		_precision(3),
-		_body_radius(25.0f),
-		_grid(dimension, 50.0f)
+		_precision(2),
+		_body_radius(body_radius),
+		_grid(dimension, 2*body_radius)
 	{}
 
 	void addBody(const Vec2& position)
 	{
-		_bodies.emplace_back(position, _body_radius);
+		_bodies.emplace_back(position, _body_radius, _bodies.size());
 	}
 
 	void applyGravity()
@@ -65,7 +65,7 @@ public:
 
 	void solveInterbodiesCollisions(float dt)
 	{	
-		for (GridCell<7>* gc : _grid.nonEmpty())
+		for (auto* gc : _grid.nonEmpty())
 		{
 			auto& bodies = gc->items;
 
@@ -154,7 +154,7 @@ public:
 		return _dimension;
 	}
 
-	bool test_pressure = true;
+	bool test_pressure = false;
 
 private:
 	uint32_t _precision;
@@ -164,5 +164,5 @@ private:
 	std::vector<Body> _bodies;
 	Grid _grid;
 
-	const float _body_radius;
+	const uint32_t _body_radius;
 };

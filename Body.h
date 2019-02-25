@@ -6,13 +6,13 @@ class Body
 {
 public:
 	Body() = default;
-	Body(const Vec2& pos, float radius, float mass=1.0) :
+	Body(const Vec2& pos, float radius, uint32_t id) :
 		_position(pos),
 		_old_position(pos),
 		_acceleration(),
 		_pressure(0.0f),
 		_radius(radius),
-		_mass(mass)
+		_id(id)
 	{}
 	
 	Body& operator=(const Body& b)
@@ -22,7 +22,6 @@ public:
 		_acceleration = b._acceleration;
 		_pressure     = b._pressure;
 		_radius       = b._radius;
-		_mass         = b._mass;
 
 		return *this;
 	}
@@ -36,7 +35,7 @@ public:
 		_position = new_pos;
 
 		_acceleration = {};
-		_pressure *= 0.25f;
+		_pressure = 0.0f; // *= 0.125f;
 	}
 
 	const Vec2& position() const
@@ -57,7 +56,7 @@ public:
 	void move(const Vec2& delta)
 	{
 		_position += delta;
-		_old_position += delta * (1.0f / (_pressure + 1.0f));
+		_old_position += delta * (10.0f / (_pressure + 10.0f));
 	}
 
 	void moveOld(const Vec2& delta)
@@ -82,12 +81,17 @@ public:
 
 	float mass() const
 	{
-		return _mass + _pressure;
+		return 1.0f + _pressure;
 	}
 
 	void stop()
 	{
 		_old_position = _position;
+	}
+
+	uint32_t id() const
+	{
+		return _id;
 	}
 
 private:
@@ -97,5 +101,5 @@ private:
 
 	float _pressure;
 	float _radius;
-	float _mass;
+	uint32_t _id;
 };
