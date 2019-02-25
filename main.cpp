@@ -5,15 +5,18 @@
 int main()
 {
 	const uint32_t win_height = 800;
-	sf::RenderWindow window(sf::VideoMode(1000, win_height), "UE2");
-	window.setVerticalSyncEnabled(false);
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 8;
 
-	UnitedSolver solver({ 1000.0f, float(win_height) }, { 0.0f, 9.8f/0.016f });
+	sf::RenderWindow window(sf::VideoMode(1000, win_height), "UE2", sf::Style::Default, settings);
+	window.setVerticalSyncEnabled(true);
 
-	uint32_t n = 1000;
+	UnitedSolver solver({ 1000.0f, float(win_height) }, { 0.0f, 980.0f });
+
+	uint32_t n = 2000;
 	for (int i(n); i--;)
 	{
-		solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 10.0f, 1.0f });
+		solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
 	}
 
 	while (window.isOpen())
@@ -23,6 +26,13 @@ int main()
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
+			else if (event.type == sf::Event::KeyReleased)
+			{
+				if (event.key.code == sf::Keyboard::A)
+				{
+					solver.test_pressure = !solver.test_pressure;
+				}
+			}
 		}
 
 		solver.update(0.016f);

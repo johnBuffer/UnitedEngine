@@ -5,6 +5,7 @@
 #include <vector>
 #include <SFML/System/Clock.hpp>
 #include <iostream>
+#include <algorithm>
 
 class UnitedSolver
 {
@@ -55,10 +56,11 @@ public:
 		}
 	}
 
-	void solveInterbodiesCollisions()
+	void solveInterbodiesCollisions(float dt)
 	{
 		sf::Clock clock;
 		
+		float smooth_coef = 1.0f;
 		float precision_factor = 1.0f / float(_precision);
 		for (Body& b1 : _bodies)
 		{
@@ -72,11 +74,22 @@ public:
 
 				if (col_axe.length2() < col_radius*col_radius)
 				{
+					float mass_factor_tot = 1.0f / (b1.mass() + b2.mass());
+					float mass_factor_1 = b1.mass() * mass_factor_tot;
+					float mass_factor_2 = b2.mass() * mass_factor_tot;
+
 					float delta_col = precision_factor * 0.5f * (col_radius - col_axe.length());
+					float final_delta = smooth_coef * delta_col;
 					col_axe.normalize();
 
-					b1.move(col_axe*delta_col);
-					b2.move(col_axe*(-delta_col));
+					b1.move(col_axe*(final_delta*mass_factor_2));
+					b2.move(col_axe*(-final_delta *mass_factor_1));
+
+					if (test_pressure)
+					{
+						b1.addPressure(delta_col);
+						b2.addPressure(delta_col);
+					}
 				}
 			}
 		}
@@ -90,7 +103,7 @@ public:
 
 		for (int i(_precision); i--;)
 		{
-			solveInterbodiesCollisions();
+			solveInterbodiesCollisions(dt);
 		}
 
 		solveBoundaryCollisions();
@@ -105,6 +118,8 @@ public:
 	{
 		return _bodies;
 	}
+
+	bool test_pressure = true;
 
 private:
 	uint32_t _precision;
