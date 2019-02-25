@@ -1,6 +1,0 @@
-#ifndef UNITEDENGINE_H_INCLUDED
-#define UNITEDENGINE_H_INCLUDED
-
-#include "U_2DCollisionManager.h"
-
-#endif // UNITEDENGINE_H_INCLUDED
