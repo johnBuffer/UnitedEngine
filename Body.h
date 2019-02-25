@@ -78,11 +78,6 @@ public:
 		return _mass + _pressure;
 	}
 
-	uint32_t hashIndex() const
-	{
-		return _position.x / 50 + 200 * (_position.x / 50);
-	}
-
 private:
 	Vec2 _position;
 	Vec2 _old_position;

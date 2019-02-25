@@ -13,12 +13,9 @@ int main()
 
 	UnitedSolver solver({ 1000.0f, float(win_height) }, { 0.0f, 980.0f });
 
-	uint32_t n = 1500;
-	for (int i(n); i--;)
-	{
-		solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 10.0f, 1.0f });
-	}
-
+	uint32_t n = 3000;
+	uint32_t i = 0;
+	
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -33,6 +30,14 @@ int main()
 					solver.test_pressure = !solver.test_pressure;
 				}
 			}
+		}
+
+		if (i < n)
+		{
+			i += 3;
+			solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
+			solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
+			solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
 		}
 
 		solver.update(0.016f);
