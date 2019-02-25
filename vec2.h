@@ -52,27 +52,27 @@ private:
 	mutable float _length;
 };
 
-Vec2 operator+(const Vec2& v1,const Vec2& v2)
+inline Vec2 operator+(const Vec2& v1,const Vec2& v2)
 {
 	return Vec2(v1.x + v2.x, v1.y + v2.y);
 }
 
-Vec2 operator-(const Vec2& v1, const Vec2& v2)
+inline Vec2 operator-(const Vec2& v1, const Vec2& v2)
 {
 	return Vec2(v1.x - v2.x, v1.y - v2.y);
 }
 
-Vec2 operator+(const Vec2& v)
+inline Vec2 operator+(const Vec2& v)
 {
 	return Vec2(-v.x, -v.y);
 }
 
-Vec2 operator*(float f, const Vec2& v)
+inline Vec2 operator*(float f, const Vec2& v)
 {
 	return Vec2(f*v.x, f*v.y);
 }
 
-Vec2 operator*(const Vec2& v, float f)
+inline Vec2 operator*(const Vec2& v, float f)
 {
 	return Vec2(f*v.x, f*v.y);
 }

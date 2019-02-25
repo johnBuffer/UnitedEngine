@@ -4,6 +4,7 @@
 #include <vector>
 #include "Body.h"
 
+template<int N>
 struct GridCell
 {
 	GridCell() :
@@ -12,7 +13,7 @@ struct GridCell
 
 	void add(Body& b)
 	{
-		if (items_count < 10)
+		if (items_count < N)
 		{
 			items[items_count++] = &b;
 		}
@@ -20,7 +21,7 @@ struct GridCell
 
 	void clear()
 	{
-		for (uint8_t i(10); i--;)
+		for (uint8_t i(N); i--;)
 		{
 			items[i] = nullptr;
 		}
@@ -28,7 +29,7 @@ struct GridCell
 		items_count = 0;
 	}
 
-	std::array<Body*, 10> items;
+	std::array<Body*, N> items;
 	uint8_t items_count;
 };
 
@@ -41,7 +42,7 @@ public:
 		_height(dimension.y / cell_size + 10)
 	{
 		_cells.resize(_width);
-		for (std::vector<GridCell>& column : _cells)
+		for (std::vector<GridCell<7>>& column : _cells)
 		{
 			column.resize(_height);
 		}
@@ -49,10 +50,10 @@ public:
 
 	void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 	{
-		if (grid_cell_x < 0 || grid_cell_x > _width || grid_cell_y < 0 || grid_cell_y > _height)
-			return;
+		/*if (grid_cell_x < 0 || grid_cell_x > _width || grid_cell_y < 0 || grid_cell_y > _height)
+			return;*/
 
-		GridCell& current_cell = _cells[grid_cell_x][grid_cell_y];
+		GridCell<7>& current_cell = _cells[grid_cell_x][grid_cell_y];
 		if (!current_cell.items_count)
 			_non_empty.push_back(&current_cell);
 
@@ -103,7 +104,7 @@ public:
 		}
 	}
 
-	std::vector<GridCell*>& nonEmpty()
+	std::vector<GridCell<7>*>& nonEmpty()
 	{
 		return _non_empty;
 	}
@@ -112,9 +113,9 @@ public:
 	{
 		_non_empty.clear();
 
-		for (std::vector<GridCell>& column : _cells)
+		for (std::vector<GridCell<7>>& column : _cells)
 		{
-			for (GridCell& cell : column)
+			for (GridCell<7>& cell : column)
 			{
 				cell.clear();
 			}
@@ -126,6 +127,6 @@ private:
 	uint32_t _width;
 	uint32_t _height;
 
-	std::vector< std::vector<GridCell> > _cells;
-	std::vector< GridCell* > _non_empty;
+	std::vector< std::vector<GridCell<7>> > _cells;
+	std::vector< GridCell<7>* > _non_empty;
 };

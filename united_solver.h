@@ -15,13 +15,14 @@ public:
 	UnitedSolver(const Vec2& dimension, const Vec2& gravity = Vec2(0.0f,0.0f)) :
 		_dimension(dimension),
 		_gravity(gravity),
-		_precision(1),
-		_grid(dimension, 20)
+		_precision(3),
+		_body_radius(25.0f),
+		_grid(dimension, 50.0f)
 	{}
 
-	void addBody(const Body& body)
+	void addBody(const Vec2& position)
 	{
-		_bodies.push_back(body);
+		_bodies.emplace_back(position, _body_radius);
 	}
 
 	void applyGravity()
@@ -41,28 +42,32 @@ public:
 			if (pos.x < radius)
 			{
 				b.move({ radius - pos.x, 0.0f });
+				b.stop();
 			}
 			else if (pos.x > _dimension.x - radius)
 			{
 				b.move({ _dimension.x - radius - pos.x, 0.0f });
+				b.stop();
 			}
 
 			if (pos.y < radius)
 			{
 				b.move({ 0.0f, radius - pos.y });
+				b.stop();
 			}
 			else if (pos.y > _dimension.y - radius)
 			{
 				b.move({ 0.0f, _dimension.y - radius - pos.y});
+				b.stop();
 			}
 		}
 	}
 
 	void solveInterbodiesCollisions(float dt)
 	{	
-		for (GridCell* gc : _grid.nonEmpty())
+		for (GridCell<7>* gc : _grid.nonEmpty())
 		{
-			std::array<Body*, 10>& bodies = gc->items;
+			auto& bodies = gc->items;
 
 			float smooth_coef = 1.0f;
 			float precision_factor = 1.0f / float(_precision);
@@ -88,13 +93,18 @@ public:
 
 						float delta_col = precision_factor * 0.5f * (col_radius - col_axe.length());
 						float final_delta = smooth_coef * delta_col;
+						//float old_delta = final_delta * 0.25f;
+
 						col_axe.normalize();
 
-						b1.move(col_axe*(final_delta*mass_factor_2));
-						b2.move(col_axe*(-final_delta * mass_factor_1));
+						b1.move(   col_axe*(final_delta * mass_factor_2));
+						//b1.moveOld(col_axe*(old_delta   * mass_factor_2));
 
-						b1.addPressure(delta_col);
-						b2.addPressure(delta_col);
+						b2.move(   col_axe*(-final_delta * mass_factor_1));
+						//b2.moveOld(col_axe*(-old_delta   * mass_factor_1));
+
+						b1.addPressure(final_delta);
+						b2.addPressure(final_delta);
 					}
 				}
 			}
@@ -104,6 +114,8 @@ public:
 	void update(float dt)
 	{
 		applyGravity();
+
+		solveBoundaryCollisions();
 
 		sf::Clock clock;
 		for (int i(_precision); i--;)
@@ -117,7 +129,7 @@ public:
 			solveInterbodiesCollisions(dt);
 		}
 		const float update_time = clock.getElapsedTime().asMilliseconds();
-		std::cout << "Collision time: " << update_time << "ms" << std::endl;
+		//std::cout << "Collision time: " << update_time << "ms" << std::endl;
 
 		solveBoundaryCollisions();
 
@@ -132,6 +144,16 @@ public:
 		return _bodies;
 	}
 
+	uint32_t bodyCount() const
+	{
+		return _bodies.size();
+	}
+
+	const Vec2& dimension() const
+	{
+		return _dimension;
+	}
+
 	bool test_pressure = true;
 
 private:
@@ -141,4 +163,6 @@ private:
 
 	std::vector<Body> _bodies;
 	Grid _grid;
+
+	const float _body_radius;
 };

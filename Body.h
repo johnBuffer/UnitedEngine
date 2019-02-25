@@ -29,13 +29,14 @@ public:
 
 	void update(float dt)
 	{
-		float anti_pressure_factor = std::pow(1.0f / (1.0f + _pressure), 4);
+		_acceleration += velocity() * -25.f;
+		float anti_pressure_factor = std::pow(1.0f / (1.0f + _pressure), 1);
 		Vec2 new_pos = _position + (_position - _old_position) + (_acceleration * anti_pressure_factor) * dt * dt;
 		_old_position = _position;
 		_position = new_pos;
 
 		_acceleration = {};
-		_pressure *= 0.5f;
+		_pressure *= 0.25f;
 	}
 
 	const Vec2& position() const
@@ -56,6 +57,12 @@ public:
 	void move(const Vec2& delta)
 	{
 		_position += delta;
+		_old_position += delta * (1.0f / (_pressure + 1.0f));
+	}
+
+	void moveOld(const Vec2& delta)
+	{
+		_old_position += delta;
 	}
 
 	void accelerate(const Vec2& acceleration)
@@ -75,7 +82,12 @@ public:
 
 	float mass() const
 	{
-		return _mass * (_pressure+1.0f);
+		return _mass + _pressure;
+	}
+
+	void stop()
+	{
+		_old_position = _position;
 	}
 
 private:
