@@ -29,13 +29,13 @@ public:
 	void update(float dt)
 	{
 		_acceleration += velocity() * -25.f;
-		float anti_pressure_factor = std::pow(1.0f / (1.0f + _pressure), 1);
+		float anti_pressure_factor = 1.0f / (1.0f + _pressure);
 		Vec2 new_pos = _position + (_position - _old_position) + (_acceleration * anti_pressure_factor) * dt * dt;
 		_old_position = _position;
 		_position = new_pos;
 
 		_acceleration = {};
-		_pressure = 0.0f; // *= 0.125f;
+		_pressure = 0.0f;
 	}
 
 	const Vec2& position() const

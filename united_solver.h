@@ -64,15 +64,19 @@ public:
 	}
 
 	void solveInterbodiesCollisions(float dt)
-	{	
-		for (auto* gc : _grid.nonEmpty())
+	{
+		CellRegister& cr = _grid.nonEmpty();
+		uint32_t cell_count = cr.size;
+		auto& cells = cr.cells;
+		for (int i_cell(0); i_cell<cell_count; ++i_cell)
 		{
+			auto* gc = cells[i_cell];
+			uint8_t size = gc->items_count;
 			auto& bodies = gc->items;
 
 			float smooth_coef = 1.0f;
 			float precision_factor = 1.0f / float(_precision);
-			uint8_t size = gc->items_count;
-
+			
 			if (test_pressure)
 				std::cout << "Size: " << uint32_t(size) << std::endl;
 
@@ -92,19 +96,14 @@ public:
 						float mass_factor_2 = b2.mass() * mass_factor_tot;
 
 						float delta_col = precision_factor * 0.5f * (col_radius - col_axe.length());
-						float final_delta = smooth_coef * delta_col;
-						//float old_delta = final_delta * 0.25f;
 
 						col_axe.normalize();
 
-						b1.move(   col_axe*(final_delta * mass_factor_2));
-						//b1.moveOld(col_axe*(old_delta   * mass_factor_2));
+						b1.move(col_axe*(delta_col * mass_factor_2));
+						b2.move(col_axe*(-delta_col * mass_factor_1));
 
-						b2.move(   col_axe*(-final_delta * mass_factor_1));
-						//b2.moveOld(col_axe*(-old_delta   * mass_factor_1));
-
-						b1.addPressure(final_delta);
-						b2.addPressure(final_delta);
+						b1.addPressure(delta_col);
+						b2.addPressure(delta_col);
 					}
 				}
 			}
@@ -129,7 +128,7 @@ public:
 			solveInterbodiesCollisions(dt);
 		}
 		const float update_time = clock.getElapsedTime().asMilliseconds();
-		//std::cout << "Collision time: " << update_time << "ms" << std::endl;
+		std::cout << "Collision time: " << update_time << "ms" << std::endl;
 
 		solveBoundaryCollisions();
 

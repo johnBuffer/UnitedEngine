@@ -33,19 +33,46 @@ struct GridCell
 	uint8_t items_count;
 };
 
+struct CellRegister
+{
+	CellRegister() :
+		size(0)
+	{}
+
+	void init(uint32_t max_size)
+	{
+		cells.resize(max_size);
+	}
+
+	void add(GridCell<7>& gc)
+	{
+		cells[size++] = &gc;
+	}
+
+	void clear()
+	{
+		for (uint32_t i(0); i < size; ++i)
+		{
+			cells[i]->clear();
+		}
+		size = 0;
+	}
+
+	uint32_t size;
+	std::vector<GridCell<7>*> cells;
+};
+
 class Grid
 {
 public:
 	Grid(const Vec2& dimension, uint32_t cell_size) :
 		_cell_size(cell_size),
 		_width(dimension.x / cell_size + 10),
-		_height(dimension.y / cell_size + 10)
+		_height(dimension.y / cell_size + 10),
+		_non_empty()
 	{
-		_cells.resize(_width);
-		for (std::vector<GridCell<10>>& column : _cells)
-		{
-			column.resize(_height);
-		}
+		_non_empty.init(_width * _height);
+		_cells.resize(_width * _height);
 	}
 
 	void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
@@ -53,9 +80,9 @@ public:
 		/*if (grid_cell_x < 0 || grid_cell_x > _width || grid_cell_y < 0 || grid_cell_y > _height)
 			return;*/
 
-		GridCell<10>& current_cell = _cells[grid_cell_x][grid_cell_y];
+		GridCell<7>& current_cell = _cells[grid_cell_x + _width *grid_cell_y];
 		if (!current_cell.items_count)
-			_non_empty.push_back(&current_cell);
+			_non_empty.add(current_cell);
 
 		current_cell.add(b);
 	}
@@ -104,7 +131,7 @@ public:
 		}
 	}
 
-	std::vector<GridCell<10>*>& nonEmpty()
+	CellRegister& nonEmpty()
 	{
 		return _non_empty;
 	}
@@ -112,14 +139,6 @@ public:
 	void clear()
 	{
 		_non_empty.clear();
-
-		for (std::vector<GridCell<10>>& column : _cells)
-		{
-			for (GridCell<10>& cell : column)
-			{
-				cell.clear();
-			}
-		}
 	}
 
 private:
@@ -127,6 +146,6 @@ private:
 	uint32_t _width;
 	uint32_t _height;
 
-	std::vector< std::vector<GridCell<10>> > _cells;
-	std::vector< GridCell<10>* > _non_empty;
+	std::vector<GridCell<7>> _cells;
+	CellRegister _non_empty;
 };
