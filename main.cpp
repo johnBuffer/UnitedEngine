@@ -13,10 +13,10 @@ int main()
 
 	UnitedSolver solver({ 1000.0f, float(win_height) }, { 0.0f, 980.0f });
 
-	uint32_t n = 2000;
+	uint32_t n = 1500;
 	for (int i(n); i--;)
 	{
-		solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 8.0f, 1.0f });
+		solver.addBody({ {float(rand() % 1000), float(rand() % 200)}, 10.0f, 1.0f });
 	}
 
 	while (window.isOpen())

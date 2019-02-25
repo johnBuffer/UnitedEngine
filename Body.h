@@ -35,7 +35,7 @@ public:
 		_position = new_pos;
 
 		_acceleration = {};
-		_pressure *= 0.75f;
+		_pressure *= 0.5f;
 	}
 
 	const Vec2& position() const
