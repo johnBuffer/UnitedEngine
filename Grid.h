@@ -4,6 +4,9 @@
 #include <vector>
 #include "Body.h"
 
+namespace up
+{
+
 template<int N>
 struct GridCell
 {
@@ -58,6 +61,16 @@ struct CellRegister
 		size = 0;
 	}
 
+	std::vector<GridCell<7>*>::iterator begin()
+	{
+		return cells.begin();
+	}
+
+	std::vector<GridCell<7>*>::iterator end()
+	{
+		return cells.begin() + size;
+	}
+
 	uint32_t size;
 	std::vector<GridCell<7>*> cells;
 };
@@ -77,9 +90,6 @@ public:
 
 	void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 	{
-		/*if (grid_cell_x < 0 || grid_cell_x > _width || grid_cell_y < 0 || grid_cell_y > _height)
-			return;*/
-
 		GridCell<7>& current_cell = _cells[grid_cell_x + _width *grid_cell_y];
 		if (!current_cell.items_count)
 			_non_empty.add(current_cell);
@@ -149,3 +159,5 @@ private:
 	std::vector<GridCell<7>> _cells;
 	CellRegister _non_empty;
 };
+
+}

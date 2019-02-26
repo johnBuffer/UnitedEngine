@@ -21,6 +21,11 @@ public:
 		_source(&source)
 	{}
 
+	operator bool() const
+	{
+		return _source;
+	}
+
 	T& operator*()
 	{
 		return (*_source)[_index];
@@ -47,7 +52,7 @@ public:
 	SwapArray() = default;
 
 	template<typename... Args>
-	uint32_t add(Args&&...);
+	Handle<T> add(Args&&...);
 	void remove(Handle<T>& handle);
 
 	T& operator[](uint32_t index);
@@ -56,8 +61,8 @@ public:
 	typename std::vector<T>::iterator begin();
 	typename std::vector<T>::iterator end();
 
-	typename std::vector<T>::const_iterator cbegin() const;
-	typename std::vector<T>::const_iterator cend() const;
+	typename std::vector<T>::const_iterator begin() const;
+	typename std::vector<T>::const_iterator end() const;
 
 	uint32_t size() const;
 	void     clear();
@@ -72,7 +77,7 @@ private:
 
 template<class T>
 template<typename... Args>
-inline uint32_t SwapArray<T>::add(Args&&... args)
+inline Handle<T> SwapArray<T>::add(Args&&... args)
 {
 	// Compute data_index (index in _data) and init index (index for access from outside)
 	uint32_t data_index = uint32_t(_data.size());
@@ -97,7 +102,7 @@ inline uint32_t SwapArray<T>::add(Args&&... args)
 	_data.emplace_back(args...);
 	_reverse_index.push_back(index);
 
-	return index;
+	return Handle<T>(index, *this);
 }
 
 template<class T>
@@ -160,15 +165,15 @@ inline typename std::vector<T>::iterator SwapArray<T>::end()
 }
 
 template<class T>
-inline typename std::vector<T>::const_iterator SwapArray<T>::cbegin() const
+inline typename std::vector<T>::const_iterator SwapArray<T>::begin() const
 {
-	return _data.cbegin();
+	return _data.begin();
 }
 
 template<class T>
-inline typename std::vector<T>::const_iterator SwapArray<T>::cend() const
+inline typename std::vector<T>::const_iterator SwapArray<T>::end() const
 {
-	return _data.cend();
+	return _data.end();
 }
 
 template<class T>

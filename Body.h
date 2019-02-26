@@ -2,6 +2,9 @@
 
 #include "vec2.h"
 
+namespace up
+{
+
 class Body
 {
 public:
@@ -12,7 +15,7 @@ public:
 		_acceleration(),
 		_pressure(0.0f),
 		_radius(radius),
-		_id(id)
+		_moving(1)
 	{}
 	
 	Body& operator=(const Body& b)
@@ -28,12 +31,18 @@ public:
 
 	void update(float dt)
 	{
+		// Air friction
 		_acceleration += velocity() * -25.f;
+
+		// This prevent from too much compression
 		float anti_pressure_factor = 1.0f / (1.0f + _pressure);
-		Vec2 new_pos = _position + (_position - _old_position) + (_acceleration * anti_pressure_factor) * dt * dt;
+
+		// Verlet integration
+		Vec2 new_pos = _position + _moving*((_position - _old_position) + (_acceleration * anti_pressure_factor) * dt * dt);
 		_old_position = _position;
 		_position = new_pos;
 
+		// Reset temporary values
 		_acceleration = {};
 		_pressure = 0.0f;
 	}
@@ -55,8 +64,14 @@ public:
 
 	void move(const Vec2& delta)
 	{
-		_position += delta;
-		_old_position += delta * (1.0f / (_pressure + 1.0f));
+		Vec2 d = _moving * delta;
+		_position += d;
+		moveOld(d * (1.0f / (_pressure + 1.0f)));
+	}
+
+	void moveHard(const Vec2& delta)
+	{
+		_position += _moving*delta;
 	}
 
 	void moveOld(const Vec2& delta)
@@ -89,9 +104,14 @@ public:
 		_old_position = _position;
 	}
 
-	uint32_t id() const
+	bool moving() const
 	{
-		return _id;
+		return _moving;
+	}
+
+	void moving(bool b)
+	{
+		_moving = b;
 	}
 
 private:
@@ -101,5 +121,7 @@ private:
 
 	float _pressure;
 	float _radius;
-	uint32_t _id;
+	uint8_t _moving;
 };
+
+}

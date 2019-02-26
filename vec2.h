@@ -2,6 +2,9 @@
 
 #include <cmath>
 
+namespace up
+{
+
 struct Vec2
 {
 	Vec2() noexcept :
@@ -38,6 +41,11 @@ struct Vec2
 		y /= l;
 
 		_length = 1.0f;
+	}
+
+	Vec2 getNormal() const
+	{
+		return Vec2(-y, x);
 	}
 
 	void operator+=(const Vec2& v)
@@ -77,3 +85,4 @@ inline Vec2 operator*(const Vec2& v, float f)
 	return Vec2(f*v.x, f*v.y);
 }
 
+}
