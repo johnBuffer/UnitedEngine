@@ -99,8 +99,8 @@ public:
 						b1.move(col_axe*(delta_col * mass_factor_2));
 						b2.move(col_axe*(-delta_col * mass_factor_1));
 
-						b1.addPressure(delta_col);
-						b2.addPressure(delta_col);
+						b1.addPressure(0.25f*delta_col);
+						b2.addPressure(0.25f*delta_col);
 					}
 				}
 			}

@@ -56,7 +56,7 @@ public:
 	void move(const Vec2& delta)
 	{
 		_position += delta;
-		_old_position += delta * (10.0f / (_pressure + 10.0f));
+		_old_position += delta * (1.0f / (_pressure + 1.0f));
 	}
 
 	void moveOld(const Vec2& delta)

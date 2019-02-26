@@ -5,21 +5,22 @@
 
 int main()
 {
-	const uint32_t win_height = 800;
+	const uint32_t win_width = 1600;
+	const uint32_t win_height = 900;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 2;
 
-	sf::RenderWindow window(sf::VideoMode(1000, win_height), "UE2", sf::Style::Default, settings);
-	window.setVerticalSyncEnabled(true);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
+	window.setVerticalSyncEnabled(false);
 
 	Vec2 world_dimension(5000.0f, 10000.0f);
-	UnitedSolver solver(world_dimension, 5, { 0.0f, 200.0f });
+	UnitedSolver solver(world_dimension, 15, { 0.0f, 200.0f });
 
 	DisplayManager displayManager(&window, &solver);
 	displayManager.setOffset(-world_dimension.x / 2, -0.75*world_dimension.y);
 	displayManager.setZoom(0.5);
 
-	uint32_t n = 2000;
+	uint32_t n = 32000;
 	uint32_t i = 0;
 
 	bool emit = false;
@@ -86,7 +87,7 @@ int main()
 		{
 			i += 10;
 			for (int ii(10); ii--;)
-				solver.addBody({ float(rand() % 1000 + 1500), float(rand() % 100 + 9900 - i/80) });
+				solver.addBody({ float(rand() % 1000 + 1500), float(rand() % 100 + 9900) });
 		}
 
 		solver.update(0.016f);
