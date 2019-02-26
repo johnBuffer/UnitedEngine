@@ -15,36 +15,35 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
-	up::Vec2 world_dimension(5000.0f, 10000.0f);
-	up::UnitedSolver solver(world_dimension, 15, { 0.0f, 200.0f });
+	float body_radius = 10;
+	up::Vec2 world_dimension(10000.0f, 10000.0f);
+	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 200.0f });
 
 	DisplayManager displayManager(&window, &solver);
 	displayManager.setOffset(-world_dimension.x / 2, -0.75*world_dimension.y);
 	displayManager.setZoom(0.5);
 
 	uint32_t n = 32000;
-	uint32_t i = 0;
 
-	bool emit = false;
+	Wall wall(up::Vec2(5000, 10000-body_radius*201), 4, 100);
+	wall.init(solver);
+
+	up::BodyPtr b = solver.addBody(up::Vec2(2000, 8500));
 
 	while (window.isOpen())
 	{
 		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 		displayManager.processEvents();
-			
 
-		if (i < n && emit)
-		{
-			i += 10;
-			for (int ii(10); ii--;)
-				solver.addBody({ float(rand() % 1000 + 1500), float(rand() % 100 + 9900) });
-		}
+		b->moveHard({ 4*body_radius, 0.0f });
+		b->stop();
 
 		solver.update(0.016f);
 
 		window.clear(sf::Color::White);
 
 		displayManager.draw(false);
+		wall.draw(&window, displayManager);
 
 		window.display();
 	}

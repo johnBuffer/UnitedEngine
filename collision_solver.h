@@ -22,9 +22,12 @@ namespace up
 			_grid(dimension, 2 * body_radius)
 		{}
 
-		fva::Handle<Body> addBody(const Vec2& position)
+		fva::Handle<Body> addBody(const Vec2& position, float radius)
 		{
-			return _bodies.add(position, _body_radius, _bodies.size());
+			if (radius > 0.0f && radius <= _body_radius)
+				return _bodies.add(position, radius);
+			
+			return _bodies.add(position, _body_radius);
 		}
 
 		void applyGravity()
@@ -146,6 +149,25 @@ namespace up
 		const Vec2& dimension() const
 		{
 			return _dimension;
+		}
+
+		void applyExplosion(const Vec2& position, float force)
+		{
+			for (Body& b : _bodies)
+			{
+				Vec2 dir = b.position() - position;
+				float length = dir.length();
+				dir.normalize();
+
+				float force_factor = force / (length  + 1.0f);
+
+				b.accelerate(force_factor * dir);
+			}
+		}
+
+		float defaultBodyRadius() const
+		{
+			return _body_radius;
 		}
 
 		bool test_pressure = false;

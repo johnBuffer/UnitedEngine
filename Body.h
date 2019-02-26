@@ -9,7 +9,7 @@ class Body
 {
 public:
 	Body() = default;
-	Body(const Vec2& pos, float radius, uint32_t id) :
+	Body(const Vec2& pos, float radius) :
 		_position(pos),
 		_old_position(pos),
 		_acceleration(),

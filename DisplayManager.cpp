@@ -116,12 +116,7 @@ void DisplayManager::processEvents()
 			_mouse_button_pressed = false;
 			if (_clic_position == mousePosition)
 			{
-				for (int i(500); --i;)
-				{
-					up::Vec2 pos(mousePosition.x + rand() % 50, mousePosition.y + rand() % 50);
-					up::Vec2 worldPos = displayCoordToWorldCoord(pos);
-					m_collisionManager->addBody(worldPos);
-				}
+				m_collisionManager->applyExplosion(displayCoordToWorldCoord(up::Vec2(_clic_position.x, _clic_position.y)), 1000000.0f);
 			}
 
 			break;

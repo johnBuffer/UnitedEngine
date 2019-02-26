@@ -20,14 +20,19 @@ public:
 		_dimension(dimension)
 	{}
 
-	BodyPtr addBody(const Vec2& position)
+	BodyPtr addBody(const Vec2& position, float radius = 0.0f)
 	{
-		return _collision_solver.addBody(position);
+		return _collision_solver.addBody(position, radius);
 	}
 
 	ConstraintPtr addConstraint(BodyPtr b1, BodyPtr b2)
 	{
 		return _constraint_solver.addConstraint(b1, b2);
+	}
+
+	AnchorPtr addAnchor(BodyPtr b, float max_length)
+	{
+		return _constraint_solver.addAnchor(b, max_length);
 	}
 
 	void update(float dt)
@@ -46,6 +51,16 @@ public:
 	const Vec2& dimension() const
 	{
 		return _dimension;
+	}
+
+	float defaultBodyRadius() const
+	{
+		return _collision_solver.defaultBodyRadius();
+	}
+
+	void applyExplosion(const Vec2& position, float force)
+	{
+		_collision_solver.applyExplosion(position, force);
 	}
 
 private:

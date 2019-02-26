@@ -31,7 +31,17 @@ public:
 		return (*_source)[_index];
 	}
 
+	const T& operator*() const
+	{
+		return (*_source)[_index];
+	}
+
 	T* operator->()
+	{
+		return &(this->operator*());
+	}
+
+	const T* operator->() const
 	{
 		return &(this->operator*());
 	}
