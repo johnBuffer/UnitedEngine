@@ -63,6 +63,11 @@ public:
 		_collision_solver.applyExplosion(position, force);
 	}
 
+	float physicsUpdateTime() const
+	{
+		return _collision_solver._up_time;
+	}
+
 private:
 	const Vec2 _dimension;
 	CollisionSolver _collision_solver;

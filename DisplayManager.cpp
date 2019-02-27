@@ -42,6 +42,7 @@ up::Vec2 DisplayManager::displayCoordToWorldCoord(const up::Vec2& viewCoord)
 
 void DisplayManager::draw(bool showInner)
 {
+	sf::Clock clock;
     // draw the world's ground as a big black square
     sf::RectangleShape ground(sf::Vector2f(m_collisionManager->dimension().x, m_collisionManager->dimension().y));
     ground.setFillColor(sf::Color::Black);
@@ -62,12 +63,6 @@ void DisplayManager::draw(bool showInner)
         double radius = body.radius()*1.0f;
 
 		const up::Vec2& position = body.position();
-        //up::Vec2 viewCoord = worldCoordToDisplayCoord(body.position());
-
-        /*bodies[4*i  ].position = sf::Vector2f(viewCoord.x-radius, viewCoord.y-radius);
-        bodies[4*i+1].position = sf::Vector2f(viewCoord.x+radius, viewCoord.y-radius);
-        bodies[4*i+2].position = sf::Vector2f(viewCoord.x+radius, viewCoord.y+radius);
-        bodies[4*i+3].position = sf::Vector2f(viewCoord.x-radius, viewCoord.y+radius);*/
 
 		bodies[4 * i].position = sf::Vector2f(position.x - radius, position.y - radius);
 		bodies[4 * i + 1].position = sf::Vector2f(position.x + radius, position.y - radius);
@@ -95,7 +90,7 @@ void DisplayManager::draw(bool showInner)
 		}
 		else
 		{
-			float pressure = std::min(body.mass()*10.0f, 255.0f);
+			float pressure = std::min(body.mass()*5.0F, 255.0f);
 			sf::Color color(255, 255 - pressure, 255 - pressure);
 			bodies[4 * i].color = color;
 			bodies[4 * i + 1].color = color;
@@ -113,6 +108,8 @@ void DisplayManager::draw(bool showInner)
 	rs.transform.translate(m_offsetX, m_offsetY);
 
     m_window->draw(bodies, rs);
+
+	render_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 }
 
 void DisplayManager::processEvents()

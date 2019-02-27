@@ -35,6 +35,8 @@ public:
 	up::Body* getBodyAt(double x, double y);
 
 	bool emit;
+	float render_time;
+
 private:
 	up::UnitedSolver* m_collisionManager;
     sf::RenderWindow* m_window;

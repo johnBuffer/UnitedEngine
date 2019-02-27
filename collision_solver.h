@@ -70,7 +70,6 @@ namespace up
 
 		void solveInterbodiesCollisions(float dt)
 		{
-			//const float precision_factor = 1.0f / float(_precision);
 			const float col_radius = 2 * _body_radius;
 
 			CellRegister&  cr = _grid.nonEmpty();
@@ -126,8 +125,7 @@ namespace up
 
 				solveInterbodiesCollisions(dt);
 			}
-			const float update_time = clock.getElapsedTime().asMilliseconds();
-			std::cout << "Collision time: " << update_time << "ms (" << _bodies.size() << " bodies)" << std::endl;
+			_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 
 			solveBoundaryCollisions();
 
@@ -172,6 +170,8 @@ namespace up
 		}
 
 		bool test_pressure = false;
+		float _up_time;
+
 
 	private:
 		Vec2 _gravity;
