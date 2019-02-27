@@ -41,10 +41,14 @@ up::Vec2 DisplayManager::displayCoordToWorldCoord(const up::Vec2& viewCoord)
 void DisplayManager::draw(bool showInner)
 {
     // draw the world's ground as a big black square
-    sf::RectangleShape ground(sf::Vector2f(m_collisionManager->dimension().x*m_zoom, m_collisionManager->dimension().y*m_zoom));
+    sf::RectangleShape ground(sf::Vector2f(m_collisionManager->dimension().x, m_collisionManager->dimension().y));
     ground.setFillColor(sf::Color::Black);
-    ground.setPosition(m_offsetX*m_zoom+m_windowOffsetX, m_offsetY*m_zoom+m_windowOffsetY);
-    m_window->draw(ground);
+
+	sf::RenderStates rs_ground;
+	rs_ground.transform.translate(m_windowOffsetX, m_windowOffsetY);
+	rs_ground.transform.scale(m_zoom, m_zoom);
+	rs_ground.transform.translate(m_offsetX, m_offsetY);
+    m_window->draw(ground, rs_ground);
 
     // draw the guys
 	const fva::SwapArray<up::Body>& bodies_data = m_collisionManager->bodies();
@@ -53,21 +57,27 @@ void DisplayManager::draw(bool showInner)
 	uint32_t i(0);
     for (const up::Body& body : bodies_data)
     {
-        double radius = body.radius()*m_zoom;
+        double radius = body.radius()*1.0f;
 
-        up::Vec2 viewCoord = worldCoordToDisplayCoord(body.position());
+		const up::Vec2& position = body.position();
+        //up::Vec2 viewCoord = worldCoordToDisplayCoord(body.position());
 
-        bodies[4*i  ].position = sf::Vector2f(viewCoord.x-radius, viewCoord.y-radius);
+        /*bodies[4*i  ].position = sf::Vector2f(viewCoord.x-radius, viewCoord.y-radius);
         bodies[4*i+1].position = sf::Vector2f(viewCoord.x+radius, viewCoord.y-radius);
         bodies[4*i+2].position = sf::Vector2f(viewCoord.x+radius, viewCoord.y+radius);
-        bodies[4*i+3].position = sf::Vector2f(viewCoord.x-radius, viewCoord.y+radius);
+        bodies[4*i+3].position = sf::Vector2f(viewCoord.x-radius, viewCoord.y+radius);*/
+
+		bodies[4 * i].position = sf::Vector2f(position.x - radius, position.y - radius);
+		bodies[4 * i + 1].position = sf::Vector2f(position.x + radius, position.y - radius);
+		bodies[4 * i + 2].position = sf::Vector2f(position.x + radius, position.y + radius);
+		bodies[4 * i + 3].position = sf::Vector2f(position.x - radius, position.y + radius);
 
         bodies[4*i  ].texCoords = sf::Vector2f(0, 0);
         bodies[4*i+1].texCoords = sf::Vector2f(512, 0);
         bodies[4*i+2].texCoords = sf::Vector2f(512, 512);
         bodies[4*i+3].texCoords = sf::Vector2f(0, 512);
 
-		/*const float pi = 3.1415926f;
+		const float pi = 3.1415926f;
 
 		float t = i / 1000.0f;
 		float r = sin(t)*sin(t);
@@ -77,7 +87,7 @@ void DisplayManager::draw(bool showInner)
 		bodies[4 * i].color = color;
 		bodies[4 * i + 1].color = color;
 		bodies[4 * i + 2].color = color;
-		bodies[4 * i + 3].color = color;*/
+		bodies[4 * i + 3].color = color;
 
 		/*float pressure = std::min(body.mass(), 255.0f);
 		sf::Color color(255, 255 - pressure, 255 - pressure);
@@ -87,8 +97,17 @@ void DisplayManager::draw(bool showInner)
 		bodies[4 * i + 3].color = color;*/
 
 		++i;
-    }
-    m_window->draw(bodies, &m_bodyTexture);
+	}
+
+	sf::RenderStates rs;
+	rs.texture = &m_bodyTexture;
+	rs.transform.translate(m_windowOffsetX, m_windowOffsetY);
+	rs.transform.scale(m_zoom, m_zoom);
+	rs.transform.translate(m_offsetX, m_offsetY);
+
+	std::cout << m_zoom << std::endl;
+
+    m_window->draw(bodies, rs);
 }
 
 void DisplayManager::processEvents()

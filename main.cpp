@@ -20,7 +20,7 @@ int main()
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 1000.0f });
 
 	DisplayManager displayManager(&window, &solver);
-	displayManager.setOffset(-world_dimension.x / 2, -0.75*world_dimension.y);
+	//displayManager.setOffset(-world_dimension.x / 2, -0.75*world_dimension.y);
 	displayManager.setZoom(0.5);
 
 	uint32_t n = 50000;
