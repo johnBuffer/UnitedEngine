@@ -14,6 +14,8 @@ DisplayManager::DisplayManager(sf::RenderWindow *window, up::UnitedSolver* colli
     m_windowOffsetY = m_window->getSize().y/2;
 
     m_bodyTexture.loadFromFile("circle.png");
+
+	_show_pressure = false;
 }
 
 up::Vec2 DisplayManager::worldCoordToDisplayCoord(const up::Vec2& worldCoord)
@@ -77,24 +79,29 @@ void DisplayManager::draw(bool showInner)
         bodies[4*i+2].texCoords = sf::Vector2f(512, 512);
         bodies[4*i+3].texCoords = sf::Vector2f(0, 512);
 
-		const float pi = 3.1415926f;
 
-		float t = i / 1000.0f;
-		float r = sin(t)*sin(t);
-		float g = sin(t + 0.5f*pi)*sin(t + 0.5f*pi);
-		float b = sin(0.1*t)*sin(0.1*t);
-		sf::Color color(255*r, 255*g, 255*b);
-		bodies[4 * i].color = color;
-		bodies[4 * i + 1].color = color;
-		bodies[4 * i + 2].color = color;
-		bodies[4 * i + 3].color = color;
-
-		/*float pressure = std::min(body.mass(), 255.0f);
-		sf::Color color(255, 255 - pressure, 255 - pressure);
-		bodies[4 * i].color = color;
-		bodies[4 * i + 1].color = color;
-		bodies[4 * i + 2].color = color;
-		bodies[4 * i + 3].color = color;*/
+		if (!_show_pressure)
+		{
+			const float pi = 3.1415926f;
+			float t = i / 1000.0f;
+			float r = sin(t);
+			float g = sin(t + 0.33f * 2 * pi);
+			float b = sin(t + 0.66f * 2 * pi);
+			sf::Color color(255 * r*r, 255 * g*g, 255 * b*b);
+			bodies[4 * i].color = color;
+			bodies[4 * i + 1].color = color;
+			bodies[4 * i + 2].color = color;
+			bodies[4 * i + 3].color = color;
+		}
+		else
+		{
+			float pressure = std::min(body.mass()*10.0f, 255.0f);
+			sf::Color color(255, 255 - pressure, 255 - pressure);
+			bodies[4 * i].color = color;
+			bodies[4 * i + 1].color = color;
+			bodies[4 * i + 2].color = color;
+			bodies[4 * i + 3].color = color;
+		}
 
 		++i;
 	}
@@ -104,8 +111,6 @@ void DisplayManager::draw(bool showInner)
 	rs.transform.translate(m_windowOffsetX, m_windowOffsetY);
 	rs.transform.scale(m_zoom, m_zoom);
 	rs.transform.translate(m_offsetX, m_offsetY);
-
-	std::cout << m_zoom << std::endl;
 
     m_window->draw(bodies, rs);
 }
@@ -123,7 +128,8 @@ void DisplayManager::processEvents()
 			if (event.key.code == sf::Keyboard::Escape) m_window->close();
 			else if ((event.key.code == sf::Keyboard::Subtract)) zoom(0.8);
 			else if ((event.key.code == sf::Keyboard::Add)) zoom(1.2);
-			//else if ((event.key.code == sf::Keyboard::Space)) emit = !emit;
+			else if ((event.key.code == sf::Keyboard::Space)) emit = !emit;
+			else if ((event.key.code == sf::Keyboard::A)) _show_pressure = !_show_pressure;
 			break;
 		case sf::Event::MouseWheelMoved:
 			// this is an amazing zoom
@@ -142,7 +148,7 @@ void DisplayManager::processEvents()
 			_mouse_button_pressed = false;
 			if (_clic_position == mousePosition)
 			{
-				m_collisionManager->applyExplosion(displayCoordToWorldCoord(up::Vec2(_clic_position.x, _clic_position.y)), 10000000000.0f);
+				m_collisionManager->applyExplosion(displayCoordToWorldCoord(up::Vec2(_clic_position.x, _clic_position.y)), 1000000000.0f);
 			}
 
 			break;

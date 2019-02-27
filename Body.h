@@ -37,7 +37,7 @@ public:
 		_acceleration += v * -30.0f;
 
 		// This prevent from too much compression
-		float anti_pressure_factor = std::pow(1.0f / mass(), 4);
+		float anti_pressure_factor = std::pow(1.0f / mass(), 3);
 
 		// Verlet integration
 		Vec2 new_pos = _position + _moving*v + (_acceleration * anti_pressure_factor) * dt * dt;
@@ -48,7 +48,7 @@ public:
 		_acceleration = {};
 
 		if (_pressure > _radius) _pressure = _radius;
-		_old_pressure = std::pow(_pressure, 2);
+		_old_pressure = _pressure; // std::pow(_pressure, 1);
 		_pressure = 0.0f;
 	}
 

@@ -17,7 +17,7 @@ int main()
 
 	float body_radius = 25;
 	up::Vec2 world_dimension(10000.0f, 20000.0f);
-	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 1000.0f });
+	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
 	DisplayManager displayManager(&window, &solver);
 	//displayManager.setOffset(-world_dimension.x / 2, -0.75*world_dimension.y);
@@ -28,11 +28,11 @@ int main()
 	while (window.isOpen())
 	{
 		uint32_t current_bodies = solver.bodies().size();
-		if (current_bodies < n)
+		if (current_bodies < n && displayManager.emit)
 		{
 			for (int i(10); --i;)
 			{
-				up::BodyPtr b = solver.addBody(up::Vec2(rand()%200, 3000 + rand() % 1000));
+				up::BodyPtr b = solver.addBody(up::Vec2(rand()%200, 10000 + rand() % 1000));
 				b->setVelocity({ rand() % 10 + 50.0f, rand()%10+1.0f });
 			}
 

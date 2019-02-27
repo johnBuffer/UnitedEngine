@@ -34,6 +34,7 @@ public:
 	up::Vec2 displayCoordToWorldCoord(const up::Vec2&);
 	up::Body* getBodyAt(double x, double y);
 
+	bool emit;
 private:
 	up::UnitedSolver* m_collisionManager;
     sf::RenderWindow* m_window;
@@ -43,6 +44,9 @@ private:
 	sf::Vector2i _drag_clic_position, _clic_position;
 
     double m_zoom, m_offsetX, m_offsetY, m_windowOffsetX, m_windowOffsetY;
+
+	bool _show_pressure;
+
 };
 
 #endif // DISPLAYMANAGER_H_INCLUDED

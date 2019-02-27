@@ -160,7 +160,7 @@ namespace up
 				float length = dir.length();
 				dir.normalize();
 
-				float force_factor = force / (length * length + 1.0f);
+				float force_factor = force / (length + 1.0f);
 
 				b.accelerate(force_factor * dir);
 			}
