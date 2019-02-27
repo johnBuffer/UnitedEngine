@@ -79,11 +79,12 @@ void DisplayManager::draw(bool showInner)
 		bodies[4 * i + 2].color = color;
 		bodies[4 * i + 3].color = color;*/
 
-		sf::Color color(255, 255-body.mass(), 255 - body.mass());
+		/*float pressure = std::min(body.mass(), 255.0f);
+		sf::Color color(255, 255 - pressure, 255 - pressure);
 		bodies[4 * i].color = color;
 		bodies[4 * i + 1].color = color;
 		bodies[4 * i + 2].color = color;
-		bodies[4 * i + 3].color = color;
+		bodies[4 * i + 3].color = color;*/
 
 		++i;
     }

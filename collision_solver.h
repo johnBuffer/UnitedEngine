@@ -70,7 +70,8 @@ namespace up
 
 		void solveInterbodiesCollisions(float dt)
 		{
-			const float precision_factor = 1.0f / float(_precision);
+			//const float precision_factor = 1.0f / float(_precision);
+			const float col_radius = 2 * _body_radius;
 
 			CellRegister&  cr = _grid.nonEmpty();
 			for (auto* gc : cr)
@@ -85,23 +86,24 @@ namespace up
 					{
 						Body& b2 = *bodies[j];
 						Vec2 col_axe = b1.position() - b2.position();
-						float col_radius = b1.radius() + b2.radius();
 
 						if (col_axe.length2() < col_radius*col_radius)
 						{
-							float mass_factor_tot = 1.0f / (b1.mass() + b2.mass());
-							float mass_factor_1 = b1.mass() * mass_factor_tot;
-							float mass_factor_2 = b2.mass() * mass_factor_tot;
+							const float m1 = b1.mass();
+							const float m2 = b2.mass();
+							const float mass_factor_tot = 1.0f / (m1 + m2);
+							const float mass_factor_1 = m1 * mass_factor_tot;
+							const float mass_factor_2 = m2 * mass_factor_tot;
 
-							float delta_col = precision_factor * 0.5f * (col_radius - col_axe.length());
+							const float delta_col = 0.5f * (col_radius - col_axe.length());
 
 							col_axe.normalize();
 
 							b1.move(col_axe*( delta_col * mass_factor_2));
 							b2.move(col_axe*(-delta_col * mass_factor_1));
 
-							b1.addPressure(precision_factor * delta_col);
-							b2.addPressure(precision_factor * delta_col);
+							b1.addPressure(delta_col);
+							b2.addPressure(delta_col);
 						}
 					}
 				}

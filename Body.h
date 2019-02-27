@@ -31,22 +31,25 @@ public:
 
 	void update(float dt)
 	{
+		Vec2 v = velocity();
+
 		// Air friction
-		_acceleration += velocity() * -25.f;
+		_acceleration += v * -30.0f;
 
 		// This prevent from too much compression
 		float anti_pressure_factor = std::pow(1.0f / mass(), 4);
 
 		// Verlet integration
-		Vec2 new_pos = _position + _moving*((_position - _old_position) + (_acceleration * anti_pressure_factor) * dt * dt);
+		Vec2 new_pos = _position + _moving*v + (_acceleration * anti_pressure_factor) * dt * dt;
 		_old_position = _position;
 		_position = new_pos;
 
 		// Reset temporary values
 		_acceleration = {};
 
-		_old_pressure = _pressure;
-		_pressure *= 0.10f;
+		if (_pressure > _radius) _pressure = _radius;
+		_old_pressure = std::pow(_pressure, 2);
+		_pressure = 0.0f;
 	}
 
 	const Vec2& position() const
@@ -66,9 +69,7 @@ public:
 
 	void move(const Vec2& delta)
 	{
-		Vec2 d = _moving * delta;
-		_position += d;
-		moveOld(d * (1.0f / (mass() + 1.0f)));
+		_position += _moving * delta;
 	}
 
 	void moveHard(const Vec2& delta)
@@ -89,7 +90,6 @@ public:
 	void addPressure(float pressure)
 	{
 		_pressure += pressure;
-		if (_pressure > _radius) _pressure = _radius;
 	}
 
 	float radius() const
@@ -99,7 +99,7 @@ public:
 
 	float mass() const
 	{
-		return 1.0f + std::pow(_old_pressure, 2) / (velocity().length() + 1.0f);
+		return 1.0f + _old_pressure / (velocity().length2() + 1.0f);
 	}
 
 	void stop()
@@ -117,6 +117,11 @@ public:
 		_moving = b;
 	}
 
+	void setVelocity(const Vec2& v)
+	{
+		moveOld(-1.0f*v);
+	}
+
 private:
 	Vec2 _position;
 	Vec2 _old_position;
@@ -126,6 +131,7 @@ private:
 	float _radius;
 	uint8_t _moving;
 	float _old_pressure;
+	//float _mass;
 };
 
 class UnitedSolver;
