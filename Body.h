@@ -34,7 +34,7 @@ public:
 	void update(float dt)
 	{
 		Vec2 v = velocity();
-		_inertia = 0.1f * _inertia + 1.0f + _old_pressure / (v.length2() + 1.0f);
+		_inertia = 0.15f * _inertia + 1.0f + _old_pressure / (v.length2() + 1.0f);
 
 		// Air friction
 		_acceleration += v * -30.0f;

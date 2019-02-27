@@ -50,7 +50,7 @@ int main()
 	window.setFramerateLimit(60);
 
 	float body_radius = 25;
-	up::Vec2 world_dimension(50000.0f, 50000.0f);
+	up::Vec2 world_dimension(25000.0f, 50000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
 	DisplayManager displayManager(&window, &solver);
@@ -93,7 +93,7 @@ int main()
 		
 		displayManager.draw(false);
 
-		sf::RectangleShape rec(sf::Vector2f(270, 100));
+		sf::RectangleShape rec(sf::Vector2f(400, 150));
 		rec.setPosition(10, 10);
 		rec.setFillColor(sf::Color::Black);
 		window.draw(rec);
@@ -106,8 +106,17 @@ int main()
 		text.setPosition(20, 45);
 		window.draw(text);
 
-		text.setString("Draw time : " + round(displayManager.render_time, 2) + " ms");
+		text.setString("Render time : " + round(displayManager.render_time, 2) + " ms");
 		text.setPosition(20, 70);
+		window.draw(text);
+
+		float total_time = displayManager.render_time + solver.physicsUpdateTime();
+		text.setString("Total frame time : " + round(total_time, 2) + " ms");
+		text.setPosition(20, 95);
+		window.draw(text);
+
+		text.setString("FPS : " + round(1000.0f / total_time, 1));
+		text.setPosition(20, 120);
 		window.draw(text);
 
 		window.display();
