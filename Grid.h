@@ -47,7 +47,7 @@ struct CellRegister
 		cells.resize(max_size);
 	}
 
-	void add(GridCell<7>& gc)
+	void add(GridCell<8>& gc)
 	{
 		cells[size++] = &gc;
 	}
@@ -61,18 +61,18 @@ struct CellRegister
 		size = 0;
 	}
 
-	std::vector<GridCell<7>*>::iterator begin()
+	std::vector<GridCell<8>*>::iterator begin()
 	{
 		return cells.begin();
 	}
 
-	std::vector<GridCell<7>*>::iterator end()
+	std::vector<GridCell<8>*>::iterator end()
 	{
 		return cells.begin() + size;
 	}
 
 	uint32_t size;
-	std::vector<GridCell<7>*> cells;
+	std::vector<GridCell<8>*> cells;
 };
 
 class Grid
@@ -90,7 +90,7 @@ public:
 
 	void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 	{
-		GridCell<7>& current_cell = _cells[grid_cell_x + _width *grid_cell_y];
+		GridCell<8>& current_cell = _cells[grid_cell_x + _width *grid_cell_y];
 		if (!current_cell.items_count)
 			_non_empty.add(current_cell);
 
@@ -99,8 +99,8 @@ public:
 
 	void addBody(Body& b)
 	{
-		uint32_t body_x = b.position().x;
-		uint32_t body_y = b.position().y;
+		uint32_t body_x = b.position().x + 1.0f;
+		uint32_t body_y = b.position().y + 1.0f;
 
 		uint32_t grid_x = body_x / _cell_size + 5;
 		uint32_t grid_y = body_y / _cell_size + 5;
@@ -156,7 +156,7 @@ private:
 	uint32_t _width;
 	uint32_t _height;
 
-	std::vector<GridCell<7>> _cells;
+	std::vector<GridCell<8>> _cells;
 	CellRegister _non_empty;
 };
 

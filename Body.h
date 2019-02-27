@@ -35,7 +35,7 @@ public:
 		_acceleration += velocity() * -25.f;
 
 		// This prevent from too much compression
-		float anti_pressure_factor = 1.0f / (1.0f + _pressure);
+		float anti_pressure_factor = std::pow(1.0f / mass(), 4);
 
 		// Verlet integration
 		Vec2 new_pos = _position + _moving*((_position - _old_position) + (_acceleration * anti_pressure_factor) * dt * dt);
@@ -44,7 +44,9 @@ public:
 
 		// Reset temporary values
 		_acceleration = {};
-		_pressure = 0.0f;
+
+		_old_pressure = _pressure;
+		_pressure *= 0.10f;
 	}
 
 	const Vec2& position() const
@@ -66,7 +68,7 @@ public:
 	{
 		Vec2 d = _moving * delta;
 		_position += d;
-		moveOld(d * (1.0f / (_pressure + 1.0f)));
+		moveOld(d * (1.0f / (mass() + 1.0f)));
 	}
 
 	void moveHard(const Vec2& delta)
@@ -87,6 +89,7 @@ public:
 	void addPressure(float pressure)
 	{
 		_pressure += pressure;
+		if (_pressure > _radius) _pressure = _radius;
 	}
 
 	float radius() const
@@ -96,7 +99,7 @@ public:
 
 	float mass() const
 	{
-		return 1.0f + _pressure;
+		return 1.0f + std::pow(_old_pressure, 2) / (velocity().length() + 1.0f);
 	}
 
 	void stop()
@@ -122,6 +125,31 @@ private:
 	float _pressure;
 	float _radius;
 	uint8_t _moving;
+	float _old_pressure;
 };
+
+class UnitedSolver;
+
+class FastCollider
+{
+public:
+	FastCollider() = default;
+
+	FastCollider(const Vec2& position, const Vec2& dir, uint32_t speed_factor) :
+		_position(position),
+		_direction(dir),
+		_speed(speed_factor)
+	{
+
+	}
+
+	virtual void onHit(UnitedSolver* solver) = 0;
+
+private:
+	Vec2 _position;
+	Vec2 _direction;
+	uint32_t _speed;
+};
+
 
 }

@@ -102,9 +102,9 @@ public:
 	{
 		float radius = solver.defaultBodyRadius();
 
-		float in_resistance = 6.0f;
-		float out_resistance = 4.0f;
-		float rope_resistance = 5.0f;
+		float in_resistance = 50.0f;
+		float out_resistance = 10.0f;
+		float rope_resistance = 8.0f;
 
 		up::BodyPtr b = solver.addBody(_position);
 		_bodies.add(b);
@@ -173,7 +173,7 @@ public:
 			++i;
 		}
 
-		target->draw(va);
+		//target->draw(va);
 	}
 
 private:

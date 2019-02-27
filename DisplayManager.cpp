@@ -67,13 +67,19 @@ void DisplayManager::draw(bool showInner)
         bodies[4*i+2].texCoords = sf::Vector2f(512, 512);
         bodies[4*i+3].texCoords = sf::Vector2f(0, 512);
 
-		const float pi = 3.1415926f;
+		/*const float pi = 3.1415926f;
 
 		float t = i / 1000.0f;
 		float r = sin(t)*sin(t);
 		float g = sin(t + 0.5f*pi)*sin(t + 0.5f*pi);
 		float b = sin(0.1*t)*sin(0.1*t);
 		sf::Color color(255*r, 255*g, 255*b);
+		bodies[4 * i].color = color;
+		bodies[4 * i + 1].color = color;
+		bodies[4 * i + 2].color = color;
+		bodies[4 * i + 3].color = color;*/
+
+		sf::Color color(255, 255-body.mass(), 255 - body.mass());
 		bodies[4 * i].color = color;
 		bodies[4 * i + 1].color = color;
 		bodies[4 * i + 2].color = color;
@@ -116,7 +122,7 @@ void DisplayManager::processEvents()
 			_mouse_button_pressed = false;
 			if (_clic_position == mousePosition)
 			{
-				m_collisionManager->applyExplosion(displayCoordToWorldCoord(up::Vec2(_clic_position.x, _clic_position.y)), 1000000.0f);
+				m_collisionManager->applyExplosion(displayCoordToWorldCoord(up::Vec2(_clic_position.x, _clic_position.y)), 10000000000.0f);
 			}
 
 			break;

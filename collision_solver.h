@@ -17,7 +17,7 @@ namespace up
 		CollisionSolver(const Vec2& dimension, uint32_t body_radius, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
 			_dimension(dimension),
 			_gravity(gravity),
-			_precision(3),
+			_precision(1),
 			_body_radius(body_radius),
 			_grid(dimension, 2 * body_radius)
 		{}
@@ -97,11 +97,11 @@ namespace up
 
 							col_axe.normalize();
 
-							b1.move(col_axe*(delta_col * mass_factor_2));
+							b1.move(col_axe*( delta_col * mass_factor_2));
 							b2.move(col_axe*(-delta_col * mass_factor_1));
 
-							b1.addPressure(0.25f*delta_col);
-							b2.addPressure(0.25f*delta_col);
+							b1.addPressure(precision_factor * delta_col);
+							b2.addPressure(precision_factor * delta_col);
 						}
 					}
 				}
@@ -112,11 +112,10 @@ namespace up
 		{
 			applyGravity();
 
-			solveBoundaryCollisions();
-
 			sf::Clock clock;
-			for (int i(_precision); i--;)
+			for (int i(0); i<_precision; ++i)
 			{
+				solveBoundaryCollisions();
 				_grid.clear();
 				for (Body& b : _bodies)
 				{
@@ -159,7 +158,7 @@ namespace up
 				float length = dir.length();
 				dir.normalize();
 
-				float force_factor = force / (length  + 1.0f);
+				float force_factor = force / (length * length + 1.0f);
 
 				b.accelerate(force_factor * dir);
 			}
@@ -176,6 +175,7 @@ namespace up
 		Vec2 _gravity;
 
 		fva::SwapArray<Body> _bodies;
+		fva::SwapArray<FastCollider> _colliders;
 		Grid _grid;
 
 		const Vec2 _dimension;
