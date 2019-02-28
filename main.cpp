@@ -4,6 +4,7 @@
 #include "DisplayManager.h"
 #include <sstream>
 #include "props.h"
+#include <stdlib.h>
 
 std::string to_string(uint32_t number)
 {
@@ -71,21 +72,16 @@ int main()
 		uint32_t current_bodies = solver.bodies().size();
 		if (current_bodies < n && displayManager.emit)
 		{
-			for (int i(10); --i;)
+			for (int i(60); --i;)
 			{
 				up::BodyPtr b = solver.addBody(up::Vec2(body_radius, 35000.0f + i * 2 * body_radius));
-				b->setVelocity({ 70.0f, 0.0f});
+				b->setVelocity({ 60.0f, 0.0f});
 			}
 
-			for (int i(10); --i;)
+			/*for (int i(10); --i;)
 			{
 				up::BodyPtr b = solver.addBody(up::Vec2(25000.0f - body_radius, 35000.0f + i * 2 * body_radius));
 				b->setVelocity({ -70.0f, 0.0f });
-			}
-
-			/*for (int i(1000); --i;)
-			{
-				up::BodyPtr b = solver.addBody(up::Vec2(rand() % 10000+0.0f, rand() % 12000 + 8000.0f));
 			}*/
 		}
 
@@ -126,6 +122,8 @@ int main()
 		window.draw(text);
 
 		window.display();
+
+		
 	}
 
 	return 0;
