@@ -47,7 +47,7 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(false);
-	window.setFramerateLimit(60);
+	//window.setFramerateLimit(60);
 
 	float body_radius = 25;
 	up::Vec2 world_dimension(25000.0f, 50000.0f);
@@ -75,6 +75,12 @@ int main()
 			{
 				up::BodyPtr b = solver.addBody(up::Vec2(body_radius, 35000.0f + i * 2 * body_radius));
 				b->setVelocity({ 70.0f, 0.0f});
+			}
+
+			for (int i(10); --i;)
+			{
+				up::BodyPtr b = solver.addBody(up::Vec2(25000.0f - body_radius, 35000.0f + i * 2 * body_radius));
+				b->setVelocity({ -70.0f, 0.0f });
 			}
 
 			/*for (int i(1000); --i;)

@@ -127,6 +127,12 @@ void DisplayManager::processEvents()
 			else if ((event.key.code == sf::Keyboard::Add)) zoom(1.2);
 			else if ((event.key.code == sf::Keyboard::Space)) emit = !emit;
 			else if ((event.key.code == sf::Keyboard::A)) _show_pressure = !_show_pressure;
+			else if ((event.key.code == sf::Keyboard::R))
+			{
+				m_offsetX = 0.0f;
+				m_offsetY = 0.0f;
+				m_zoom = 1.0f;
+			}
 			break;
 		case sf::Event::MouseWheelMoved:
 			// this is an amazing zoom

@@ -71,8 +71,9 @@ public:
 
 	void move(const Vec2& delta)
 	{
-		_position += _moving * delta;
-		_old_position += (0.1f*_moving) * delta;
+		const Vec2 d = _moving * delta;
+		_position += d;
+		_old_position += 0.1f * d;
 	}
 
 	void moveHard(const Vec2& delta)
