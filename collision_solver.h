@@ -35,11 +35,11 @@ namespace up
 			const Vec2 attract(12500, 25000);
 			for (Body& b : _bodies)
 			{
-				/*Vec2 dir = attract - b.position();
+				Vec2 dir = attract - b.position();
 				dir.normalize();
 
-				b.accelerate(500.0f*dir);*/
-				b.accelerate(_gravity);
+				b.accelerate(500.0f*dir);
+				//b.accelerate(_gravity);
 			}
 		}
 

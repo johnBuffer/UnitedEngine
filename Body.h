@@ -34,7 +34,7 @@ public:
 	void update(float dt)
 	{
 		Vec2 v = velocity();
-		_inertia = 0.15f * _inertia + 1.0f + _old_pressure / (v.length2() + 1.0f);
+		_inertia = 0.1f * _inertia + 1.0f + _old_pressure / (v.length2() + 1.0f);
 
 		// Air friction
 		_acceleration += v * -30.0f;
@@ -43,9 +43,15 @@ public:
 		float anti_pressure_factor = std::pow(1.0f / _inertia, 3);
 
 		// Verlet integration
-		const Vec2 new_pos(_position + _moving*v + (_acceleration * anti_pressure_factor) * dt * dt);
 		_old_position = _position;
-		_position = new_pos;
+		/*Vec2 delta_pos = _moving * v + (_acceleration * anti_pressure_factor) * dt * dt;
+		if (delta_pos.length2() > _radius*_radius)
+		{
+			delta_pos.normalize();
+			delta_pos = delta_pos * _radius;
+		}*/
+
+		_position += v + (_acceleration * anti_pressure_factor) * dt * dt;
 
 		// Reset temporary values
 		_acceleration = {};
@@ -73,7 +79,7 @@ public:
 	{
 		const Vec2 d = _moving * delta;
 		_position += d;
-		//_old_position += 0.75f * d;
+		_old_position += 0.1f * d;
 	}
 
 	void moveHard(const Vec2& delta)
