@@ -109,6 +109,8 @@ void DisplayManager::draw(bool showInner)
 
     m_window->draw(bodies, rs);
 
+	drawConstraints(m_collisionManager->constraints());
+
 	render_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 }
 
@@ -172,4 +174,22 @@ void DisplayManager::processEvents()
 up::Body* DisplayManager::getBodyAt(double x, double y)
 {
 	return nullptr;// m_collisionManager->getBodyAt(displayCoordToWorldCoord(up::Vec2(x, y)));
+}
+
+void DisplayManager::drawConstraints(const fva::SwapArray<up::Constraint>& constraints)
+{
+	sf::VertexArray cva(sf::Lines, constraints.size() * 2);
+	uint32_t i(0);
+	for (const up::Constraint& c : constraints)
+	{
+		const up::Vec2& p1 = worldCoordToDisplayCoord(c.position1());
+		const up::Vec2& p2 = worldCoordToDisplayCoord(c.position2());
+
+		cva[2 * i + 0].position = sf::Vector2f(p1.x, p1.y);
+		cva[2 * i + 1].position = sf::Vector2f(p2.x, p2.y);
+
+		++i;
+	}
+
+	m_window->draw(cva);
 }

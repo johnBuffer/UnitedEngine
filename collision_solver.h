@@ -174,11 +174,6 @@ namespace up
 			return _body_radius;
 		}
 
-		std::vector<Vec2> getIntersectionWith(const Vec2& p1, const Vec2& p2) const
-		{
-			return std::vector<Vec2>();
-		}
-
 		bool test_pressure = false;
 		float _up_time;
 

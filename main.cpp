@@ -15,15 +15,15 @@ int main()
 	settings.antialiasingLevel = 1;
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
-	window.setVerticalSyncEnabled(false);
+	window.setVerticalSyncEnabled(true);
 	//window.setFramerateLimit(60);
 
 	float body_radius = 25;
-	up::Vec2 world_dimension(25000.0f, 50000.0f);
+	up::Vec2 world_dimension(2000.0f, 2000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
 	DisplayManager displayManager(&window, &solver);
-	displayManager.setZoom(0.5);
+	displayManager.setZoom(0.75);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -33,16 +33,48 @@ int main()
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
 
+	up::Vec2 pt1(0, 0);
+
+	for (int i(0); i < 10; i++)
+	{
+		up::Vec2 sp1(rand() % int(world_dimension.x), rand() % int(world_dimension.y));
+		up::Vec2 sp2(rand() % int(world_dimension.x), rand() % int(world_dimension.y));
+
+		solver.addSegment(sp1, sp2);
+	}
+
 	while (window.isOpen())
 	{
 		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 		displayManager.processEvents();
 
+		up::Vec2 pt2(mousePosition.x, mousePosition.y);
+		sf::VertexArray segment(sf::Lines, 2);
+		up::Vec2 p1 = displayManager.worldCoordToDisplayCoord(pt1);
+		segment[0].position = sf::Vector2f(p1.x, p1.y);
+		segment[1].position = sf::Vector2f(pt2.x, pt2.y);
+
 		solver.update(0.016f);
+
+		auto intersections = solver.getIntersectionWith(pt1, displayManager.displayCoordToWorldCoord(pt2));
 
 		window.clear(sf::Color::White);
 
 		displayManager.draw(false);
+		window.draw(segment);
+
+		for (const up::Vec2& inter_pt : intersections)
+		{
+			sf::CircleShape cs(4.0f);
+			cs.setOrigin(2.0f, 2.0f);
+			cs.setFillColor(sf::Color::Green);
+
+			const up::Vec2 dc_inter = displayManager.worldCoordToDisplayCoord(inter_pt);
+
+			cs.setPosition(dc_inter.x, dc_inter.y);
+
+			window.draw(cs);
+		}
 
 		sf::RectangleShape rec(sf::Vector2f(400, 150));
 		rec.setPosition(10, 10);

@@ -68,6 +68,38 @@ public:
 		return _collision_solver._up_time;
 	}
 
+	const fva::SwapArray<Constraint>& constraints() const
+	{
+		return _constraint_solver.constraints();
+	}
+
+	std::vector<Vec2> getIntersectionWith(const Vec2& p1, const Vec2& p2) const
+	{
+		std::vector<up::Vec2> result;
+		const fva::SwapArray<Constraint>& constraints = _constraint_solver.constraints();
+		const Segment s1(p1, p2);
+
+		for (const Constraint& c : constraints)
+		{
+			Intersection inter(s1, Segment(c.position1(), c.position2()));
+
+			if (inter.cross)
+			{
+				result.push_back(inter.point);
+			}
+		}
+
+		return result;
+	}
+
+	void addSegment(const Vec2& pt1, const Vec2& pt2)
+	{
+		auto b1 = addBody(pt1);
+		auto b2 = addBody(pt2);
+
+		addConstraint(b1, b2);
+	}
+
 private:
 	const Vec2 _dimension;
 	CollisionSolver _collision_solver;

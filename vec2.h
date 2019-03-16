@@ -101,7 +101,8 @@ struct Segment
 
 struct Intersection
 {
-	Intersection(const Segment& s1, const Segment& s2)
+	Intersection(const Segment& s1, const Segment& s2) :
+		cross(false)
 	{
 		float s1_x(s1.x), s1_y(s1.y), s2_x(s2.x), s2_y(s2.y);
 		float p0_x(s1.p1.x), p0_y(s1.p1.y), p2_x(s2.p1.x), p2_y(s2.p1.y);
@@ -115,6 +116,8 @@ struct Intersection
 			// Intersection detected
 			point.x = p0_x + (t * s1_x);
 			point.y = p0_y + (t * s1_y);
+
+			cross = true;
 		}
 	}
 

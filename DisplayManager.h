@@ -34,6 +34,9 @@ public:
 	up::Vec2 displayCoordToWorldCoord(const up::Vec2&);
 	up::Body* getBodyAt(double x, double y);
 
+	// Draw constraints
+	void drawConstraints(const fva::SwapArray<up::Constraint>& constraints);
+
 	bool emit;
 	float render_time;
 

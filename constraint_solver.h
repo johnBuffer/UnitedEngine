@@ -150,6 +150,11 @@ public:
 		}
 	}
 
+	const fva::SwapArray<Constraint>& constraints() const
+	{
+		return _constraints;
+	}
+
 private:
 	fva::SwapArray<Constraint> _constraints;
 	fva::SwapArray<Anchor> _anchors;
