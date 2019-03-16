@@ -5,39 +5,7 @@
 #include <sstream>
 #include "props.h"
 #include <stdlib.h>
-
-std::string to_string(uint32_t number)
-{
-	std::stringstream ss;
-	ss << number;
-
-	return ss.str();
-}
-
-std::string round(double d, int decimals)
-{
-	std::string result;
-	std::stringstream sx;
-	sx << std::fixed << d;
-	result = sx.str();
-
-	size_t pos = result.find('.');
-	if (pos == std::string::npos)
-		return result;
-	else if (!decimals)
-	{
-		return result.substr(0, pos);
-	}
-	else
-	{
-		if (pos + decimals + 1 < result.size())
-		{
-			return result.substr(0, pos + decimals + 1);
-		}
-	}
-
-	return result;
-}
+#include "utils.hpp"
 
 int main()
 {
@@ -57,8 +25,6 @@ int main()
 	DisplayManager displayManager(&window, &solver);
 	displayManager.setZoom(0.5);
 
-	uint32_t n = 100000;
-
 	sf::Font font;
 	font.loadFromFile("font.ttf");
 
@@ -69,22 +35,6 @@ int main()
 
 	while (window.isOpen())
 	{
-		uint32_t current_bodies = solver.bodies().size();
-		if (current_bodies < n && displayManager.emit)
-		{
-			for (int i(30); --i;)
-			{
-				up::BodyPtr b = solver.addBody(up::Vec2(body_radius, 35000.0f + i * 2 * body_radius));
-				b->setVelocity({ 60.0f, 0.0f});
-			}
-
-			/*for (int i(10); --i;)
-			{
-				up::BodyPtr b = solver.addBody(up::Vec2(25000.0f - body_radius, 35000.0f + i * 2 * body_radius));
-				b->setVelocity({ -70.0f, 0.0f });
-			}*/
-		}
-
 		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 		displayManager.processEvents();
 
@@ -92,7 +42,6 @@ int main()
 
 		window.clear(sf::Color::White);
 
-		
 		displayManager.draw(false);
 
 		sf::RectangleShape rec(sf::Vector2f(400, 150));
@@ -100,10 +49,10 @@ int main()
 		rec.setFillColor(sf::Color::Black);
 		window.draw(rec);
 
-		text.setString("Objects: " + to_string(current_bodies));
+		/*text.setString("Objects: " + to_string(current_bodies));
 		text.setPosition(20, 20);
 		window.draw(text);
-
+		*/
 		text.setString("Physics time : " + round(solver.physicsUpdateTime(), 2) + " ms");
 		text.setPosition(20, 45);
 		window.draw(text);
