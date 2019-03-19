@@ -37,6 +37,8 @@ public:
 		_resistance = r;
 	}
 
+
+
 	void update(float dt)
 	{
 		if (_broken)

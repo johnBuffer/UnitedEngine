@@ -18,7 +18,7 @@ int main()
 	window.setVerticalSyncEnabled(true);
 	//window.setFramerateLimit(60);
 
-	float body_radius = 25;
+	float body_radius = 12;
 	up::Vec2 world_dimension(2000.0f, 2000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
@@ -33,9 +33,22 @@ int main()
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
 
+	up::BodyPtr b1 = solver.addBody(50, 50);
+	up::BodyPtr b2 = solver.addBody(100, 50);
+	up::BodyPtr b3 = solver.addBody(100, 100);
+	up::BodyPtr b4 = solver.addBody(50, 100);
+
+	solver.addConstraint(b1, b2);
+	solver.addConstraint(b2, b3);
+	solver.addConstraint(b3, b4);
+	solver.addConstraint(b4, b1);
+	solver.addConstraint(b3, b1);
+	solver.addConstraint(b4, b2);
+	
+
 	up::Vec2 pt1(0, 0);
 
-	for (int i(0); i < 10; i++)
+	for (int i(0); i < 0; i++)
 	{
 		up::Vec2 sp1(rand() % int(world_dimension.x), rand() % int(world_dimension.y));
 		up::Vec2 sp2(rand() % int(world_dimension.x), rand() % int(world_dimension.y));
@@ -66,7 +79,7 @@ int main()
 		for (const up::Vec2& inter_pt : intersections)
 		{
 			sf::CircleShape cs(4.0f);
-			cs.setOrigin(2.0f, 2.0f);
+			cs.setOrigin(4.0f, 4.0f);
 			cs.setFillColor(sf::Color::Green);
 
 			const up::Vec2 dc_inter = displayManager.worldCoordToDisplayCoord(inter_pt);

@@ -25,6 +25,11 @@ public:
 		return _collision_solver.addBody(position, radius);
 	}
 
+	BodyPtr addBody(float x, float y, float radius = 0.0f)
+	{
+		return addBody(Vec2(x, y), radius);
+	}
+
 	ConstraintPtr addConstraint(BodyPtr b1, BodyPtr b2)
 	{
 		return _constraint_solver.addConstraint(b1, b2);

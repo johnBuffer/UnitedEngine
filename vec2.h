@@ -127,6 +127,7 @@ struct Intersection
 
 	bool cross;
 	Vec2 point;
+	float t;
 };
 
 }
