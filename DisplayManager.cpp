@@ -1,7 +1,8 @@
 #include "DisplayManager.h"
 #include <iostream>
 
-DisplayManager::DisplayManager(sf::RenderWindow *window, up::UnitedSolver* collisionManager)
+DisplayManager::DisplayManager(sf::RenderWindow *window, up::UnitedSolver* collisionManager) :
+	m_event_manager(*window)
 {
     m_window = window;
     m_collisionManager = collisionManager;
@@ -15,7 +16,7 @@ DisplayManager::DisplayManager(sf::RenderWindow *window, up::UnitedSolver* colli
 
     m_bodyTexture.loadFromFile("circle.png");
 
-	_show_pressure = false;
+	m_show_pressure = false;
 }
 
 up::Vec2 DisplayManager::worldCoordToDisplayCoord(const up::Vec2& worldCoord)
@@ -23,8 +24,8 @@ up::Vec2 DisplayManager::worldCoordToDisplayCoord(const up::Vec2& worldCoord)
     double worldX = worldCoord.x;
     double worldY = worldCoord.y;
 
-    double viewCoordX = (worldX+m_offsetX)*m_zoom+m_windowOffsetX;
-    double viewCoordY = (worldY+m_offsetY)*m_zoom+m_windowOffsetY;
+    double viewCoordX = (worldX-m_offsetX)*m_zoom+m_windowOffsetX;
+    double viewCoordY = (worldY-m_offsetY)*m_zoom+m_windowOffsetY;
 
     return up::Vec2(viewCoordX, viewCoordY);
 }
@@ -34,8 +35,8 @@ up::Vec2 DisplayManager::displayCoordToWorldCoord(const up::Vec2& viewCoord)
     double viewCoordX = viewCoord.x;
     double viewCoordY = viewCoord.y;
 
-    double worldCoordX = (viewCoordX-m_windowOffsetX)/m_zoom-m_offsetX;
-    double worldCoordY = (viewCoordY-m_windowOffsetY)/m_zoom-m_offsetY;
+    double worldCoordX = (viewCoordX-m_windowOffsetX)/m_zoom+m_offsetX;
+    double worldCoordY = (viewCoordY-m_windowOffsetY)/m_zoom+m_offsetY;
 
     return up::Vec2(worldCoordX, worldCoordY);
 }
@@ -50,7 +51,7 @@ void DisplayManager::draw(bool showInner)
 	sf::RenderStates rs_ground;
 	rs_ground.transform.translate(m_windowOffsetX, m_windowOffsetY);
 	rs_ground.transform.scale(m_zoom, m_zoom);
-	rs_ground.transform.translate(m_offsetX, m_offsetY);
+	rs_ground.transform.translate(-m_offsetX, -m_offsetY);
     m_window->draw(ground, rs_ground);
 
     // draw the guys
@@ -75,7 +76,7 @@ void DisplayManager::draw(bool showInner)
         bodies[4*i+3].texCoords = sf::Vector2f(0, 512);
 
 
-		if (!_show_pressure)
+		if (!m_show_pressure)
 		{
 			const float pi = 3.1415926f;
 			float t = i / 1000.0f;
@@ -105,7 +106,7 @@ void DisplayManager::draw(bool showInner)
 	rs.texture = &m_bodyTexture;
 	rs.transform.translate(m_windowOffsetX, m_windowOffsetY);
 	rs.transform.scale(m_zoom, m_zoom);
-	rs.transform.translate(m_offsetX, m_offsetY);
+	rs.transform.translate(-m_offsetX, -m_offsetY);
 
     m_window->draw(bodies, rs);
 
@@ -128,7 +129,7 @@ void DisplayManager::processEvents()
 			else if ((event.key.code == sf::Keyboard::Subtract)) zoom(0.8);
 			else if ((event.key.code == sf::Keyboard::Add)) zoom(1.2);
 			else if ((event.key.code == sf::Keyboard::Space)) emit = !emit;
-			else if ((event.key.code == sf::Keyboard::A)) _show_pressure = !_show_pressure;
+			else if ((event.key.code == sf::Keyboard::A)) m_show_pressure = !m_show_pressure;
 			else if ((event.key.code == sf::Keyboard::R))
 			{
 				m_offsetX = 0.0f;
@@ -153,7 +154,6 @@ void DisplayManager::processEvents()
 			_mouse_button_pressed = false;
 			if (_clic_position == mousePosition)
 			{
-				m_collisionManager->applyExplosion(displayCoordToWorldCoord(up::Vec2(_clic_position.x, _clic_position.y)), 1000000000.0f);
 			}
 
 			break;

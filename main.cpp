@@ -7,6 +7,13 @@
 #include <stdlib.h>
 #include "utils.hpp"
 
+#include <iostream>
+
+void test()
+{
+	std::cout << "llol" << std::endl;
+}
+
 int main()
 {
 	const uint32_t win_width = 1600;
@@ -25,6 +32,8 @@ int main()
 	DisplayManager displayManager(&window, &solver);
 	displayManager.setZoom(0.75);
 
+	displayManager.setClicCallback(test);
+
 	sf::Font font;
 	font.loadFromFile("font.ttf");
 
@@ -32,6 +41,8 @@ int main()
 	text.setFont(font);
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
+
+	up::BodyPtr body = solver.addBody(500, 50);
 
 	up::BodyPtr b1 = solver.addBody(50, 50);
 	up::BodyPtr b2 = solver.addBody(100, 50);
@@ -45,7 +56,6 @@ int main()
 	solver.addConstraint(b3, b1);
 	solver.addConstraint(b4, b2);
 	
-
 	up::Vec2 pt1(0, 0);
 
 	for (int i(0); i < 0; i++)
@@ -61,15 +71,18 @@ int main()
 		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 		displayManager.processEvents();
 
+		up::Vec2 cam_pos = body->position();
 		up::Vec2 pt2(mousePosition.x, mousePosition.y);
 		sf::VertexArray segment(sf::Lines, 2);
-		up::Vec2 p1 = displayManager.worldCoordToDisplayCoord(pt1);
+		up::Vec2 p1 = displayManager.worldCoordToDisplayCoord(cam_pos);
 		segment[0].position = sf::Vector2f(p1.x, p1.y);
 		segment[1].position = sf::Vector2f(pt2.x, pt2.y);
 
 		solver.update(0.016f);
 
-		auto intersections = solver.getIntersectionWith(pt1, displayManager.displayCoordToWorldCoord(pt2));
+		displayManager.setOffset(body->position());
+
+		auto intersections = solver.getIntersectionWith(cam_pos, displayManager.displayCoordToWorldCoord(pt2));
 
 		window.clear(sf::Color::White);
 
@@ -94,10 +107,6 @@ int main()
 		rec.setFillColor(sf::Color::Black);
 		window.draw(rec);
 
-		/*text.setString("Objects: " + to_string(current_bodies));
-		text.setPosition(20, 20);
-		window.draw(text);
-		*/
 		text.setString("Physics time : " + round(solver.physicsUpdateTime(), 2) + " ms");
 		text.setPosition(20, 45);
 		window.draw(text);

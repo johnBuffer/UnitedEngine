@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "united_solver.h"
+#include "event_manager.hpp"
 
 class DisplayManager
 {
@@ -45,13 +46,14 @@ private:
     sf::RenderWindow* m_window;
     sf::Texture m_bodyTexture;
 
+	EventManager m_event_manager;
+
 	bool _mouse_button_pressed;
 	sf::Vector2i _drag_clic_position, _clic_position;
 
     double m_zoom, m_offsetX, m_offsetY, m_windowOffsetX, m_windowOffsetY;
 
-	bool _show_pressure;
-
+	bool m_show_pressure;
 };
 
 #endif // DISPLAYMANAGER_H_INCLUDED
