@@ -15,7 +15,8 @@ public:
 		_body1(),
 		_body2(),
 		_length(0.0f),
-		_broken(false)
+		_broken(false),
+		_strength(1.0f)
 	{}
 
 	Constraint(fva::Handle<Body>& b1, fva::Handle<Body>& b2, float length = 0.0f) :
@@ -23,7 +24,8 @@ public:
 		_body2(b2),
 		_length(length),
 		_broken(false),
-		_resistance(1000.0f)
+		_resistance(1000.0f),
+		_strength(1.0f)
 	{
 		if (!_length)
 		{
@@ -37,7 +39,20 @@ public:
 		_resistance = r;
 	}
 
+	float length() const
+	{
+		return _length;
+	}
 
+	void strength(float s)
+	{
+		_strength = s;
+	}
+
+	void length(float l)
+	{
+		_length = l;
+	}
 
 	void update(float dt)
 	{
@@ -46,7 +61,7 @@ public:
 
 		Vec2 dir = _body1->position() - _body2->position();
 		float current_length = dir.length();
-		float delta_length = 0.5f*(_length - current_length);
+		float delta_length = _strength*0.5f*(_length - current_length);
 		
 		if (std::fabs(2.0f*delta_length) > _resistance)
 			_broken = true;
@@ -78,6 +93,46 @@ private:
 	float _length;
 	bool _broken;
 	float _resistance;
+	float _strength;
+};
+
+
+class Muscle
+{
+public:
+	Muscle(BodyPtr b1, BodyPtr b2) :
+		m_constraint(b1, b2),
+		m_contraction(0.0f)
+	{
+		m_constraint.strength(0.075f);
+		m_idle_length = m_constraint.length();
+	}
+
+	void update(float dt)
+	{
+		m_constraint.update(dt);
+	}
+
+	void contract(float ratio)
+	{
+		m_contraction = 1.0 - ratio;
+		m_constraint.length(m_idle_length * m_contraction);
+	}
+
+	const Constraint& constraint() const
+	{
+		return m_constraint;
+	}
+
+	float contraction() const
+	{
+		return 1.0f - m_contraction;
+	}
+
+private:
+	Constraint m_constraint;
+	float m_idle_length;
+	float m_contraction;
 };
 
 
@@ -122,6 +177,7 @@ private:
 
 
 using ConstraintPtr = fva::Handle<Constraint>;
+using MusclePtr = fva::Handle<Muscle>;
 using AnchorPtr = fva::Handle<Anchor>;
 
 class ConstraintSolver
@@ -132,6 +188,11 @@ public:
 	ConstraintPtr addConstraint(BodyPtr b1, BodyPtr b2)
 	{
 		return _constraints.add(b1, b2);
+	}
+
+	MusclePtr addMuscle(BodyPtr b1, BodyPtr b2)
+	{
+		return _muscles.add(b1, b2);
 	}
 
 	AnchorPtr addAnchor(BodyPtr b, float max_length)
@@ -146,6 +207,11 @@ public:
 			c.update(dt);
 		}
 
+		for (Muscle& m : _muscles)
+		{
+			m.update(dt);
+		}
+
 		for (Anchor& a : _anchors)
 		{
 			a.update(dt);
@@ -157,8 +223,14 @@ public:
 		return _constraints;
 	}
 
+	const fva::SwapArray<Muscle>& muscles() const
+	{
+		return _muscles;
+	}
+
 private:
 	fva::SwapArray<Constraint> _constraints;
+	fva::SwapArray<Muscle> _muscles;
 	fva::SwapArray<Anchor> _anchors;
 };
 

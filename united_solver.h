@@ -35,6 +35,11 @@ public:
 		return _constraint_solver.addConstraint(b1, b2);
 	}
 
+	MusclePtr addMuscle(BodyPtr b1, BodyPtr b2)
+	{
+		return _constraint_solver.addMuscle(b1, b2);
+	}
+
 	AnchorPtr addAnchor(BodyPtr b, float max_length)
 	{
 		return _constraint_solver.addAnchor(b, max_length);
@@ -44,7 +49,7 @@ public:
 	{
 		_collision_solver.update(dt);
 
-		for (int i(2); i--;)
+		for (int i(10); i--;)
 			_constraint_solver.update(dt);
 	}
 
@@ -76,6 +81,11 @@ public:
 	const fva::SwapArray<Constraint>& constraints() const
 	{
 		return _constraint_solver.constraints();
+	}
+
+	const fva::SwapArray<Muscle>& muscles() const
+	{
+		return _constraint_solver.muscles();
 	}
 
 	std::vector<Vec2> getIntersectionWith(const Vec2& p1, const Vec2& p2) const

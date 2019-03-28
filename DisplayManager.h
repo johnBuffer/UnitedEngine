@@ -14,8 +14,8 @@ public:
     void setOffset(double x, double y) {m_offsetX=x; m_offsetY=y;};
     void setOffset(const up::Vec2& off) {m_offsetX=off.x; m_offsetY=off.y;};
 
-    void addOffset(double x, double y) {m_offsetX+=x/m_zoom; m_offsetY+=y/m_zoom;};
-    void addOffset(const up::Vec2& off) {m_offsetX+=off.x/m_zoom; m_offsetY+=off.y/m_zoom;};
+    void addOffset(double x, double y) {m_offsetX-=x/m_zoom; m_offsetY-=y/m_zoom;};
+    void addOffset(const up::Vec2& off) {m_offsetX-=off.x/m_zoom; m_offsetY-=off.y/m_zoom;};
 
     // set the absolute zoom
     void setZoom(double zoom) {m_zoom = zoom;};
@@ -37,16 +37,22 @@ public:
 
 	// Draw constraints
 	void drawConstraints(const fva::SwapArray<up::Constraint>& constraints);
+	void drawMuscles(const fva::SwapArray<up::Muscle>& constraints);
 
 	bool emit;
 	float render_time;
+
+	sfev::EventManager& eventManager()
+	{
+		return m_event_manager;
+	}
 
 private:
 	up::UnitedSolver* m_collisionManager;
     sf::RenderWindow* m_window;
     sf::Texture m_bodyTexture;
 
-	EventManager m_event_manager;
+	sfev::EventManager m_event_manager;
 
 	bool _mouse_button_pressed;
 	sf::Vector2i _drag_clic_position, _clic_position;

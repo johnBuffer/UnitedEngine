@@ -9,30 +9,23 @@
 
 #include <iostream>
 
-void test()
-{
-	std::cout << "llol" << std::endl;
-}
-
 int main()
 {
 	const uint32_t win_width = 1600;
 	const uint32_t win_height = 900;
 	sf::ContextSettings settings;
-	settings.antialiasingLevel = 1;
+	settings.antialiasingLevel = 4;
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 	//window.setFramerateLimit(60);
 
-	float body_radius = 12;
-	up::Vec2 world_dimension(2000.0f, 2000.0f);
+	float body_radius = 2;
+	up::Vec2 world_dimension(2000.0f, 500.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
 	DisplayManager displayManager(&window, &solver);
-	displayManager.setZoom(0.75);
-
-	displayManager.setClicCallback(test);
+	displayManager.setZoom(5);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -42,91 +35,73 @@ int main()
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
 
-	up::BodyPtr body = solver.addBody(500, 50);
+	displayManager.setOffset(50, 400);
 
-	up::BodyPtr b1 = solver.addBody(50, 50);
-	up::BodyPtr b2 = solver.addBody(100, 50);
-	up::BodyPtr b3 = solver.addBody(100, 100);
-	up::BodyPtr b4 = solver.addBody(50, 100);
+	// Foot
+	up::BodyPtr a = solver.addBody(50, 480);
+	up::BodyPtr b = solver.addBody(80, 480);
+	up::BodyPtr c = solver.addBody(60, 472);
+	up::BodyPtr d = solver.addBody(55, 470);
 
-	solver.addConstraint(b1, b2);
-	solver.addConstraint(b2, b3);
-	solver.addConstraint(b3, b4);
-	solver.addConstraint(b4, b1);
-	solver.addConstraint(b3, b1);
-	solver.addConstraint(b4, b2);
-	
-	up::Vec2 pt1(0, 0);
+	// Mollet
+	up::BodyPtr e = solver.addBody(45, 430);
+	up::BodyPtr f = solver.addBody(60, 430);
+	up::BodyPtr g = solver.addBody(55, 415);
+	up::BodyPtr g2 = solver.addBody(67, 410);
 
-	for (int i(0); i < 0; i++)
-	{
-		up::Vec2 sp1(rand() % int(world_dimension.x), rand() % int(world_dimension.y));
-		up::Vec2 sp2(rand() % int(world_dimension.x), rand() % int(world_dimension.y));
+	// Cuisse
+	up::BodyPtr h = solver.addBody(40, 355);
+	up::BodyPtr i = solver.addBody(65, 355);
+	//up::BodyPtr j = solver.addBody(55, 435);
 
-		solver.addSegment(sp1, sp2);
-	}
+	solver.addAnchor(h, 20);
+
+	solver.addConstraint(a, b);
+	solver.addConstraint(a, c);
+	solver.addConstraint(a, d);
+	solver.addConstraint(d, c);
+	solver.addConstraint(c, b);
+	solver.addConstraint(d, b);
+
+	solver.addConstraint(e, f);
+	solver.addConstraint(g, d);
+	solver.addConstraint(g, e);
+	solver.addConstraint(g, f);
+	solver.addConstraint(g, g2);
+	solver.addConstraint(g2, f);
+	solver.addConstraint(g2, e);
+
+	solver.addConstraint(e, d);
+	solver.addConstraint(d, f);
+
+	solver.addConstraint(h, g);
+	solver.addConstraint(i, g);
+	solver.addConstraint(h, i);
+
+	auto muscle_ae = solver.addMuscle(e, a);
+	solver.addMuscle(f, c);
+	auto muscle_he = solver.addMuscle(h, e);
+	solver.addMuscle(i, g2);
+
+	displayManager.eventManager().addKeyPressedCallback(sf::Keyboard::A, [&](const sf::Event&) {muscle_ae->contract(0.5f); });
+	displayManager.eventManager().addKeyReleasedCallback(sf::Keyboard::A, [&](const sf::Event&) {muscle_ae->contract(0.0f); });
+
+	displayManager.eventManager().addKeyPressedCallback(sf::Keyboard::E, [&](const sf::Event&) {muscle_he->contract(0.8f); });
+	displayManager.eventManager().addKeyReleasedCallback(sf::Keyboard::E, [&](const sf::Event&) {muscle_he->contract(0.0f); });
 
 	while (window.isOpen())
 	{
 		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 		displayManager.processEvents();
 
-		up::Vec2 cam_pos = body->position();
-		up::Vec2 pt2(mousePosition.x, mousePosition.y);
-		sf::VertexArray segment(sf::Lines, 2);
-		up::Vec2 p1 = displayManager.worldCoordToDisplayCoord(cam_pos);
-		segment[0].position = sf::Vector2f(p1.x, p1.y);
-		segment[1].position = sf::Vector2f(pt2.x, pt2.y);
-
 		solver.update(0.016f);
-
-		displayManager.setOffset(body->position());
-
-		auto intersections = solver.getIntersectionWith(cam_pos, displayManager.displayCoordToWorldCoord(pt2));
 
 		window.clear(sf::Color::White);
 
 		displayManager.draw(false);
-		window.draw(segment);
 
-		for (const up::Vec2& inter_pt : intersections)
-		{
-			sf::CircleShape cs(4.0f);
-			cs.setOrigin(4.0f, 4.0f);
-			cs.setFillColor(sf::Color::Green);
-
-			const up::Vec2 dc_inter = displayManager.worldCoordToDisplayCoord(inter_pt);
-
-			cs.setPosition(dc_inter.x, dc_inter.y);
-
-			window.draw(cs);
-		}
-
-		sf::RectangleShape rec(sf::Vector2f(400, 150));
-		rec.setPosition(10, 10);
-		rec.setFillColor(sf::Color::Black);
-		window.draw(rec);
-
-		text.setString("Physics time : " + round(solver.physicsUpdateTime(), 2) + " ms");
-		text.setPosition(20, 45);
-		window.draw(text);
-
-		text.setString("Render time : " + round(displayManager.render_time, 2) + " ms");
-		text.setPosition(20, 70);
-		window.draw(text);
-
-		float total_time = displayManager.render_time + solver.physicsUpdateTime();
-		text.setString("Total frame time : " + round(total_time, 2) + " ms");
-		text.setPosition(20, 95);
-		window.draw(text);
-
-		text.setString("FPS : " + round(1000.0f / total_time, 1));
-		text.setPosition(20, 120);
-		window.draw(text);
 
 		window.display();
-
-		
 	}
 
 	return 0;

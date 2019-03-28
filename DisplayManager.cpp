@@ -111,6 +111,7 @@ void DisplayManager::draw(bool showInner)
     m_window->draw(bodies, rs);
 
 	drawConstraints(m_collisionManager->constraints());
+	drawMuscles(m_collisionManager->muscles());
 
 	render_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 }
@@ -118,6 +119,8 @@ void DisplayManager::draw(bool showInner)
 void DisplayManager::processEvents()
 {
 	sf::Vector2i mousePosition = sf::Mouse::getPosition(*m_window);
+
+	m_event_manager.processEvents();
 
 	sf::Event event;
 	while (m_window->pollEvent(event))
@@ -187,6 +190,29 @@ void DisplayManager::drawConstraints(const fva::SwapArray<up::Constraint>& const
 
 		cva[2 * i + 0].position = sf::Vector2f(p1.x, p1.y);
 		cva[2 * i + 1].position = sf::Vector2f(p2.x, p2.y);
+
+		++i;
+	}
+
+	m_window->draw(cva);
+}
+
+void DisplayManager::drawMuscles(const fva::SwapArray<up::Muscle>& muscles)
+{
+	sf::VertexArray cva(sf::Lines, muscles.size() * 2);
+	uint32_t i(0);
+	for (const up::Muscle& c : muscles)
+	{
+		const up::Vec2& p1 = worldCoordToDisplayCoord(c.constraint().position1());
+		const up::Vec2& p2 = worldCoordToDisplayCoord(c.constraint().position2());
+
+		cva[2 * i + 0].position = sf::Vector2f(p1.x, p1.y);
+		cva[2 * i + 1].position = sf::Vector2f(p2.x, p2.y);
+
+		float contr = 1.0f - c.contraction();
+		sf::Color color(255, 128*contr, 128*contr);
+		cva[2 * i + 0].color = color;
+		cva[2 * i + 1].color = color;
 
 		++i;
 	}
