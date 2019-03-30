@@ -6,6 +6,7 @@
 #include "props.h"
 #include <stdlib.h>
 #include "utils.hpp"
+#include "segment.hpp"
 
 #include <iostream>
 
@@ -25,7 +26,7 @@ int main()
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
 	DisplayManager displayManager(&window, &solver);
-	displayManager.setZoom(5);
+	displayManager.setZoom(1);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -34,6 +35,27 @@ int main()
 	text.setFont(font);
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
+
+	up::BodyPtr b1 = solver.addBody(50, 50);
+	up::BodyPtr b2 = solver.addBody(100, 50);
+	up::BodyPtr b3 = solver.addBody(100, 100);
+	up::BodyPtr b4 = solver.addBody(50, 100);
+
+	std::vector<up::SolidSegment> segments;
+
+	segments.emplace_back(b1, b2);
+	segments.emplace_back(b3, b2);
+	segments.emplace_back(b3, b4);
+	segments.emplace_back(b1, b4);
+	segments.emplace_back(b3, b1);
+	segments.emplace_back(b4, b1);
+
+	solver.addConstraint(b1, b2);
+	solver.addConstraint(b2, b3);
+	solver.addConstraint(b3, b4);
+	solver.addConstraint(b4, b1);
+	solver.addConstraint(b3, b1);
+	solver.addConstraint(b4, b2);
 
 	while (window.isOpen())
 	{

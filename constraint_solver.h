@@ -8,20 +8,21 @@ namespace up
 
 using BodyPtr = fva::Handle<Body>;
 
+
 class Constraint
 {
 public:
 	Constraint():
-		_body1(),
-		_body2(),
+		body1(),
+		body2(),
 		_length(0.0f),
 		_broken(false),
 		_strength(1.0f)
 	{}
 
 	Constraint(fva::Handle<Body>& b1, fva::Handle<Body>& b2, float length = 0.0f) :
-		_body1(b1),
-		_body2(b2),
+		body1(b1),
+		body2(b2),
 		_length(length),
 		_broken(false),
 		_resistance(1000.0f),
@@ -59,7 +60,7 @@ public:
 		if (_broken)
 			return;
 
-		Vec2 dir = _body1->position() - _body2->position();
+		Vec2 dir = body1->position() - body2->position();
 		float current_length = dir.length();
 		float delta_length = _strength*0.5f*(_length - current_length);
 		
@@ -68,19 +69,19 @@ public:
 		else
 		{
 			dir.normalize();
-			_body1->moveHard( delta_length*dir);
-			_body2->moveHard((-delta_length)*dir);
+			body1->moveHard( delta_length*dir);
+			body2->moveHard((-delta_length)*dir);
 		}
 	}
 
 	const Vec2& position1() const
 	{
-		return _body1->position();
+		return body1->position();
 	}
 
 	const Vec2& position2() const
 	{
-		return _body2->position();
+		return body2->position();
 	}
 
 	bool broken() const
@@ -88,8 +89,8 @@ public:
 		return _broken;
 	}
 
+	fva::Handle<Body> body1, body2;
 private:
-	fva::Handle<Body> _body1, _body2;
 	float _length;
 	bool _broken;
 	float _resistance;

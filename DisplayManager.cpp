@@ -120,7 +120,7 @@ void DisplayManager::processEvents()
 {
 	sf::Vector2i mousePosition = sf::Mouse::getPosition(*m_window);
 
-	m_event_manager.processEvents();
+	//m_event_manager.processEvents();
 
 	sf::Event event;
 	while (m_window->pollEvent(event))
