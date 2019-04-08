@@ -79,37 +79,37 @@ class Grid
 {
 public:
 	Grid(const Vec2& dimension, uint32_t cell_size) :
-		_cell_size(cell_size),
-		_width(dimension.x / cell_size + 10),
-		_height(dimension.y / cell_size + 10),
-		_non_empty()
+		m_cell_size(cell_size),
+		m_width(uint32_t(dimension.x) / cell_size + 10),
+		m_height(uint32_t(dimension.y) / cell_size + 10),
+		m_non_empty()
 	{
-		_non_empty.init(_width * _height);
-		_cells.resize(_width * _height);
+		m_non_empty.init(m_width * m_height);
+		m_cells.resize(m_width * m_height);
 	}
 
 	void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 	{
-		GridCell<8>& current_cell = _cells[grid_cell_x + _width *grid_cell_y];
+		GridCell<8>& current_cell = m_cells[grid_cell_x + m_width *grid_cell_y];
 		if (!current_cell.items_count)
-			_non_empty.add(current_cell);
+			m_non_empty.add(current_cell);
 
 		current_cell.add(b);
 	}
 
 	void addBody(Body& b)
 	{
-		uint32_t body_x = b.position().x + 1.0f;
-		uint32_t body_y = b.position().y + 1.0f;
+		uint32_t body_x = uint32_t(b.position().x + 1.0f);
+		uint32_t body_y = uint32_t(b.position().y + 1.0f);
 
-		uint32_t grid_x = body_x / _cell_size + 5;
-		uint32_t grid_y = body_y / _cell_size + 5;
-		uint32_t mid_grid = _cell_size / 2;
+		uint32_t grid_x = body_x / m_cell_size + 5;
+		uint32_t grid_y = body_y / m_cell_size + 5;
+		uint32_t mid_grid = m_cell_size / 2;
 
 		addToCell(grid_x, grid_y, b);
 
-		uint32_t in_cell_x = body_x % _cell_size;
-		uint32_t in_cell_y = body_y % _cell_size;
+		uint32_t in_cell_x = body_x % m_cell_size;
+		uint32_t in_cell_y = body_y % m_cell_size;
 
 		if (in_cell_x > mid_grid)
 		{
@@ -143,21 +143,21 @@ public:
 
 	CellRegister& nonEmpty()
 	{
-		return _non_empty;
+		return m_non_empty;
 	}
 
 	void clear()
 	{
-		_non_empty.clear();
+		m_non_empty.clear();
 	}
 
 private:
-	uint32_t _cell_size;
-	uint32_t _width;
-	uint32_t _height;
+	uint32_t m_cell_size;
+	uint32_t m_width;
+	uint32_t m_height;
 
-	std::vector<GridCell<8>> _cells;
-	CellRegister _non_empty;
+	std::vector<GridCell<8>> m_cells;
+	CellRegister m_non_empty;
 };
 
 }
