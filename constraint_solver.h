@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Body.h"
-#include "FastVersatileArray.hpp"
+#include "fast_array.hpp"
 
 namespace up
 {
@@ -116,7 +116,7 @@ public:
 
 	void contract(float ratio)
 	{
-		m_contraction = 1.0 - ratio;
+		m_contraction = 1.0f - ratio;
 		m_constraint.length(m_idle_length * m_contraction);
 	}
 

@@ -15,14 +15,15 @@ class UnitedSolver
 {
 public:
 	UnitedSolver() = default;
-	UnitedSolver(const Vec2& dimension, uint32_t body_radius, const Vec2& gravity = Vec2(0.0f,0.0f)) :
-		_collision_solver(dimension, body_radius, gravity),
-		_dimension(dimension)
+
+	UnitedSolver(const Vec2& dimension, float body_radius, const Vec2& gravity = Vec2(0.0f,0.0f)) :
+		m_collision_solver(dimension, body_radius, gravity),
+		m_dimension(dimension)
 	{}
 
 	BodyPtr addBody(const Vec2& position, float radius = 0.0f)
 	{
-		return _collision_solver.addBody(position, radius);
+		return m_collision_solver.addBody(position, radius);
 	}
 
 	BodyPtr addBody(float x, float y, float radius = 0.0f)
@@ -47,7 +48,7 @@ public:
 
 	void update(float dt)
 	{
-		_collision_solver.update(dt);
+		m_collision_solver.update(dt);
 
 		for (int i(10); i--;)
 			_constraint_solver.update(dt);
@@ -55,27 +56,27 @@ public:
 
 	const fva::SwapArray<Body>& bodies() const
 	{
-		return _collision_solver.bodies();
+		return m_collision_solver.bodies();
 	}
 
 	const Vec2& dimension() const
 	{
-		return _dimension;
+		return m_dimension;
 	}
 
 	float defaultBodyRadius() const
 	{
-		return _collision_solver.defaultBodyRadius();
+		return m_collision_solver.defaultBodyRadius();
 	}
 
 	void applyExplosion(const Vec2& position, float force)
 	{
-		_collision_solver.applyExplosion(position, force);
+		m_collision_solver.applyExplosion(position, force);
 	}
 
 	float physicsUpdateTime() const
 	{
-		return _collision_solver._up_time;
+		return m_collision_solver.m_up_time;
 	}
 
 	const fva::SwapArray<Constraint>& constraints() const
@@ -116,8 +117,8 @@ public:
 	}
 
 private:
-	const Vec2 _dimension;
-	CollisionSolver _collision_solver;
+	const Vec2 m_dimension;
+	CollisionSolver m_collision_solver;
 	ConstraintSolver _constraint_solver;
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FastVersatileArray.hpp"
+#include "fast_array.hpp"
 #include "vec2.h"
 #include "Body.h"
 #include "Grid.h"
@@ -14,38 +14,38 @@ namespace up
 	{
 	public:
 		CollisionSolver() = default;
-		CollisionSolver(const Vec2& dimension, uint32_t body_radius, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
-			_dimension(dimension),
-			_gravity(gravity),
-			_precision(1),
-			_body_radius(body_radius),
-			_grid(dimension, 2 * body_radius)
+		CollisionSolver(const Vec2& dimension, float body_radius, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
+			m_dimension(dimension),
+			m_gravity(gravity),
+			m_precision(1),
+			m_body_radius(body_radius),
+			m_grid(dimension, 2 * uint32_t(body_radius))
 		{}
 
 		fva::Handle<Body> addBody(const Vec2& position, float radius)
 		{
-			if (radius > 0.0f && radius <= _body_radius)
-				return _bodies.add(position, radius);
+			if (radius > 0.0f && radius <= m_body_radius)
+				return m_bodies.add(position, radius);
 			
-			return _bodies.add(position, _body_radius);
+			return m_bodies.add(position, m_body_radius);
 		}
 
 		void applyGravity()
 		{
 			const Vec2 attract(12500, 25000);
-			for (Body& b : _bodies)
+			for (Body& b : m_bodies)
 			{
 				/*Vec2 dir = attract - b.position();
 				dir.normalize();
 
 				b.accelerate(500.0f*dir);*/
-				b.accelerate(_gravity);
+				b.accelerate(m_gravity);
 			}
 		}
 
 		void solveBoundaryCollisions()
 		{
-			for (Body& b : _bodies)
+			for (Body& b : m_bodies)
 			{
 				Vec2 pos = b.position();
 				float radius = b.radius();
@@ -54,9 +54,9 @@ namespace up
 					b.move({ radius - pos.x, 0.0f });
 					b.stop();
 				}
-				else if (pos.x > _dimension.x - radius)
+				else if (pos.x > m_dimension.x - radius)
 				{
-					b.move({ _dimension.x - radius - pos.x, 0.0f });
+					b.move({ m_dimension.x - radius - pos.x, 0.0f });
 					b.stop();
 				}
 
@@ -65,9 +65,9 @@ namespace up
 					b.move({ 0.0f, radius - pos.y });
 					b.stop();
 				}
-				else if (pos.y > _dimension.y - radius)
+				else if (pos.y > m_dimension.y - radius)
 				{
-					b.move({ 0.0f, _dimension.y - radius - pos.y });
+					b.move({ 0.0f, m_dimension.y - radius - pos.y });
 					b.stop();
 				}
 			}
@@ -75,9 +75,9 @@ namespace up
 
 		void solveInterbodiesCollisions(float dt)
 		{
-			const float col_radius = 2 * _body_radius;
+			const float col_radius = 2.0f * m_body_radius;
 
-			CellRegister&  cr = _grid.nonEmpty();
+			CellRegister&  cr = m_grid.nonEmpty();
 			for (auto* gc : cr)
 			{
 				const uint8_t size = gc->items_count;
@@ -119,22 +119,22 @@ namespace up
 			applyGravity();
 
 			sf::Clock clock;
-			for (int i(0); i<_precision; ++i)
+			for (uint32_t i(0); i<m_precision; ++i)
 			{
 				solveBoundaryCollisions();
-				_grid.clear();
-				for (Body& b : _bodies)
+				m_grid.clear();
+				for (Body& b : m_bodies)
 				{
-					_grid.addBody(b);
+					m_grid.addBody(b);
 				}
 
 				solveInterbodiesCollisions(dt);
 			}
-			_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
+			m_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 
 			solveBoundaryCollisions();
 
-			for (Body& b : _bodies)
+			for (Body& b : m_bodies)
 			{
 				b.update(dt);
 			}
@@ -142,22 +142,22 @@ namespace up
 
 		const fva::SwapArray<Body>& bodies() const
 		{
-			return _bodies;
+			return m_bodies;
 		}
 
 		uint32_t bodyCount() const
 		{
-			return _bodies.size();
+			return m_bodies.size();
 		}
 
 		const Vec2& dimension() const
 		{
-			return _dimension;
+			return m_dimension;
 		}
 
 		void applyExplosion(const Vec2& position, float force)
 		{
-			for (Body& b : _bodies)
+			for (Body& b : m_bodies)
 			{
 				Vec2 dir = b.position() - position;
 				float length = dir.length();
@@ -171,22 +171,22 @@ namespace up
 
 		float defaultBodyRadius() const
 		{
-			return _body_radius;
+			return m_body_radius;
 		}
 
 		bool test_pressure = false;
-		float _up_time;
+		float m_up_time;
 
 	private:
-		Vec2 _gravity;
+		Vec2 m_gravity;
 
-		fva::SwapArray<Body> _bodies;
-		fva::SwapArray<FastCollider> _colliders;
-		Grid _grid;
+		fva::SwapArray<Body> m_bodies;
+		fva::SwapArray<FastCollider> m_colliders;
+		Grid m_grid;
 
-		const Vec2 _dimension;
-		const uint32_t _precision;
-		const uint32_t _body_radius;
+		const Vec2 m_dimension;
+		const uint32_t m_precision;
+		const float m_body_radius;
 	};
 
 }
