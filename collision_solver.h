@@ -2,8 +2,8 @@
 
 #include "fast_array.hpp"
 #include "vec2.h"
-#include "Body.h"
-#include "Grid.h"
+#include "physic_body.h"
+#include "access_grid.h"
 #include <SFML/System/Clock.hpp>
 #include <iostream>
 

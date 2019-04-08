@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vec2.h"
+#include <algorithm>
 
 namespace up
 {
@@ -10,23 +11,23 @@ class Body
 public:
 	Body() = default;
 	Body(const Vec2& pos, float radius) :
-		_position(pos),
-		_old_position(pos),
-		_acceleration(),
-		_pressure(0.0f),
-		_old_pressure(0.0f),
-		_radius(radius),
-		_moving(1),
-		_inertia(1.0f)
+		m_position(pos),
+		m_old_position(pos),
+		m_acceleration(),
+		m_pressure(0.0f),
+		m_old_pressure(0.0f),
+		m_radius(radius),
+		m_moving(1),
+		m_inertia(1.0f)
 	{}
 	
 	Body& operator=(const Body& b)
 	{
-		_position     = b._position;
-		_old_position = b._old_position;
-		_acceleration = b._acceleration;
-		_pressure     = b._pressure;
-		_radius       = b._radius;
+		m_position     = b.m_position;
+		m_old_position = b.m_old_position;
+		m_acceleration = b.m_acceleration;
+		m_pressure     = b.m_pressure;
+		m_radius       = b.m_radius;
 
 		return *this;
 	}
@@ -34,16 +35,16 @@ public:
 	void update(float dt)
 	{
 		Vec2 v = velocity();
-		_inertia = 0.1f * _inertia + 1.0f + _old_pressure / (v.length2() + 1.0f);
+		m_inertia = 0.1f * m_inertia + 1.0f + m_old_pressure / (v.length2() + 1.0f);
 
 		// Air friction
-		_acceleration += v * -30.0f;
+		m_acceleration += v * -30.0f;
 
 		// This prevent from too much compression
-		float anti_pressure_factor = std::pow(1.0f / _inertia, 3);
+		float anti_pressure_factor = std::pow(1.0f / m_inertia, 3);
 
 		// Verlet integration
-		_old_position = _position;
+		m_old_position = m_position;
 		/*Vec2 delta_pos = _moving * v + (_acceleration * anti_pressure_factor) * dt * dt;
 		if (delta_pos.length2() > _radius*_radius)
 		{
@@ -51,80 +52,80 @@ public:
 			delta_pos = delta_pos * _radius;
 		}*/
 
-		_position += v + (_acceleration * anti_pressure_factor) * dt * dt;
+		m_position += v + (m_acceleration * anti_pressure_factor) * dt * dt;
 
 		// Reset temporary values
-		_acceleration = {};
+		m_acceleration = {};
 
-		_old_pressure = std::min(_pressure, _radius);
-		_pressure = 0.0f;
+		m_old_pressure = std::min(m_pressure, m_radius);
+		m_pressure = 0.0f;
 	}
 
 	const Vec2& position() const
 	{
-		return _position;
+		return m_position;
 	}
 
 	const Vec2& acceleration() const
 	{
-		return _acceleration;
+		return m_acceleration;
 	}
 
 	Vec2 velocity() const
 	{
-		return _position - _old_position;
+		return m_position - m_old_position;
 	}
 
 	void move(const Vec2& delta)
 	{
-		const Vec2 d = _moving * delta;
-		_position += d;
-		_old_position += 0.1f * d;
+		const Vec2 d = m_moving * delta;
+		m_position += d;
+		m_old_position += 0.1f * d;
 	}
 
 	void moveHard(const Vec2& delta)
 	{
-		_position += _moving*delta;
+		m_position += m_moving*delta;
 	}
 
 	void moveOld(const Vec2& delta)
 	{
-		_old_position += delta;
+		m_old_position += delta;
 	}
 
 	void accelerate(const Vec2& acceleration)
 	{
-		_acceleration += acceleration;
+		m_acceleration += acceleration;
 	}
 
 	void addPressure(float pressure)
 	{
-		_pressure += pressure;
+		m_pressure += pressure;
 	}
 
 	float radius() const
 	{
-		return _radius;
+		return m_radius;
 	}
 
 	float mass() const
 	{
-		return _inertia;
+		return m_inertia;
 	}
 
 	void stop()
 	{
-		_old_position = _position;
+		m_old_position = m_position;
 	}
 
 	bool moving() const
 	{
-		return _moving;
+		return m_moving;
 	}
 
 	void moving(bool b)
 	{
-		_moving = b;
+		m_moving = b;
 	}
 
 	void setVelocity(const Vec2& v)
@@ -133,15 +134,15 @@ public:
 	}
 
 private:
-	Vec2 _position;
-	Vec2 _old_position;
-	Vec2 _acceleration;
+	Vec2 m_position;
+	Vec2 m_old_position;
+	Vec2 m_acceleration;
 
-	float _radius;
-	float _pressure;
-	float _old_pressure;
-	float _inertia;
-	uint8_t _moving;
+	float m_radius;
+	float m_pressure;
+	float m_old_pressure;
+	float m_inertia;
+	uint8_t m_moving;
 };
 
 class UnitedSolver;
