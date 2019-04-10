@@ -12,28 +12,28 @@ class Handle
 {
 public:
 	Handle() :
-		_index(0),
-		_source(nullptr)
+		m_index(0),
+		m_source(nullptr)
 	{}
 
 	Handle(uint32_t index, SwapArray<T>& source) :
-		_index(index),
-		_source(&source)
+		m_index(index),
+		m_source(&source)
 	{}
 
 	operator bool() const
 	{
-		return _source;
+		return m_source;
 	}
 
 	T& operator*()
 	{
-		return (*_source)[_index];
+		return (*m_source)[m_index];
 	}
 
 	const T& operator*() const
 	{
-		return (*_source)[_index];
+		return (*m_source)[m_index];
 	}
 
 	T* operator->()
@@ -47,8 +47,8 @@ public:
 	}
 
 private:
-	uint32_t _index;
-	SwapArray<T>* _source;
+	uint32_t m_index;
+	SwapArray<T>* m_source;
 
 	friend SwapArray<T>;
 };
@@ -118,7 +118,7 @@ inline Handle<T> SwapArray<T>::add(Args&&... args)
 template<class T>
 inline void SwapArray<T>::remove(Handle<T>& handle)
 {
-	uint32_t index = handle._index;
+	uint32_t index = handle.m_index;
 	uint32_t index_remove = _index[index];
 	// The object to remove
 	T& removed_object = _data[index_remove];
@@ -144,14 +144,14 @@ inline void SwapArray<T>::remove(Handle<T>& handle)
 	_reverse_index.pop_back();
 	_data.pop_back();
 
-	handle._index = 0;
-	handle._source = nullptr;
+	handle.m_index = 0;
+	handle.m_source = nullptr;
 }
 
 template<class T>
 inline T& SwapArray<T>::operator[](const Handle<T>& handle)
 {
-	const uint32_t data_index = _index[handle._index];
+	const uint32_t data_index = _index[handle.m_index];
 	return _data[data_index];
 }
 
