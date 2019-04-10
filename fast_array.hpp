@@ -46,6 +46,11 @@ public:
 		return &(this->operator*());
 	}
 
+	uint32_t index() const
+	{
+		return m_index;
+	}
+
 private:
 	uint32_t m_index;
 	SwapArray<T>* m_source;
@@ -53,16 +58,20 @@ private:
 	friend SwapArray<T>;
 };
 
-
-
 template<class T>
 class SwapArray
 {
 public:
 	SwapArray() = default;
 
+	Handle<T> getFreeSlot();
+
 	template<typename... Args>
 	Handle<T> add(Args&&...);
+
+	template<typename... Args>
+	void add(Handle<T>& slot, Args&&...);
+
 	void remove(Handle<T>& handle);
 
 	T& operator[](uint32_t index);
@@ -78,71 +87,70 @@ public:
 	void     clear();
 
 private:
-	std::vector<T>        _data;
-	std::vector<uint32_t> _index;
-	std::vector<uint32_t> _reverse_index;
+	std::vector<T>        m_data;
+	std::vector<uint32_t> m_index;
+	std::vector<uint32_t> m_reverse_index;
+	std::list<uint32_t>   m_free_indexes;
 
-	std::list<uint32_t> _free_indexes;
+	uint32_t getFreeSlotIndex();
 };
 
 template<class T>
 template<typename... Args>
 inline Handle<T> SwapArray<T>::add(Args&&... args)
 {
-	// Compute data_index (index in _data) and init index (index for access from outside)
-	uint32_t data_index = uint32_t(_data.size());
-	uint32_t index = data_index;
-
-	// If empty slots in _index
-	if (!_free_indexes.empty())
-	{
-		// Get a free slot
-		index = _free_indexes.front();
-		_free_indexes.pop_front();
-		// And link it to the new object
-		_index[index] = data_index;
-	}
-	else
-	{
-		// Else create a new one
-		_index.push_back(index);
-	}
+	uint32_t index(getFreeSlotIndex());
 	
 	// Add object and reverse index
-	_data.emplace_back(args...);
-	_reverse_index.push_back(index);
+	m_data.emplace_back(args...);
+	m_reverse_index.push_back(index);
 
 	return Handle<T>(index, *this);
+}
+
+template<class T>
+template<typename... Args>
+inline void SwapArray<T>::add(Handle<T>& slot, Args&& ...args)
+{
+	// Add object and reverse index
+	m_data.emplace_back(args...);
+	m_reverse_index.push_back(slot.m_index);
+}
+
+template<class T>
+inline Handle<T> SwapArray<T>::getFreeSlot()
+{
+	return Handle<T>(getFreeSlotIndex(), *this);
 }
 
 template<class T>
 inline void SwapArray<T>::remove(Handle<T>& handle)
 {
 	uint32_t index = handle.m_index;
-	uint32_t index_remove = _index[index];
+	uint32_t index_remove = m_index[index];
 	// The object to remove
-	T& removed_object = _data[index_remove];
+	T& removed_object = m_data[index_remove];
 	// The current last object
-	T& last_object = _data.back();
+	T& last_object = m_data.back();
 
 	// The position of the last object in the index vector
-	uint32_t last_object_index = _reverse_index.back();
+	uint32_t last_object_index = m_reverse_index.back();
 	// Update index vector
-	_index[last_object_index] = index;
+	m_index[last_object_index] = index;
 
-	if (index_remove != _data.size() - 1)
+	if (index_remove != m_data.size() - 1)
 	{
 		// Swap
-		std::swap(_reverse_index.back(), _reverse_index[index_remove]);
+		std::swap(m_reverse_index.back(), m_reverse_index[index_remove]);
 		std::swap(removed_object, last_object);
 	}
 
 	// Add the free index in the list
-	_free_indexes.push_back(index);
+	m_free_indexes.push_back(index);
 
 	// Erase
-	_reverse_index.pop_back();
-	_data.pop_back();
+	m_reverse_index.pop_back();
+	m_data.pop_back();
 
 	handle.m_index = 0;
 	handle.m_source = nullptr;
@@ -151,54 +159,79 @@ inline void SwapArray<T>::remove(Handle<T>& handle)
 template<class T>
 inline T& SwapArray<T>::operator[](const Handle<T>& handle)
 {
-	const uint32_t data_index = _index[handle.m_index];
-	return _data[data_index];
+	const uint32_t data_index = m_index[handle.m_index];
+	return m_data[data_index];
 }
 
 template<class T>
 inline T& SwapArray<T>::operator[](uint32_t index)
 {
-	const uint32_t data_index = _index[index];
-	return _data[data_index];
+	const uint32_t data_index = m_index[index];
+	return m_data[data_index];
 }
 
 template<class T>
 inline typename std::vector<T>::iterator SwapArray<T>::begin()
 {
-	return _data.begin();
+	return m_data.begin();
 }
 
 template<class T>
 inline typename std::vector<T>::iterator SwapArray<T>::end()
 {
-	return _data.end();
+	return m_data.end();
 }
 
 template<class T>
 inline typename std::vector<T>::const_iterator SwapArray<T>::begin() const
 {
-	return _data.begin();
+	return m_data.begin();
 }
 
 template<class T>
 inline typename std::vector<T>::const_iterator SwapArray<T>::end() const
 {
-	return _data.end();
+	return m_data.end();
 }
 
 template<class T>
 inline uint32_t SwapArray<T>::size() const
 {
-	return uint32_t(_data.size());
+	return uint32_t(m_data.size());
 }
 
 template<class T>
 inline void SwapArray<T>::clear()
 {
-	_data.clear();
-	_index.clear();
-	_reverse_index.clear();
-	_free_indexes.clear();
+	m_data.clear();
+	m_index.clear();
+	m_reverse_index.clear();
+	m_free_indexes.clear();
+}
+
+template<class T>
+inline uint32_t SwapArray<T>::getFreeSlotIndex()
+{
+	// Compute data_index (index in _data) and init index (index for access from outside)
+	uint32_t data_index = uint32_t(m_data.size());
+	uint32_t index = data_index;
+
+	// If empty slots in m_index
+	if (!m_free_indexes.empty())
+	{
+		// Get a free slot
+		index = m_free_indexes.front();
+		m_free_indexes.pop_front();
+		// And link it to the new object
+		m_index[index] = data_index;
+	}
+	else
+	{
+		// Else create a new one
+		m_index.push_back(index);
+	}
+
+	return index;
 }
 
 } // Namespace's end
