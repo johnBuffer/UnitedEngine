@@ -1,9 +1,9 @@
 #pragma once
 
 #include "fast_array.hpp"
-#include "vec2.h"
-#include "physic_body.h"
-#include "access_grid.h"
+#include "vec2.hpp"
+#include "physic_body.hpp"
+#include "access_grid.hpp"
 #include <SFML/System/Clock.hpp>
 #include <iostream>
 
@@ -22,18 +22,72 @@ namespace up
 			m_grid(dimension, 2 * uint32_t(body_radius))
 		{}
 
-		fva::Handle<Body> addBody(const Vec2& position, float radius)
+		void update(fva::SwapArray<Body>& bodies, float dt)
 		{
-			if (radius > 0.0f && radius <= m_body_radius)
-				return m_bodies.add(position, radius);
-			
-			return m_bodies.add(position, m_body_radius);
+			applyGravity(bodies);
+
+			sf::Clock clock;
+			for (uint32_t i(0); i<m_precision; ++i)
+			{
+				solveBoundaryCollisions(bodies);
+				m_grid.clear();
+				for (Body& b : bodies)
+				{
+					m_grid.addBody(b);
+				}
+
+				solveInterbodiesCollisions(dt);
+			}
+
+			m_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
+
+			solveBoundaryCollisions(bodies);
+
+			for (Body& b : bodies)
+			{
+				b.update(dt);
+			}
 		}
 
-		void applyGravity()
+		const Vec2& dimension() const
+		{
+			return m_dimension;
+		}
+
+		/*void applyExplosion(const Vec2& position, float force)
+		{
+			for (Body& b : m_bodies)
+			{
+				Vec2 dir = b.position() - position;
+				float length = dir.length();
+				dir.normalize();
+
+				float force_factor = force / (length + 1.0f);
+
+				b.accelerate(force_factor * dir);
+			}
+		}*/
+
+		float defaultBodyRadius() const
+		{
+			return m_body_radius;
+		}
+
+		bool test_pressure = false;
+		float m_up_time;
+
+	private:
+		Vec2 m_gravity;
+		Grid m_grid;
+
+		const Vec2 m_dimension;
+		const uint32_t m_precision;
+		const float m_body_radius;
+
+		void applyGravity(fva::SwapArray<Body>& bodies)
 		{
 			const Vec2 attract(12500, 25000);
-			for (Body& b : m_bodies)
+			for (Body& b : bodies)
 			{
 				/*Vec2 dir = attract - b.position();
 				dir.normalize();
@@ -43,9 +97,9 @@ namespace up
 			}
 		}
 
-		void solveBoundaryCollisions()
+		void solveBoundaryCollisions(fva::SwapArray<Body>& bodies)
 		{
-			for (Body& b : m_bodies)
+			for (Body& b : bodies)
 			{
 				Vec2 pos = b.position();
 				float radius = b.radius();
@@ -103,7 +157,7 @@ namespace up
 
 							col_axe.normalize();
 
-							b1.move(col_axe*( delta_col * mass_factor_2));
+							b1.move(col_axe*(delta_col * mass_factor_2));
 							b2.move(col_axe*(-delta_col * mass_factor_1));
 
 							b1.addPressure(delta_col);
@@ -114,79 +168,6 @@ namespace up
 			}
 		}
 
-		void update(float dt)
-		{
-			applyGravity();
-
-			sf::Clock clock;
-			for (uint32_t i(0); i<m_precision; ++i)
-			{
-				solveBoundaryCollisions();
-				m_grid.clear();
-				for (Body& b : m_bodies)
-				{
-					m_grid.addBody(b);
-				}
-
-				solveInterbodiesCollisions(dt);
-			}
-			m_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
-
-			solveBoundaryCollisions();
-
-			for (Body& b : m_bodies)
-			{
-				b.update(dt);
-			}
-		}
-
-		const fva::SwapArray<Body>& bodies() const
-		{
-			return m_bodies;
-		}
-
-		uint32_t bodyCount() const
-		{
-			return m_bodies.size();
-		}
-
-		const Vec2& dimension() const
-		{
-			return m_dimension;
-		}
-
-		void applyExplosion(const Vec2& position, float force)
-		{
-			for (Body& b : m_bodies)
-			{
-				Vec2 dir = b.position() - position;
-				float length = dir.length();
-				dir.normalize();
-
-				float force_factor = force / (length + 1.0f);
-
-				b.accelerate(force_factor * dir);
-			}
-		}
-
-		float defaultBodyRadius() const
-		{
-			return m_body_radius;
-		}
-
-		bool test_pressure = false;
-		float m_up_time;
-
-	private:
-		Vec2 m_gravity;
-
-		fva::SwapArray<Body> m_bodies;
-		fva::SwapArray<FastCollider> m_colliders;
-		Grid m_grid;
-
-		const Vec2 m_dimension;
-		const uint32_t m_precision;
-		const float m_body_radius;
 	};
 
 }

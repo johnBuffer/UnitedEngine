@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physic_body.h"
+#include "physic_body.hpp"
 #include "fast_array.hpp"
 
 namespace up
@@ -8,64 +8,64 @@ namespace up
 
 using BodyPtr = fva::Handle<Body>;
 
-
 class Constraint
 {
 public:
 	Constraint():
 		body1(),
 		body2(),
-		_length(0.0f),
-		_broken(false),
-		_strength(1.0f)
+		m_length(0.0f),
+		m_broken(false),
+		m_strength(1.0f)
 	{}
 
-	Constraint(fva::Handle<Body>& b1, fva::Handle<Body>& b2, float length = 0.0f) :
+	Constraint(fva::Handle<Body>& b1, fva::Handle<Body>& b2, float length = 0.0f, float resistance = 1000.0f) :
 		body1(b1),
 		body2(b2),
-		_length(length),
-		_broken(false),
-		_resistance(1000.0f),
-		_strength(1.0f)
+		m_length(length),
+		m_broken(false),
+		m_resistance(resistance),
+		m_strength(1.0f)
 	{
-		if (!_length)
+		if (!m_length)
 		{
 			Vec2 dir = b1->position() - b2->position();
-			_length = dir.length();
+			m_length = dir.length();
 		}
 	}
 
 	void resitance(float r)
 	{
-		_resistance = r;
+		m_resistance = r;
 	}
 
 	float length() const
 	{
-		return _length;
+		return m_length;
 	}
 
 	void strength(float s)
 	{
-		_strength = s;
+		m_strength = s;
 	}
 
 	void length(float l)
 	{
-		_length = l;
+		m_length = l;
 	}
 
 	void update(float dt)
 	{
-		if (_broken)
+		if (m_broken)
 			return;
 
 		Vec2 dir = body1->position() - body2->position();
 		float current_length = dir.length();
-		float delta_length = _strength*0.5f*(_length - current_length);
+		float delta_length = m_strength*0.5f*(m_length - current_length);
 		
-		if (std::fabs(2.0f*delta_length) > _resistance)
-			_broken = true;
+		if (std::fabs(2.0f*delta_length) > m_resistance) {
+			m_broken = true;
+		}
 		else
 		{
 			dir.normalize();
@@ -86,15 +86,15 @@ public:
 
 	bool broken() const
 	{
-		return _broken;
+		return m_broken;
 	}
 
 	fva::Handle<Body> body1, body2;
 private:
-	float _length;
-	bool _broken;
-	float _resistance;
-	float _strength;
+	float m_length;
+	bool m_broken;
+	float m_resistance;
+	float m_strength;
 };
 
 
@@ -142,38 +142,39 @@ class Anchor
 public:
 	Anchor() = default;
 	Anchor(BodyPtr body, float max_length = 1000.0f) :
-		_body(body),
-		_attach_point(body->position()),
-		_max_length(max_length),
-		_broken(false)
+		m_body(body),
+		m_attach_point(body->position()),
+		m_max_length(max_length),
+		m_broken(false)
 	{}
 
 	void update(float dt)
 	{
-		if (_broken)
+		if (m_broken)
 			return;
 
-		Vec2 position = _body->position();
-		Vec2 dir = _attach_point - position;
+		Vec2 position = m_body->position();
+		Vec2 dir = m_attach_point - position;
 
-		if (dir.length() > _max_length)
-			_broken = true;
+		if (dir.length() > m_max_length) {
+			m_broken = true;
+		}
 		else
 		{
-			_body->moveHard(0.5f*dir);
+			m_body->moveHard(0.5f*dir);
 		}
 	}
 
 	bool broken() const
 	{
-		return _broken;
+		return m_broken;
 	}
 
 private:
-	BodyPtr _body;
-	Vec2 _attach_point;
-	float _max_length;
-	bool _broken;
+	BodyPtr m_body;
+	Vec2 m_attach_point;
+	float m_max_length;
+	bool m_broken;
 };
 
 
@@ -184,55 +185,23 @@ using AnchorPtr = fva::Handle<Anchor>;
 class ConstraintSolver
 {
 public:
+	using ConstraintsRef = fva::SwapArray<Constraint>&;
+	using AnchorsRef = fva::SwapArray<Anchor>&;
+	
 	ConstraintSolver() = default;
 
-	ConstraintPtr addConstraint(BodyPtr b1, BodyPtr b2)
+	void update(ConstraintsRef constraints, AnchorsRef anchors, float dt)
 	{
-		return _constraints.add(b1, b2);
-	}
-
-	MusclePtr addMuscle(BodyPtr b1, BodyPtr b2)
-	{
-		return _muscles.add(b1, b2);
-	}
-
-	AnchorPtr addAnchor(BodyPtr b, float max_length)
-	{
-		return _anchors.add(b, max_length);
-	}
-
-	void update(float dt)
-	{
-		for (Constraint& c : _constraints)
+		for (Constraint& c : constraints)
 		{
 			c.update(dt);
 		}
 
-		for (Muscle& m : _muscles)
-		{
-			m.update(dt);
-		}
-
-		for (Anchor& a : _anchors)
+		for (Anchor& a : anchors)
 		{
 			a.update(dt);
 		}
 	}
-
-	const fva::SwapArray<Constraint>& constraints() const
-	{
-		return _constraints;
-	}
-
-	const fva::SwapArray<Muscle>& muscles() const
-	{
-		return _muscles;
-	}
-
-private:
-	fva::SwapArray<Constraint> _constraints;
-	fva::SwapArray<Muscle> _muscles;
-	fva::SwapArray<Anchor> _anchors;
 };
 
 

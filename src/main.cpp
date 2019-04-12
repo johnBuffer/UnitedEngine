@@ -1,9 +1,8 @@
 #include <SFML/Graphics.hpp>
 
-#include "united_solver.h"
-#include "DisplayManager.h"
+#include "united_solver.hpp"
+#include "display_manager.hpp"
 #include <sstream>
-#include "props.h"
 #include <stdlib.h>
 #include "utils.hpp"
 #include "segment.hpp"
@@ -21,12 +20,12 @@ int main()
 	window.setVerticalSyncEnabled(true);
 	//window.setFramerateLimit(60);
 
-	float body_radius = 2;
-	up::Vec2 world_dimension(2000.0f, 500.0f);
+	float body_radius = 25;
+	up::Vec2 world_dimension(2000.0f, 2000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
-	DisplayManager displayManager(&window, &solver);
-	displayManager.setZoom(1);
+	DisplayManager displayManager(window, solver);
+	displayManager.setZoom(1.0f);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -36,30 +35,12 @@ int main()
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
 
-	up::BodyPtr b1 = solver.addBody(50, 50);
-	up::BodyPtr b2 = solver.addBody(100, 50);
-	up::BodyPtr b3 = solver.addBody(100, 100);
-	up::BodyPtr b4 = solver.addBody(50, 100);
-
-	std::vector<up::SolidSegment> segments;
-
-	segments.emplace_back(b1, b2);
-	segments.emplace_back(b3, b2);
-	segments.emplace_back(b3, b4);
-	segments.emplace_back(b1, b4);
-	segments.emplace_back(b3, b1);
-	segments.emplace_back(b4, b1);
-
-	solver.addConstraint(b1, b2);
-	solver.addConstraint(b2, b3);
-	solver.addConstraint(b3, b4);
-	solver.addConstraint(b4, b1);
-	solver.addConstraint(b3, b1);
-	solver.addConstraint(b4, b2);
-
 	while (window.isOpen())
 	{
 		displayManager.processEvents();
+
+		if (displayManager.emit)
+			solver.addBody({ 50.0f + rand()%2, 50.0f });
 
 		solver.update(0.016f);
 

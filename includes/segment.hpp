@@ -1,6 +1,6 @@
 #pragma once
 
-#include "constraint_solver.h"
+#include "constraint_solver.hpp"
 
 namespace up
 {

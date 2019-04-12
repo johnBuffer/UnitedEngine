@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec2.h"
+#include "vec2.hpp"
 #include <algorithm>
 
 namespace up
