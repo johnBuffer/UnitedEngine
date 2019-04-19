@@ -70,7 +70,7 @@ public:
 
 	void move(const Vec2& delta)
 	{
-		const Vec2 d = m_moving * delta;
+		const Vec2 d(m_moving * delta);
 		m_position += d;
 		m_old_position += 0.1f * d;
 	}
@@ -137,28 +137,8 @@ private:
 	uint8_t m_moving;
 };
 
-class UnitedSolver;
-
-class FastCollider
-{
-public:
-	FastCollider() = default;
-
-	FastCollider(const Vec2& position, const Vec2& dir, uint32_t speed_factor) :
-		_position(position),
-		_direction(dir),
-		_speed(speed_factor)
-	{
-
-	}
-
-	virtual void onHit(UnitedSolver* solver) = 0;
-
-private:
-	Vec2 _position;
-	Vec2 _direction;
-	uint32_t _speed;
-};
-
-
 }
+
+
+
+

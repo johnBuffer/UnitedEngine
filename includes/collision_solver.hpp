@@ -48,20 +48,6 @@ namespace up
 			return m_dimension;
 		}
 
-		/*void applyExplosion(const Vec2& position, float force)
-		{
-			for (Body& b : m_bodies)
-			{
-				Vec2 dir = b.position() - position;
-				float length = dir.length();
-				dir.normalize();
-
-				float force_factor = force / (length + 1.0f);
-
-				b.accelerate(force_factor * dir);
-			}
-		}*/
-
 		float defaultBodyRadius() const
 		{
 			return m_body_radius;
@@ -81,8 +67,7 @@ namespace up
 		void applyGravity(fva::SwapArray<Body>& bodies)
 		{
 			const Vec2 attract(12500, 25000);
-			for (Body& b : bodies)
-			{
+			for (Body& b : bodies) {
 				b.accelerate(m_gravity);
 			}
 		}
@@ -119,38 +104,43 @@ namespace up
 
 		void solveInterbodiesCollisions(float dt)
 		{
-			const float col_radius(2.0f * m_body_radius);
-
 			auto&  cr = m_grid.nonEmpty();
 			for (auto* gc : cr)
 			{
-				const uint8_t size = gc->items_count;
-				auto& bodies = gc->items;
+				const uint8_t size(gc->items_count);
+				auto& bodies(gc->items);
 
 				for (uint8_t i(0); i < size; ++i)
 				{
-					Body& b1 = *bodies[i];
-					for (uint8_t j(i + 1); j < size; ++j)
-					{
-						Body& b2 = *bodies[j];
-						Vec2 col_axe = b1.position() - b2.position();
+					solveCellCollisions(i, size, bodies);
+				}
+			}
+		}
 
-						if (col_axe.length2() < col_radius*col_radius)
-						{
-							const float m1(b1.mass());
-							const float m2(b2.mass());
-							const float mass_factor_tot(1.0f / (m1 + m2));
-							const float mass_factor_1(m1 * mass_factor_tot);
-							const float mass_factor_2(m2 * mass_factor_tot);
-							const float delta_col(0.5f * (col_radius - col_axe.length()));
+		void solveCellCollisions(uint32_t index, uint32_t size, std::array<up::Body*, 8U>& bodies)
+		{
+			const float col_radius(2.0f * m_body_radius);
+			Body& b1(*bodies[index]);
 
-							col_axe.normalize();
-							b1.move(col_axe*(delta_col * mass_factor_2));
-							b2.move(col_axe*(-delta_col * mass_factor_1));
-							b1.addPressure(delta_col);
-							b2.addPressure(delta_col);
-						}
-					}
+			for (uint8_t i(index + 1); i < size; ++i)
+			{
+				Body& b2 = *bodies[i];
+				Vec2 col_axe(b1.position() - b2.position());
+
+				if (col_axe.length2() < col_radius*col_radius)
+				{
+					const float m1(b1.mass());
+					const float m2(b2.mass());
+					const float mass_factor_tot(1.0f / (m1 + m2));
+					const float mass_factor_1(m1 * mass_factor_tot);
+					const float mass_factor_2(m2 * mass_factor_tot);
+					const float delta_col(0.5f * (col_radius - col_axe.length()));
+
+					col_axe.normalize();
+					b1.move(col_axe*(delta_col * mass_factor_2));
+					b2.move(col_axe*(-delta_col * mass_factor_1));
+					b1.addPressure(delta_col);
+					b2.addPressure(delta_col);
 				}
 			}
 		}
