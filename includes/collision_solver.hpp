@@ -17,7 +17,7 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
 			m_dimension(dimension),
 			m_gravity(gravity),
-			m_precision(1),
+			m_precision(2),
 			m_body_radius(body_radius),
 			m_grid(dimension, 2 * uint32_t(body_radius))
 		{}
@@ -25,26 +25,20 @@ namespace up
 		void update(fva::SwapArray<Body>& bodies, float dt)
 		{
 			applyGravity(bodies);
-
 			sf::Clock clock;
-			for (uint32_t i(0); i<m_precision; ++i)
-			{
+			for (uint32_t i(0); i<m_precision; ++i) {
 				solveBoundaryCollisions(bodies);
 				m_grid.clear();
-				for (Body& b : bodies)
-				{
+				for (Body& b : bodies) {
 					m_grid.addBody(b);
 				}
-
 				solveInterbodiesCollisions(dt);
 			}
 
 			m_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 
 			solveBoundaryCollisions(bodies);
-
-			for (Body& b : bodies)
-			{
+			for (Body& b : bodies) {
 				b.update(dt);
 			}
 		}
@@ -89,10 +83,6 @@ namespace up
 			const Vec2 attract(12500, 25000);
 			for (Body& b : bodies)
 			{
-				/*Vec2 dir = attract - b.position();
-				dir.normalize();
-
-				b.accelerate(500.0f*dir);*/
 				b.accelerate(m_gravity);
 			}
 		}
@@ -129,7 +119,7 @@ namespace up
 
 		void solveInterbodiesCollisions(float dt)
 		{
-			const float col_radius = 2.0f * m_body_radius;
+			const float col_radius(2.0f * m_body_radius);
 
 			auto&  cr = m_grid.nonEmpty();
 			for (auto* gc : cr)
@@ -147,19 +137,16 @@ namespace up
 
 						if (col_axe.length2() < col_radius*col_radius)
 						{
-							const float m1 = b1.mass();
-							const float m2 = b2.mass();
-							const float mass_factor_tot = 1.0f / (m1 + m2);
-							const float mass_factor_1 = m1 * mass_factor_tot;
-							const float mass_factor_2 = m2 * mass_factor_tot;
-
-							const float delta_col = 0.5f * (col_radius - col_axe.length());
+							const float m1(b1.mass());
+							const float m2(b2.mass());
+							const float mass_factor_tot(1.0f / (m1 + m2));
+							const float mass_factor_1(m1 * mass_factor_tot);
+							const float mass_factor_2(m2 * mass_factor_tot);
+							const float delta_col(0.5f * (col_radius - col_axe.length()));
 
 							col_axe.normalize();
-
 							b1.move(col_axe*(delta_col * mass_factor_2));
 							b2.move(col_axe*(-delta_col * mass_factor_1));
-
 							b1.addPressure(delta_col);
 							b2.addPressure(delta_col);
 						}
@@ -167,7 +154,5 @@ namespace up
 				}
 			}
 		}
-
 	};
-
 }

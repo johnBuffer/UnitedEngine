@@ -34,29 +34,21 @@ public:
 
 	void update(float dt)
 	{
-		Vec2 v = velocity();
-		m_inertia = 0.1f * m_inertia + 1.0f + m_old_pressure / (v.length2() + 1.0f);
+		const Vec2 v(velocity());
+		m_inertia = 1.0f + 0.1f * m_inertia + m_old_pressure / (v.length2() + 1.0f);
 
 		// Air friction
-		m_acceleration += v * -30.0f;
+		m_acceleration -= v * 30.0f;
 
 		// This prevent from too much compression
-		float anti_pressure_factor = std::pow(1.0f / m_inertia, 3);
+		const float anti_pressure_factor(std::pow(1.0f / m_inertia, 3));
 
 		// Verlet integration
 		m_old_position = m_position;
-		/*Vec2 delta_pos = _moving * v + (_acceleration * anti_pressure_factor) * dt * dt;
-		if (delta_pos.length2() > _radius*_radius)
-		{
-			delta_pos.normalize();
-			delta_pos = delta_pos * _radius;
-		}*/
-
 		m_position += v + (m_acceleration * anti_pressure_factor) * dt * dt;
 
 		// Reset temporary values
 		m_acceleration = {};
-
 		m_old_pressure = std::min(m_pressure, m_radius);
 		m_pressure = 0.0f;
 	}

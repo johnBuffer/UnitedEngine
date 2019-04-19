@@ -18,9 +18,8 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
-	//window.setFramerateLimit(60);
 
-	float body_radius = 25;
+	const float body_radius(25.0f);
 	up::Vec2 world_dimension(2000.0f, 2000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 2000.0f });
 
