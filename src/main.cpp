@@ -22,7 +22,7 @@ int main()
 
 	float body_radius = 25;
 	up::Vec2 world_dimension(2000.0f, 2000.0f);
-	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
+	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 2000.0f });
 
 	DisplayManager displayManager(window, solver);
 	displayManager.setZoom(1.0f);

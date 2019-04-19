@@ -78,7 +78,7 @@ namespace up
 
 	private:
 		Vec2 m_gravity;
-		Grid m_grid;
+		Grid<8U> m_grid;
 
 		const Vec2 m_dimension;
 		const uint32_t m_precision;
@@ -131,7 +131,7 @@ namespace up
 		{
 			const float col_radius = 2.0f * m_body_radius;
 
-			CellRegister&  cr = m_grid.nonEmpty();
+			auto&  cr = m_grid.nonEmpty();
 			for (auto* gc : cr)
 			{
 				const uint8_t size = gc->items_count;

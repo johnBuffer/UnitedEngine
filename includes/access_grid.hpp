@@ -36,6 +36,7 @@ struct GridCell
 	uint8_t items_count;
 };
 
+template<uint8_t N>
 struct CellRegister
 {
 	CellRegister() :
@@ -47,7 +48,7 @@ struct CellRegister
 		cells.resize(max_size);
 	}
 
-	void add(GridCell<8>& gc)
+	void add(GridCell<N>& gc)
 	{
 		cells[size++] = &gc;
 	}
@@ -61,20 +62,21 @@ struct CellRegister
 		size = 0;
 	}
 
-	std::vector<GridCell<8>*>::iterator begin()
+	typename std::vector<GridCell<N>*>::iterator begin()
 	{
 		return cells.begin();
 	}
 
-	std::vector<GridCell<8>*>::iterator end()
+	typename std::vector<GridCell<N>*>::iterator end()
 	{
 		return cells.begin() + size;
 	}
 
 	uint32_t size;
-	std::vector<GridCell<8>*> cells;
+	std::vector<GridCell<N>*> cells;
 };
 
+template<uint8_t N>
 class Grid
 {
 public:
@@ -90,7 +92,7 @@ public:
 
 	void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 	{
-		GridCell<8>& current_cell = m_cells[grid_cell_x + m_width *grid_cell_y];
+		GridCell<N>& current_cell = m_cells[grid_cell_x + m_width*grid_cell_y];
 		if (!current_cell.items_count)
 			m_non_empty.add(current_cell);
 
@@ -141,7 +143,7 @@ public:
 		}
 	}
 
-	CellRegister& nonEmpty()
+	CellRegister<N>& nonEmpty()
 	{
 		return m_non_empty;
 	}
@@ -156,8 +158,8 @@ private:
 	uint32_t m_width;
 	uint32_t m_height;
 
-	std::vector<GridCell<8>> m_cells;
-	CellRegister m_non_empty;
+	std::vector<GridCell<N>> m_cells;
+	CellRegister<N> m_non_empty;
 };
 
 }
