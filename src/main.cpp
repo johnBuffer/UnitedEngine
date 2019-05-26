@@ -19,7 +19,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
-	const float body_radius(32.0f);
+	const float body_radius(8.0f);
 	up::Vec2 world_dimension(2000.0f, 2000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 1000.0f });
 
@@ -35,6 +35,10 @@ int main()
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
 
+	up::BodyPtr b1 = solver.addBody(up::Vec2(500, 500));
+	up::BodyPtr b2 = solver.addBody(up::Vec2(1000, 700));
+	up::SolidSegment segment(b1, b2);
+
 	while (window.isOpen())
 	{
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
@@ -49,9 +53,9 @@ int main()
 		window.clear(sf::Color::White);
 		
 		displayManager.draw(false);
-		displayManager.drawPoint(world_coord);
-		
-
+		//displayManager.drawPoint(world_coord);
+		displayManager.drawSegment(segment);
+		displayManager.drawPoint(segment.getPointProjection(world_coord));
 		
 		window.display();
 	}

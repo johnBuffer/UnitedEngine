@@ -209,8 +209,18 @@ void DisplayManager::drawPoint(const up::Vec2& point)
 	m_window.draw(c);
 }
 
-void DisplayManager::drawSegment(const up::Segment& segment)
+void DisplayManager::drawSegment(const up::SolidSegment& segment)
 {
+	const up::Vec2& b1p(segment.getBody1Position());
+	const up::Vec2& b2p(segment.getBody2Position());
+	
+	const up::Vec2 wb1p(worldCoordToDisplayCoord(b1p));
+	const up::Vec2 wb2p(worldCoordToDisplayCoord(b2p));
 
+	sf::VertexArray va(sf::Lines, 2);
+	va[0].position = sf::Vector2f(wb1p.x, wb1p.y);
+	va[1].position = sf::Vector2f(wb2p.x, wb2p.y);
+	
+	m_window.draw(va);
 }
 

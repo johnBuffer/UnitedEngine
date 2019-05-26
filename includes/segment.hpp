@@ -25,6 +25,16 @@ public:
 		return v;
 	}
 
+	const Vec2& getBody1Position() const
+	{
+		return m_constraint.body1->position();
+	}
+
+	const Vec2& getBody2Position() const
+	{
+		return m_constraint.body2->position();
+	}
+	
 	void update(float dt)
 	{
 		m_constraint.update(dt);
@@ -47,7 +57,7 @@ public:
 		const float length(segment_vec.length());
 		segment_vec.normalize();
 		// B1 to P
-		const Vec2& b1p(m_constraint.body1->position());
+		const Vec2& b1p(getBody1Position());
 		Vec2 point_vec(point - b1p);
 		// Projection of B1->P on B1->B2
 		float dot(segment_vec.dot(point_vec));

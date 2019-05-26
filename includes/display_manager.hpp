@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include "united_solver.hpp"
 #include "event_manager.hpp"
+#include "segment.hpp"
 
 class DisplayManager
 {
@@ -39,7 +40,7 @@ public:
 	void drawConstraints(const fva::SwapArray<up::Constraint>& constraints);
 
 	void drawPoint(const up::Vec2& point);
-	void drawSegment(const up::Segment& segment);
+	void drawSegment(const up::SolidSegment& segment);
 
 	bool emit;
 	float render_time;
