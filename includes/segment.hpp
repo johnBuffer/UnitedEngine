@@ -12,6 +12,19 @@ public:
 		m_constraint(b1, b2)
 	{}
 
+	const Vec2 getVec() const
+	{
+		return (m_constraint.body2->position - m_constraint.body1->position);
+	}
+
+	const Vec2 getDir() const
+	{
+		Vec2 v(getVec());
+		v.normalize();
+
+		return v;
+	}
+
 	void update(float dt)
 	{
 		m_constraint.update(dt);
@@ -23,7 +36,16 @@ public:
 		const float l2((pt - m_constraint.position2()).length());
 
 		if (l1 < l2) return m_constraint.position1();
+
 		return m_constraint.position2();
+	}
+
+	const Vec2& getPointProjection(const Vec2& point) const
+	{
+		Vec2 v(getVec());
+		const float length(v.length());
+
+
 	}
 
 	void solveCollisions(SolidSegment& segment)
@@ -50,9 +72,7 @@ public:
 				const Vec2 v = inter.point - inter_pt1;
 				m_constraint.body1->move(v);
 				m_constraint.body2->move(v);
-			}
-			else
-			{
+			} else {
 				const Vec2 v = inter.point - inter_pt2;
 				segment.m_constraint.body1->move(v);
 				segment.m_constraint.body2->move(v);

@@ -19,12 +19,13 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
-	const float body_radius(25.0f);
+	const float body_radius(32.0f);
 	up::Vec2 world_dimension(2000.0f, 2000.0f);
-	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 2000.0f });
+	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 1000.0f });
 
 	DisplayManager displayManager(window, solver);
-	displayManager.setZoom(1.0f);
+	displayManager.setZoom(0.7f);
+	displayManager.setOffset(0.5f * world_dimension);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -38,10 +39,9 @@ int main()
 	{
 		displayManager.processEvents();
 
-		if (displayManager.emit)
-			solver.addBody({ 50.0f + rand()%2, 50.0f });
-
-		solver.update(0.016f);
+		if (displayManager.emit) {
+			solver.update(0.016f);
+		}
 
 		window.clear(sf::Color::White);
 		displayManager.draw(false);

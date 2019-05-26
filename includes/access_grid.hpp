@@ -24,11 +24,9 @@ struct GridCell
 
 	void clear()
 	{
-		for (uint8_t i(N); i--;)
-		{
+		for (uint8_t i(N); i--;) {
 			items[i] = nullptr;
 		}
-
 		items_count = 0;
 	}
 
@@ -97,6 +95,23 @@ public:
 			m_non_empty.add(current_cell);
 
 		current_cell.add(b);
+	}
+
+	GridCell<N>* getColliders(const Body& b)
+	{
+		uint32_t body_x = uint32_t(b.position().x + 1.0f);
+		uint32_t body_y = uint32_t(b.position().y + 1.0f);
+
+		uint32_t grid_x = body_x / m_cell_size + 5;
+		uint32_t grid_y = body_y / m_cell_size + 5;
+
+		if (grid_x > 0 && grid_x < m_width &&
+			grid_y > 0 && grid_y < m_height)
+		{
+			return &m_cells[grid_x + m_width * grid_y];
+		}
+
+		return nullptr;
 	}
 
 	void addBody(Body& b)

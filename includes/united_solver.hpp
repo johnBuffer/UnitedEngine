@@ -25,6 +25,9 @@ public:
 	{
 		m_collision_solver.update(m_bodies, dt);
 		m_constraint_solver.update(m_constraints, m_anchors, dt);
+		for (Body& b : m_bodies) {
+			b.update(dt);
+		}
 	}
 
 	BodyPtr addBody(const Vec2& position)

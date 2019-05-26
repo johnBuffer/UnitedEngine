@@ -61,16 +61,22 @@ public:
 
 		Vec2 dir = body1->position() - body2->position();
 		float current_length = dir.length();
-		float delta_length = m_strength*0.5f*(m_length - current_length);
+		float delta_length = 0.5f*(m_length - current_length);
 		
 		if (std::fabs(2.0f*delta_length) > m_resistance) {
 			m_broken = true;
 		}
 		else
 		{
+			const float force(m_strength*delta_length);
+
 			dir.normalize();
-			body1->moveHard( delta_length*dir);
-			body2->moveHard((-delta_length)*dir);
+			body1->move((+force)*dir);
+			body2->move((-force)*dir);
+
+			/*const int32_t p(4);
+			body1->accelerate((+std::pow(force, p))*dir);
+			body2->accelerate((-std::pow(force, p))*dir);*/
 		}
 	}
 
@@ -161,7 +167,7 @@ public:
 		}
 		else
 		{
-			m_body->moveHard(0.5f*dir);
+			m_body->move(0.5f*dir);
 		}
 	}
 
@@ -192,6 +198,8 @@ public:
 
 	void update(ConstraintsRef constraints, AnchorsRef anchors, float dt)
 	{
+		const uint32_t precision(16);
+		for (uint32_t i(precision); i--;)
 		for (Constraint& c : constraints)
 		{
 			c.update(dt);
