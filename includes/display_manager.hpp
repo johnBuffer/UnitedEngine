@@ -37,7 +37,9 @@ public:
 
 	// Draw constraints
 	void drawConstraints(const fva::SwapArray<up::Constraint>& constraints);
-	void drawMuscles(const fva::SwapArray<up::Muscle>& constraints);
+
+	void drawPoint(const up::Vec2& point);
+	void drawSegment(const up::Segment& segment);
 
 	bool emit;
 	float render_time;

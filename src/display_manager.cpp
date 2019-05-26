@@ -196,3 +196,21 @@ void DisplayManager::drawConstraints(const fva::SwapArray<up::Constraint>& const
 	m_window.draw(cva);
 }
 
+void DisplayManager::drawPoint(const up::Vec2& point)
+{
+	const up::Vec2 p(worldCoordToDisplayCoord(point));
+
+	const float radius(4.0f);
+	sf::CircleShape c(radius);
+	c.setOrigin(radius, radius);
+	c.setPosition(p.x, p.y);
+	c.setFillColor(sf::Color::Red);
+
+	m_window.draw(c);
+}
+
+void DisplayManager::drawSegment(const up::Segment& segment)
+{
+
+}
+

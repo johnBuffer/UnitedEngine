@@ -37,6 +37,9 @@ int main()
 
 	while (window.isOpen())
 	{
+		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
+		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
+
 		displayManager.processEvents();
 
 		if (displayManager.emit) {
@@ -44,7 +47,12 @@ int main()
 		}
 
 		window.clear(sf::Color::White);
+		
 		displayManager.draw(false);
+		displayManager.drawPoint(world_coord);
+		
+
+		
 		window.display();
 	}
 
