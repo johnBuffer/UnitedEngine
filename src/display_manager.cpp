@@ -110,6 +110,11 @@ void DisplayManager::draw(bool showInner)
 
 	drawConstraints(m_solver.getConstraints());
 
+	const auto& segments(m_solver.getSegments());
+	for (const up::SolidSegment& s : segments) {
+		drawSegment(s);
+	}
+
 	render_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 }
 
@@ -154,6 +159,7 @@ void DisplayManager::processEvents()
 			m_mouse_button_pressed = false;
 			if (m_clic_position == mousePosition)
 			{
+				clic = true;
 			}
 
 			break;

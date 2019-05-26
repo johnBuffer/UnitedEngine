@@ -6,6 +6,7 @@
 #include "access_grid.hpp"
 #include <SFML/System/Clock.hpp>
 #include <iostream>
+#include "segment.hpp"
 
 namespace up
 {
@@ -17,12 +18,12 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
 			m_dimension(dimension),
 			m_gravity(gravity),
-			m_precision(1),
+			m_precision(2),
 			m_body_radius(body_radius),
 			m_grid(dimension, 2 * uint32_t(body_radius))
 		{}
 
-		void update(fva::SwapArray<Body>& bodies, float dt)
+		void update(fva::SwapArray<Body>& bodies, fva::SwapArray<SolidSegment>& segments, float dt)
 		{
 			applyGravity(bodies);
 			sf::Clock clock;
@@ -36,6 +37,8 @@ namespace up
 			}
 
 			m_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
+
+			solveBodySegment(segments, bodies);
 
 			solveBoundaryCollisions(bodies);
 		}
@@ -60,8 +63,6 @@ namespace up
 		const Vec2 m_dimension;
 		const uint32_t m_precision;
 		const float m_body_radius;
-
-		std::list<Body*> m_fasts;
 
 		void applyGravity(fva::SwapArray<Body>& bodies)
 		{
@@ -170,5 +171,18 @@ namespace up
 
 			return false;
 		}
-	};
+	
+		void solveBodySegment(fva::SwapArray<SolidSegment>& segments, fva::SwapArray<Body>& bodies)
+		{
+			for (SolidSegment& s : segments) {
+				for (Body& b : bodies) {
+					s.collideWith(b);
+				}
+			}
+		}
+
+};
 }
+
+
+

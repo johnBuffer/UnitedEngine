@@ -5,6 +5,7 @@
 
 #include "collision_solver.hpp"
 #include "constraint_solver.hpp"
+#include "segment.hpp"
 
 namespace up
 {
@@ -23,8 +24,13 @@ public:
 
 	void update(float dt)
 	{
-		m_collision_solver.update(m_bodies, dt);
+		m_collision_solver.update(m_bodies, m_segmets, dt);
 		m_constraint_solver.update(m_constraints, m_anchors, dt);
+
+		for (SolidSegment& s : m_segmets) {
+			s.update(dt);
+		}
+
 		for (Body& b : m_bodies) {
 			b.update(dt);
 		}
@@ -46,6 +52,11 @@ public:
 		return m_constraints.add(body1, body2, length, resistance);
 	}
 
+	SolidSegmentPtr addSolidSegment(BodyPtr& body1, BodyPtr& body2)
+	{
+		return m_segmets.add(body1, body2);
+	}
+
 	const Vec2& getDimension() const
 	{
 		return m_dimension;
@@ -61,6 +72,11 @@ public:
 		return m_constraints;
 	}
 
+	const fva::SwapArray<SolidSegment>& getSegments() const
+	{
+		return m_segmets;
+	}
+
 private:
 	const Vec2 m_dimension;
 	CollisionSolver m_collision_solver;
@@ -69,6 +85,7 @@ private:
 	fva::SwapArray<Body> m_bodies;
 	fva::SwapArray<Constraint> m_constraints;
 	fva::SwapArray<Anchor> m_anchors;
+	fva::SwapArray<SolidSegment> m_segmets;
 };
 
 }

@@ -42,6 +42,7 @@ public:
 	void drawPoint(const up::Vec2& point);
 	void drawSegment(const up::SolidSegment& segment);
 
+	bool clic;
 	bool emit;
 	float render_time;
 
