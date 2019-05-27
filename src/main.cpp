@@ -46,15 +46,15 @@ int main()
 	settings.antialiasingLevel = 4;
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
-	window.setVerticalSyncEnabled(true);
+	window.setVerticalSyncEnabled(false);
 
-	const float body_radius(20.0f);
+	const float body_radius(8.0f);
 	up::Vec2 world_dimension(2000.0f, 2000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 1000.0f });
 
 	DisplayManager displayManager(window, solver);
 	displayManager.setZoom(0.5f);
-	displayManager.setOffset(0.5f * world_dimension);
+	displayManager.setOffset(0.65f * world_dimension);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -74,9 +74,10 @@ int main()
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
 
-		if (clock.getElapsedTime().asSeconds() > 0.5f) {
-			//solver.addBody(up::Vec2(rand() % 2000, 50));
-			clock.restart();
+		if (displayManager.emit) {
+			for (uint8_t i(5); i--;) {
+				solver.addBody(up::Vec2(rand() % 2000, 1000+rand() % 100));
+			}
 		}
 
 		displayManager.processEvents();
@@ -88,7 +89,7 @@ int main()
 			//addBox(solver, world_coord.x, world_coord.y, 100.0f, 100.0f);
 		}
 
-		if (displayManager.emit) {
+		if (1 || displayManager.emit) {
 			solver.update(0.016f);
 		}
 

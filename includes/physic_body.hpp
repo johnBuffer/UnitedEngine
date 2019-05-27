@@ -2,6 +2,7 @@
 
 #include "vec2.hpp"
 #include <algorithm>
+#include <iostream>
 
 namespace up
 {
@@ -41,11 +42,11 @@ public:
 		m_acceleration -= v * 30.0f;
 
 		// This prevent from too much compression
-		const float anti_pressure_factor(1.0f + std::pow(1.0f / m_inertia, 3));
+		const float anti_pressure_factor(std::pow(1.0f / m_inertia, 3));
 
 		// Verlet integration
 		m_old_position = m_position;
-		m_position += float(m_moving)*( v + (m_acceleration * anti_pressure_factor) * dt * dt);
+		m_position += v + m_acceleration * anti_pressure_factor * dt * dt;
 
 		// Reset temporary values
 		m_acceleration = {};
