@@ -34,14 +34,13 @@ namespace up
 					m_grid.addBody(b);
 				}
 				solveInterbodiesCollisions(dt);
+
+				solveBodySegment(segments, bodies);
+				solveSegmentSegment(segments);
+				solveBoundaryCollisions(bodies);
 			}
 
 			m_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
-
-			solveBodySegment(segments, bodies);
-			solveSegmentSegment(segments);
-
-			solveBoundaryCollisions(bodies);
 		}
 
 		const Vec2& dimension() const
@@ -127,11 +126,10 @@ namespace up
 
 		bool solveBodiesCollision(Body& b1, Body& b2)
 		{
-			const float col_radius(2.0f * m_body_radius);
+			const float col_radius(b1.radius() + b2.radius());
 			Vec2 col_axe(b1.position() - b2.position());
 			if (col_axe.length2() < col_radius*col_radius)
 			{
-
 				const float m1(b1.mass());
 				const float m2(b2.mass());
 				const float mass_factor_tot(1.0f / (m1 + m2));

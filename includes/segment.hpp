@@ -86,10 +86,10 @@ public:
 		const float distance(col_vec.length());
 
 		const float body_radius(body.radius());
-		if (distance < 2 * body_radius) {
+		if (distance < 2 * body_radius && distance > 0.001f) {
 			const float delta(0.5f * (2.0f * body_radius - distance));
-
 			const float distFromB1((segment_closest_point - getBody1Position()).length());
+
 			col_vec.normalize();
 			body.move(delta * col_vec);
 			moveAt(-delta * col_vec, distFromB1);
@@ -151,9 +151,10 @@ public:
 				min_vec = &col_vec_4;
 			}
 
-			if (min_dist > 0.001f) {
-				segment.move(0.5f * (*min_vec));
-				move(-0.5f * (*min_vec));
+			if (min_dist > 0.01f) {
+				const float fact(0.25f);
+				segment.move(fact * (*min_vec));
+				this->move(-fact * (*min_vec));
 			}
 		}
 	}
