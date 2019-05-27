@@ -46,6 +46,11 @@ public:
 		return &(this->operator*());
 	}
 
+	bool operator==(const Handle<T>& h) const
+	{
+		return m_index == h.m_index && m_source == h.m_source;
+	}
+
 	uint32_t index() const
 	{
 		return m_index;

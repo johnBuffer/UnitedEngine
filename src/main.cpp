@@ -11,7 +11,7 @@
 
 void addBox(up::UnitedSolver& solver, float x, float y, float w, float h)
 {
-	const float radius(8.0f);
+	const float radius(12.0f);
 	up::BodyPtr b1 = solver.addBody(up::Vec2(x, y), radius);
 	up::BodyPtr b2 = solver.addBody(up::Vec2(x + w, y), radius);
 	up::BodyPtr b3 = solver.addBody(up::Vec2(x + w, y + h), radius);
@@ -53,7 +53,7 @@ int main()
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 1000.0f });
 
 	DisplayManager displayManager(window, solver);
-	displayManager.setZoom(0.7f);
+	displayManager.setZoom(0.5f);
 	displayManager.setOffset(0.5f * world_dimension);
 
 	sf::Font font;
@@ -66,7 +66,7 @@ int main()
 
 	sf::Clock clock;
 
-	addSolidSegment(solver, 500, 1000, 1000, 1200, false);
+	//addSolidSegment(solver, 500, 1000, 1000, 1200, false);
 	//addSolidSegment(solver, 500, 100, 700, 100);
 
 	while (window.isOpen())
@@ -84,8 +84,8 @@ int main()
 		if (displayManager.clic) {
 			displayManager.clic = false;
 			//addSolidSegment(solver, world_coord.x, world_coord.y, world_coord.x, world_coord.y + 100.0f);
-			//addBox(solver, world_coord.x, world_coord.y, 50.0f + rand()%200, 50.0f + rand() % 200);
-			addBox(solver, world_coord.x, world_coord.y, 100.0f, 100.0f);
+			addBox(solver, world_coord.x, world_coord.y, 50.0f + rand()%200, 50.0f + rand() % 200);
+			//addBox(solver, world_coord.x, world_coord.y, 100.0f, 100.0f);
 		}
 
 		if (displayManager.emit) {

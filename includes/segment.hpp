@@ -52,6 +52,18 @@ public:
 		return m_constraint.position2();
 	}
 
+	Body& getClosestBodyTo(const Vec2& pt)
+	{
+		const float l1((pt - m_constraint.position1()).length());
+		const float l2((pt - m_constraint.position2()).length());
+
+		if (l1 < l2) {
+			return *m_constraint.body1;
+		}
+
+		return *m_constraint.body2;
+	}
+
 	const Vec2 getPointProjection(const Vec2& point) const
 	{
 		// B1 to B2
@@ -84,12 +96,10 @@ public:
 
 		Vec2 col_vec(body_position - segment_closest_point);
 		const float distance(col_vec.length());
-
 		const float body_radius(body.radius());
 		if (distance < 2 * body_radius && distance > 0.001f) {
 			const float delta(0.5f * (2.0f * body_radius - distance));
 			const float distFromB1((segment_closest_point - getBody1Position()).length());
-
 			col_vec.normalize();
 			body.move(delta * col_vec);
 			moveAt(-delta * col_vec, distFromB1);
@@ -111,8 +121,20 @@ public:
 		m_constraint.body2->move(v);
 	}
 
+	bool isLinkedTo(const SolidSegment& segment) const
+	{
+		return segment.m_constraint.body1 == m_constraint.body1
+			|| segment.m_constraint.body1 == m_constraint.body2
+			|| segment.m_constraint.body2 == m_constraint.body1
+			|| segment.m_constraint.body2 == m_constraint.body2;
+	}
+
 	void collideWith(SolidSegment& segment)
 	{
+		if (isLinkedTo(segment)) {
+			return;
+		}
+
 		const Vec2& p1 = m_constraint.position1();
 		const Vec2& p2 = m_constraint.position2();
 		const Vec2& p3 = segment.m_constraint.position1();
@@ -120,42 +142,12 @@ public:
 
 		const Intersection inter(p1, p2, p3, p4);
 		if (inter.cross) {
-			// Projections of segment on this
-			const Vec2 proj1(getPointProjection(p3));
-			const Vec2 proj2(getPointProjection(p4));
-			// Projection of this on segment
-			const Vec2 proj3(segment.getPointProjection(p1));
-			const Vec2 proj4(segment.getPointProjection(p2));
-			// Find min dist
-			const Vec2 col_vec_1(proj1 - p3);
-			const Vec2 col_vec_2(proj2 - p4);
-			const Vec2 col_vec_3(p1 - proj3);
-			const Vec2 col_vec_4(p2 - proj4);
-			const float dist1(col_vec_1.length());
-			float min_dist = dist1;
-			const Vec2* min_vec(&col_vec_1);
+			const Vec2& cross_point(inter.point);
+			Body& closest_point_this(getClosestBodyTo(cross_point));
 
-			const float dist2(col_vec_2.length());
-			if (dist2 < min_dist) {
-				min_dist = dist2;
-				min_vec = &col_vec_2;
-			}
-			const float dist3(col_vec_3.length());
-			if (dist3 < min_dist) {
-				min_dist = dist3;
-				min_vec = &col_vec_3;
-			}
-			const float dist4(col_vec_4.length());
-			if (dist4 < min_dist) {
-				min_dist = dist4;
-				min_vec = &col_vec_4;
-			}
-
-			if (min_dist > 0.01f) {
-				const float fact(0.25f);
-				segment.move(fact * (*min_vec));
-				this->move(-fact * (*min_vec));
-			}
+			move(-1.0f* closest_point_this.velocity());
+			const float dist((cross_point - segment.getBody1Position()).length());
+			segment.moveAt(1.0f * closest_point_this.velocity(), dist);
 		}
 	}
 
