@@ -39,6 +39,7 @@ namespace up
 			m_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 
 			solveBodySegment(segments, bodies);
+			solveSegmentSegment(segments);
 
 			solveBoundaryCollisions(bodies);
 		}
@@ -181,7 +182,17 @@ namespace up
 			}
 		}
 
-};
+		void solveSegmentSegment(fva::SwapArray<SolidSegment>& segments)
+		{
+			for (SolidSegment& s1 : segments) {
+				for (SolidSegment& s2 : segments) {
+					if (&s1 != &s2) {
+						s1.collideWith(s2);
+					}
+				}
+			}
+		}
+	};
 }
 
 

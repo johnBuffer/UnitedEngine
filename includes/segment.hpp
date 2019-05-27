@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constraint.hpp"
+#include <iostream>
 
 namespace up
 {
@@ -104,34 +105,55 @@ public:
 		m_constraint.body2->move(ratio1 * v);
 	}
 
-	void solveCollisions(SolidSegment& segment)
+	void move(const Vec2& v)
+	{
+		m_constraint.body1->move(v);
+		m_constraint.body2->move(v);
+	}
+
+	void collideWith(SolidSegment& segment)
 	{
 		const Vec2& p1 = m_constraint.position1();
 		const Vec2& p2 = m_constraint.position2();
-		const Vec2& p3 = segment.m_constraint.position2();
+		const Vec2& p3 = segment.m_constraint.position1();
 		const Vec2& p4 = segment.m_constraint.position2();
 
 		const Intersection inter(p1, p2, p3, p4);
-		Vec2 inter_pt1;
-		Vec2 inter_pt2;
+		if (inter.cross) {
+			// Projections of segment on this
+			const Vec2 proj1(getPointProjection(p3));
+			const Vec2 proj2(getPointProjection(p4));
+			// Projection of this on segment
+			const Vec2 proj3(segment.getPointProjection(p1));
+			const Vec2 proj4(segment.getPointProjection(p2));
+			// Find min dist
+			const Vec2 col_vec_1(proj1 - p3);
+			const Vec2 col_vec_2(proj2 - p4);
+			const Vec2 col_vec_3(p1 - proj3);
+			const Vec2 col_vec_4(p2 - proj4);
+			const float dist1(col_vec_1.length());
+			float min_dist = dist1;
+			const Vec2* min_vec(&col_vec_1);
 
-		if (inter.cross)
-		{
-			Vec2 inter_pt1 = this->getClosestPointTo(inter.point);
-			Vec2 inter_pt2 = segment.getClosestPointTo(inter.point);
+			const float dist2(col_vec_2.length());
+			if (dist2 < min_dist) {
+				min_dist = dist2;
+				min_vec = &col_vec_2;
+			}
+			const float dist3(col_vec_3.length());
+			if (dist3 < min_dist) {
+				min_dist = dist3;
+				min_vec = &col_vec_3;
+			}
+			const float dist4(col_vec_4.length());
+			if (dist4 < min_dist) {
+				min_dist = dist4;
+				min_vec = &col_vec_4;
+			}
 
-			float d1((inter.point - inter_pt1).length());
-			float d2((inter.point - inter_pt2).length());
-
-			if (d1 < d2)
-			{
-				const Vec2 v = inter.point - inter_pt1;
-				m_constraint.body1->move(v);
-				m_constraint.body2->move(v);
-			} else {
-				const Vec2 v = inter.point - inter_pt2;
-				segment.m_constraint.body1->move(v);
-				segment.m_constraint.body2->move(v);
+			if (min_dist > 0.001f) {
+				segment.move(0.5f * (*min_vec));
+				move(-0.5f * (*min_vec));
 			}
 		}
 	}

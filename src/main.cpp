@@ -20,8 +20,19 @@ void addBox(up::UnitedSolver& solver, float x, float y, float w, float h)
 	up::SolidSegmentPtr segment2 = solver.addSolidSegment(b2, b3);
 	up::SolidSegmentPtr segment3 = solver.addSolidSegment(b3, b4);
 	up::SolidSegmentPtr segment4 = solver.addSolidSegment(b4, b1);
+
 	solver.addConstraint(b1, b3);
 	solver.addConstraint(b2, b4);
+}
+
+void addSolidSegment(up::UnitedSolver& solver, float x1, float y1, float x2, float y2, bool moving = true)
+{
+	up::BodyPtr b1 = solver.addBody(up::Vec2(x1, y1));
+	b1->moving(moving);
+	up::BodyPtr b2 = solver.addBody(up::Vec2(x2, y2));
+	b2->moving(moving);
+
+	up::SolidSegmentPtr segment1 = solver.addSolidSegment(b1, b2);
 }
 
 int main()
@@ -34,7 +45,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
-	const float body_radius(24.0f);
+	const float body_radius(8.0f);
 	up::Vec2 world_dimension(2000.0f, 2000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 1000.0f });
 
@@ -50,26 +61,28 @@ int main()
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
 
-	up::BodyPtr b1 = solver.addBody(up::Vec2(300, 1300));
-	b1->moving(false);
-
 	sf::Clock clock;
+
+	addSolidSegment(solver, 500, 1000, 1000, 1200, false);
+	//addSolidSegment(solver, 500, 100, 700, 100);
 
 	while (window.isOpen())
 	{
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
 
-		if (clock.getElapsedTime().asSeconds() > 0.5f) {
+		/*if (clock.getElapsedTime().asSeconds() > 0.5f) {
 			solver.addBody(up::Vec2(rand() % 2000, 50));
 			clock.restart();
-		}
+		}*/
 
 		displayManager.processEvents();
 
 		if (displayManager.clic) {
 			displayManager.clic = false;
+			//addSolidSegment(solver, world_coord.x, world_coord.y, world_coord.x, world_coord.y + 100.0f);
 			addBox(solver, world_coord.x, world_coord.y, 50.0f + rand()%200, 50.0f + rand() % 200);
+			//addBox(solver, world_coord.x, world_coord.y, 100.0f, 100.0f);
 		}
 
 		if (displayManager.emit) {
