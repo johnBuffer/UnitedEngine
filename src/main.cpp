@@ -69,15 +69,19 @@ int main()
 	//addSolidSegment(solver, 500, 1000, 1000, 1200, false);
 	//addSolidSegment(solver, 500, 100, 700, 100);
 
+	uint32_t bodies(0);
+
 	while (window.isOpen())
 	{
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
 
-		if (displayManager.emit) {
+		if (displayManager.emit && bodies < 18730) {
 			for (uint8_t i(5); i--;) {
 				solver.addBody(up::Vec2(rand() % 2000, 1000+rand() % 100));
 			}
+
+			bodies += 5;
 		}
 
 		displayManager.processEvents();
@@ -96,6 +100,23 @@ int main()
 		window.clear(sf::Color::White);
 		
 		displayManager.draw(false);
+
+		sf::RectangleShape rec(sf::Vector2f(400, 150));
+		rec.setPosition(10, 10);
+		rec.setFillColor(sf::Color::Black);
+		window.draw(rec);
+
+		text.setString("Objects: " + to_string(bodies));
+		text.setPosition(20, 20);
+		window.draw(text);
+
+		text.setString("Grid time : " + round(solver.getGridTime(), 2) + " ms");
+		text.setPosition(20, 45);
+		window.draw(text);
+
+		text.setString("Collision time : " + round(solver.getCollisionTime(), 2) + " ms");
+		text.setPosition(20, 70);
+		window.draw(text);
 		
 		window.display();
 	}

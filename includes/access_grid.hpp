@@ -106,8 +106,7 @@ public:
 		uint32_t grid_y = body_y / m_cell_size + 5;
 
 		if (grid_x > 0 && grid_x < m_width &&
-			grid_y > 0 && grid_y < m_height)
-		{
+			grid_y > 0 && grid_y < m_height) {
 			return &m_cells[grid_x + m_width * grid_y];
 		}
 
@@ -128,30 +127,21 @@ public:
 		uint32_t in_cell_x = body_x % m_cell_size;
 		uint32_t in_cell_y = body_y % m_cell_size;
 
-		if (in_cell_x > mid_grid)
-		{
+		if (in_cell_x > mid_grid) {
 			addToCell(grid_x + 1, grid_y, b);
-			if (in_cell_y > mid_grid)
-			{
+			if (in_cell_y > mid_grid) {
 				addToCell(grid_x    , grid_y + 1, b);
 				addToCell(grid_x + 1, grid_y + 1, b);
-			}
-			else
-			{
+			} else {
 				addToCell(grid_x    , grid_y - 1, b);
 				addToCell(grid_x + 1, grid_y - 1, b);
 			}
-		}
-		else
-		{
+		} else {
 			addToCell(grid_x - 1, grid_y, b);
-			if (in_cell_y > mid_grid)
-			{
+			if (in_cell_y > mid_grid) {
 				addToCell(grid_x, grid_y + 1, b);
 				addToCell(grid_x - 1, grid_y + 1, b);
-			}
-			else
-			{
+			} else {
 				addToCell(grid_x, grid_y - 1, b);
 				addToCell(grid_x - 1, grid_y - 1, b);
 			}

@@ -18,7 +18,7 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
 			m_dimension(dimension),
 			m_gravity(gravity),
-			m_precision(4),
+			m_precision(1),
 			m_body_radius(body_radius),
 			m_grid(dimension, 2 * uint32_t(body_radius))
 		{}
@@ -27,23 +27,30 @@ namespace up
 		{
 			applyGravity(bodies);
 
-			sf::Clock clock;
+			collision_time = 0.0f;
+			grid_time = 0.0f;
+
+			sf::Clock clock_global, clock_local;
 			for (uint32_t i(0); i<m_precision; ++i) {
 				solveBoundaryCollisions(bodies);
 
+				clock_local.restart();
 				m_grid.clear();
 				for (Body& b : bodies) {
 					m_grid.addBody(b);
 				}
+				grid_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
+				clock_local.restart();
 				solveInterbodiesCollisions(dt);
+				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
 				solveBodySegment(segments, bodies);
 				/*solveSegmentSegment(segments);*/
-				solveBoundaryCollisions(bodies);
+				//solveBoundaryCollisions(bodies);
 			}
 
-			m_up_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
+			total_update_time = clock_global.getElapsedTime().asMicroseconds() * 0.001f;
 		}
 
 		const Vec2& dimension() const
@@ -57,7 +64,9 @@ namespace up
 		}
 
 		bool test_pressure = false;
-		float m_up_time;
+		float total_update_time;
+		float collision_time;
+		float grid_time;
 
 	private:
 		Vec2 m_gravity;

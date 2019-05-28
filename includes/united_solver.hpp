@@ -36,6 +36,21 @@ public:
 		}
 	}
 
+	float getGridTime() const
+	{
+		return m_collision_solver.grid_time;
+	}
+
+	float getCollisionTime() const
+	{
+		return m_collision_solver.collision_time;
+	}
+
+	float getUpdateTime() const
+	{
+		return m_collision_solver.total_update_time;
+	}
+
 	BodyPtr addBody(const Vec2& position)
 	{
 		return m_bodies.add(position, m_collision_solver.defaultBodyRadius());
