@@ -46,7 +46,7 @@ int main()
 	settings.antialiasingLevel = 4;
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
-	window.setVerticalSyncEnabled(false);
+	window.setVerticalSyncEnabled(true);
 
 	const float body_radius(8.0f);
 	up::Vec2 world_dimension(2000.0f, 2000.0f);

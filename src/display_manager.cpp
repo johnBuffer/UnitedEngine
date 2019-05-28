@@ -7,7 +7,8 @@ DisplayManager::DisplayManager(sf::RenderWindow& window, up::UnitedSolver& solve
 	m_event_manager(window),
 	m_zoom(1.0f),
 	m_offsetX(0.0f),
-	m_offsetY(0.0f)
+	m_offsetY(0.0f),
+	speed_mode(false)
 {
 	m_windowOffsetX = m_window.getSize().x * 0.5f;
     m_windowOffsetY = m_window.getSize().y * 0.5f;
@@ -140,6 +141,11 @@ void DisplayManager::processEvents()
 				m_offsetX = 0.0f;
 				m_offsetY = 0.0f;
 				m_zoom = 1.0f;
+			}
+			else if ((event.key.code == sf::Keyboard::E))
+			{
+				speed_mode = !speed_mode;
+				m_window.setVerticalSyncEnabled(!speed_mode);
 			}
 			break;
 		case sf::Event::MouseWheelMoved:

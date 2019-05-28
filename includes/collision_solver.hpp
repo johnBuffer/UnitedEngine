@@ -35,10 +35,11 @@ namespace up
 				solveBoundaryCollisions(bodies);
 
 				clock_local.restart();
-				m_grid.clear();
+				m_grid.addBodies(bodies.getData());
+				/*m_grid.clear();
 				for (Body& b : bodies) {
 					m_grid.addBody(b);
-				}
+				}*/
 				grid_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
 				clock_local.restart();
@@ -47,7 +48,8 @@ namespace up
 
 				solveBodySegment(segments, bodies);
 				/*solveSegmentSegment(segments);*/
-				//solveBoundaryCollisions(bodies);
+				
+				solveBoundaryCollisions(bodies);
 			}
 
 			total_update_time = clock_global.getElapsedTime().asMicroseconds() * 0.001f;
@@ -117,7 +119,7 @@ namespace up
 		{
 			auto&  cr = m_grid.nonEmpty();
 			for (auto* gc : cr) {
-				const uint8_t size(gc->items_count);
+				const uint8_t size(gc->item_count);
 				auto& bodies(gc->items);
 				for (uint8_t i(0); i < size; ++i) {
 					solveCellCollisions(i, size, bodies);

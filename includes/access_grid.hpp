@@ -3,23 +3,44 @@
 #include <array>
 #include <vector>
 #include "physic_body.hpp"
+#include <thread>
+#include <mutex>
+#include <windows.h>
 
 namespace up
 {
 
+// GridCell class
 template<int N>
 struct GridCell
 {
-	GridCell() :
-		items_count(0)
+	GridCell()
+		: item_count(0)
 	{}
+
+	GridCell(const GridCell<N>& cell)
+		: item_count(cell.item_count)
+		, items(cell.items)
+	{}
+
+	GridCell<N>& operator=(const GridCell<N>& cell)
+	{
+		item_count = cell.item_count;
+		items = cell.items;
+
+		return *this;
+	}
 
 	void add(Body& b)
 	{
-		if (items_count < N)
-		{
-			items[items_count++] = &b;
+		if (item_count < N) {
+			items[item_count++] = &b;
 		}
+	}
+
+	void add(SolidSegment& s)
+	{
+		segments.push_back(&s);
 	}
 
 	void clear()
@@ -27,13 +48,16 @@ struct GridCell
 		for (uint8_t i(N); i--;) {
 			items[i] = nullptr;
 		}
-		items_count = 0;
+		item_count = 0;
 	}
 
 	std::array<Body*, N> items;
-	uint8_t items_count;
+	std::vector<SolidSegment*> segments;
+	uint8_t item_count;
 };
 
+
+// CellRegister class
 template<uint8_t N>
 struct CellRegister
 {
@@ -53,8 +77,7 @@ struct CellRegister
 
 	void clear()
 	{
-		for (uint32_t i(0); i < size; ++i)
-		{
+		for (uint32_t i(0); i < size; ++i) {
 			cells[i]->clear();
 		}
 		size = 0;
@@ -74,6 +97,8 @@ struct CellRegister
 	std::vector<GridCell<N>*> cells;
 };
 
+
+// Grid class
 template<uint8_t N>
 class Grid
 {
@@ -91,7 +116,7 @@ public:
 	void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 	{
 		GridCell<N>& current_cell = m_cells[grid_cell_x + m_width*grid_cell_y];
-		if (!current_cell.items_count)
+		if (!current_cell.item_count)
 			m_non_empty.add(current_cell);
 
 		current_cell.add(b);
@@ -111,6 +136,14 @@ public:
 		}
 
 		return nullptr;
+	}
+
+	void addBodies(std::vector<up::Body>& bodies)
+	{
+		clear();
+		for (up::Body& b : bodies) {
+			addBody(b);
+		}
 	}
 
 	void addBody(Body& b)
@@ -165,6 +198,30 @@ private:
 
 	std::vector<GridCell<N>> m_cells;
 	CellRegister<N> m_non_empty;
+};
+
+template<uint8_t N>
+struct GridWorker
+{
+	GridWorker(Grid<N>& grid_, std::vector<up::Body>& data_, uint32_t id_, uint32_t step_)
+		: grid(grid_)
+		, data(data_)
+		, id(id_)
+		, step(step_)
+	{}
+
+	void job()
+	{
+		const uint32_t size(data.size());
+		for (uint32_t i(id); i < size; i += step) {
+			grid.addBody(data[i]);
+		}
+	}
+
+	Grid<N>& grid;
+	const uint32_t id;
+	const uint32_t step;
+	std::vector<up::Body>& data;
 };
 
 }

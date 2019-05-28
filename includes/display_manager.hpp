@@ -45,6 +45,7 @@ public:
 	bool clic;
 	bool emit;
 	float render_time;
+	bool speed_mode;
 
 	sfev::EventManager& eventManager()
 	{

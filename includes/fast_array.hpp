@@ -76,7 +76,6 @@ public:
 
 	template<typename... Args>
 	void add(Handle<T>& slot, Args&&...);
-
 	void remove(Handle<T>& handle);
 
 	T& operator[](uint32_t index);
@@ -90,6 +89,8 @@ public:
 
 	uint32_t size() const;
 	void     clear();
+
+	std::vector<T>& getData();
 
 private:
 	std::vector<T>        m_data;
@@ -212,6 +213,12 @@ inline void SwapArray<T>::clear()
 	m_index.clear();
 	m_reverse_index.clear();
 	m_free_indexes.clear();
+}
+
+template<class T>
+inline std::vector<T>& SwapArray<T>::getData()
+{
+	return m_data;
 }
 
 template<class T>
