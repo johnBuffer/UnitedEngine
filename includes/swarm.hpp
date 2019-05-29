@@ -28,6 +28,17 @@ public:
 		}
 	}
 
+	~Swarm()
+	{
+		for (Worker<T>& w : m_workers) {
+			w.stop();
+		}
+		notifyReady();
+		for (Worker<T>& w : m_workers) {
+			w.join();
+		}
+	}
+
 	void setJob(WorkerFunction<T> core)
 	{
 		for (Worker<T>& w : m_workers) {
@@ -116,6 +127,7 @@ struct Worker
 
 	void setJob(WorkerFunction<T> job)
 	{
+		running = true;
 		core = job;
 		worker_thread = std::thread(&Worker<T>::run, this);
 	}
@@ -125,6 +137,10 @@ struct Worker
 		while (true) {
 			swarm->waitReady();
 
+			if (!running) {
+				break;
+			}
+
 			core(*data, id, step);
 			
 			swarm->notifyWorkerDone(*this);
@@ -132,7 +148,19 @@ struct Worker
 		}
 	}
 
+	void stop()
+	{
+		running = false;
+		std::cout << "DONE" << std::endl;
+	}
+
+	void join()
+	{
+		worker_thread.join();
+	}
+
 private:
+	bool running;
 	uint32_t id, step;
 	Swarm<T>* swarm;
 	std::vector<T>* data;

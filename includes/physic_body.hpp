@@ -16,7 +16,7 @@ public:
 		m_old_position(pos),
 		m_acceleration(),
 		m_pressure(0.0f),
-		m_old_pressure(0.0f),
+		//m_old_pressure(0.0f),
 		m_radius(radius),
 		m_moving(1),
 		m_inertia(1.0f)
@@ -36,13 +36,13 @@ public:
 	void update(float dt)
 	{
 		const Vec2 v(velocity());
-		m_inertia = 1.0f + 0.1f * m_inertia + m_old_pressure / (v.length2() + 1.0f);
+		m_inertia = 1.0f + 0.1f * m_inertia + m_pressure / (v.length2() + 1.0f);
 
 		// Air friction
 		m_acceleration -= v * 30.0f;
 
 		// This prevent from too much compression
-		const float anti_pressure_factor(std::pow(1.0f / m_inertia, 4));
+		const float anti_pressure_factor(std::pow(1.0f / m_inertia, 8));
 
 		// Verlet integration
 		m_old_position = m_position;
@@ -50,7 +50,6 @@ public:
 
 		// Reset temporary values
 		m_acceleration = {};
-		m_old_pressure = std::min(m_pressure, m_radius);
 		m_pressure = 0.0f;
 	}
 
@@ -143,7 +142,7 @@ private:
 
 	float m_radius;
 	float m_pressure;
-	float m_old_pressure;
+	//float m_old_pressure;
 	float m_inertia;
 	uint8_t m_moving;
 };

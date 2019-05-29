@@ -76,11 +76,13 @@ int main()
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
 
-		if (displayManager.emit && bodies < 64000) {
-			uint32_t nb(10);
+		if (displayManager.emit && bodies < 100000) {
+			uint32_t nb(20);
 			for (uint8_t i(nb); i--;) {
 				up::BodyPtr b= solver.addBody(up::Vec2(2.0f*body_radius, 2000 + i*2*body_radius));
 				b->setVelocity(up::Vec2(4*body_radius, 0));
+
+				//up::BodyPtr b= solver.addBody(up::Vec2(rand()%16000, rand()%8000));
 			}
 
 			bodies += nb;
@@ -91,7 +93,7 @@ int main()
 		if (displayManager.clic) {
 			displayManager.clic = false;
 			//addSolidSegment(solver, world_coord.x, world_coord.y, world_coord.x, world_coord.y + 100.0f);
-			addBox(solver, world_coord.x, world_coord.y, 50.0f + rand()%200, 50.0f + rand() % 200);
+			//addBox(solver, world_coord.x, world_coord.y, 50.0f + rand()%200, 50.0f + rand() % 200);
 			//addBox(solver, world_coord.x, world_coord.y, 100.0f, 100.0f);
 		}
 

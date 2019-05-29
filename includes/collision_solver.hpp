@@ -9,6 +9,8 @@
 #include "segment.hpp"
 #include "swarm.hpp"
 
+constexpr uint32_t GRID_CELL_SIZE = 16U;
+
 namespace up
 {
 
@@ -22,9 +24,9 @@ namespace up
 			, m_precision(1)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
-			, m_swarm(m_grid.getCells(), 8)
+			, m_swarm(m_grid.getCells(), 6)
 		{
-			m_swarm.setJob([this](std::vector<GridCell<10U>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
+			m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
 		}
 
 		void update(fva::SwapArray<Body>& bodies, fva::SwapArray<SolidSegment>& segments, float dt)
@@ -74,8 +76,8 @@ namespace up
 
 	private:
 		Vec2 m_gravity;
-		Grid<10U> m_grid;
-		Swarm<GridCell<10U>> m_swarm;
+		Grid<GRID_CELL_SIZE> m_grid;
+		Swarm<GridCell<GRID_CELL_SIZE>> m_swarm;
 
 		const Vec2 m_dimension;
 		const uint32_t m_precision;
@@ -90,28 +92,21 @@ namespace up
 
 		void solveBoundaryCollisions(fva::SwapArray<Body>& bodies)
 		{
-			for (Body& b : bodies)
-			{
+			for (Body& b : bodies) {
 				Vec2 pos = b.position();
 				float radius = b.radius();
-				if (pos.x < radius)
-				{
+				if (pos.x < radius) {
 					b.moveHard({ radius - pos.x, 0.0f });
 					b.stop();
-				}
-				else if (pos.x > m_dimension.x - radius)
-				{
+				} else if (pos.x > m_dimension.x - radius) {
 					b.moveHard({ m_dimension.x - radius - pos.x, 0.0f });
 					b.stop();
 				}
 
-				if (pos.y < radius)
-				{
+				if (pos.y < radius) {
 					b.moveHard({ 0.0f, radius - pos.y });
 					b.stop();
-				}
-				else if (pos.y > m_dimension.y - radius)
-				{
+				} else if (pos.y > m_dimension.y - radius) {
 					b.moveHard({ 0.0f, m_dimension.y - radius - pos.y });
 					b.stop();
 				}
@@ -130,7 +125,7 @@ namespace up
 			}
 		}
 
-		void solveCollisionsSwarm(std::vector<GridCell<10U>>& data, uint32_t id, uint32_t step)
+		void solveCollisionsSwarm(std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step)
 		{
 			const std::size_t size(data.size());
 
@@ -140,7 +135,7 @@ namespace up
 
 			if (id%2) {
 				for (uint32_t i(start_index); i<end_index; ++i) {
-					GridCell<10U>& cell(data[i]);
+					GridCell<GRID_CELL_SIZE>& cell(data[i]);
 					const uint8_t size(cell.item_count);
 					auto& bodies(cell.items);
 					for (uint8_t i(0); i < size; ++i) {
@@ -151,7 +146,7 @@ namespace up
 			else
 			{
 				for (uint32_t i(end_index-1); i > start_index; --i) {
-					GridCell<10U>& cell(data[i]);
+					GridCell<GRID_CELL_SIZE>& cell(data[i]);
 					const uint8_t size(cell.item_count);
 					auto& bodies(cell.items);
 					for (uint8_t i(0); i < size; ++i) {
@@ -161,7 +156,7 @@ namespace up
 			}
 		}
 
-		void solveCellCollisions(uint32_t index, uint32_t size, std::array<up::Body*, 10U>& bodies)
+		void solveCellCollisions(uint32_t index, uint32_t size, std::array<up::Body*, GRID_CELL_SIZE>& bodies)
 		{
 			Body& b1(*bodies[index]);
 			for (uint8_t i(index + 1); i < size; ++i) {
@@ -178,17 +173,25 @@ namespace up
 			Vec2 col_axe(b1.position() - b2.position());
 			if (col_axe.length2() < col_radius*col_radius)
 			{
+				const Vec2 v1(b1.velocity());
+				const Vec2 v2(b2.velocity());
+				const Vec2 delta_v(v1 - v2);
+
 				const float m1(b1.mass());
 				const float m2(b2.mass());
 				const float mass_factor_tot(1.0f / (m1 + m2));
 				const float mass_factor_1(m1 * mass_factor_tot);
 				const float mass_factor_2(m2 * mass_factor_tot);
-				const float delta_col(0.35f * (col_radius - col_axe.length()));
+				const float delta_col(0.5f * (col_radius - col_axe.length()));
 
 				col_axe.normalize();
 				b1.move(col_axe*(+delta_col * mass_factor_2));
 				b2.move(col_axe*(-delta_col * mass_factor_1));
-				
+
+				const float cohesion(0.02f);
+				b1.setVelocity(-cohesion*delta_v);
+				b2.setVelocity( cohesion*delta_v);
+
 				b1.addPressure(delta_col * prec_fact);
 				b2.addPressure(delta_col * prec_fact);
 			}
