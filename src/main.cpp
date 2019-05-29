@@ -49,7 +49,7 @@ int main()
 	window.setVerticalSyncEnabled(true);
 
 	const float body_radius(8.0f);
-	up::Vec2 world_dimension(20000.0f, 20000.0f);
+	up::Vec2 world_dimension(2000.0f, 20000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 2000.0f });
 
 	DisplayManager displayManager(window, solver);
@@ -78,7 +78,7 @@ int main()
 
 		if (displayManager.emit && bodies < 71900) {
 			for (uint8_t i(50); i--;) {
-				solver.addBody(up::Vec2(rand() % 20000, 18000+rand() % 1000));
+				solver.addBody(up::Vec2(rand() % 2000, 10000+rand() % 1000));
 			}
 
 			bodies += 50;

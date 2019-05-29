@@ -122,7 +122,7 @@ public:
 
 	void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 	{
-		GridCell<N>& current_cell = m_cells[grid_cell_x + m_width*grid_cell_y];
+		GridCell<N>& current_cell = m_cells[grid_cell_y + m_height*grid_cell_x];
 		if (!current_cell.item_count)
 			m_non_empty.add(current_cell);
 

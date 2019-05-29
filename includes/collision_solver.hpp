@@ -7,6 +7,7 @@
 #include <SFML/System/Clock.hpp>
 #include <iostream>
 #include "segment.hpp"
+#include "swarm.hpp"
 
 namespace up
 {
