@@ -5,6 +5,8 @@
 #include <vector>
 #include "condition.hpp"
 #include <functional>
+#include <atomic>
+#include <SFML/System/Clock.hpp>
 
 template<typename T>
 using WorkerFunction = std::function<void(std::vector<T>&, uint32_t, uint32_t)>;
@@ -39,30 +41,37 @@ public:
 		m_ready = true;
 		m_processed = false;
 		m_done_count = 0U;
+
 		m_waiting_ready.notify_all();
 	}
 
-	void notifyWorkerDone()
+	void notifyWorkerDone(Worker<T>& worker)
 	{
 		std::lock_guard<std::mutex> lk(m_mutex_processed);
 		++m_done_count;
+		//std::cout << "Done: " << m_done_count << "/" << m_count << std::endl;
 		if (m_done_count == m_count) {
 			m_processed = true;
-			m_ready = false;
 			m_waiting_processed.notify_all();
 		}
+	}
+
+	bool done() const
+	{
+		return m_processed;
 	}
 
 	void waitReady()
 	{
 		std::unique_lock<std::mutex> lk(m_mutex_ready);
-		m_waiting_ready.wait(lk, [this] {return m_ready;});
+		m_waiting_ready.wait(lk, [&]() {return m_ready; });
 	}
 
 	void waitProcessed()
 	{
 		std::unique_lock<std::mutex> lk(m_mutex_processed);
-		m_waiting_processed.wait(lk, [this] {return m_processed; });
+		m_waiting_processed.wait(lk, [&]() {return m_processed; });
+		m_ready = false;
 	}
 
 private:
@@ -115,10 +124,10 @@ struct Worker
 	{
 		while (true) {
 			swarm->waitReady();
-			
+
 			core(*data, id, step);
 			
-			swarm->notifyWorkerDone();
+			swarm->notifyWorkerDone(*this);
 			swarm->waitProcessed();
 		}
 	}

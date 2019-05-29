@@ -48,8 +48,8 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
-	const float body_radius(8.0f);
-	up::Vec2 world_dimension(4000.0f, 4000.0f);
+	const float body_radius(16.0f);
+	up::Vec2 world_dimension(16000.0f, 8000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
 	DisplayManager displayManager(window, solver);
@@ -77,11 +77,13 @@ int main()
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
 
 		if (displayManager.emit && bodies < 64000) {
-			for (uint8_t i(50); i--;) {
-				solver.addBody(up::Vec2(rand() % 4000, rand() % 2000));
+			uint32_t nb(10);
+			for (uint8_t i(nb); i--;) {
+				up::BodyPtr b= solver.addBody(up::Vec2(2.0f*body_radius, 2000 + i*2*body_radius));
+				b->setVelocity(up::Vec2(4*body_radius, 0));
 			}
 
-			bodies += 50;
+			bodies += nb;
 		}
 
 		displayManager.processEvents();

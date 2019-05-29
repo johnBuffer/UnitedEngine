@@ -19,7 +19,7 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, std::vector<Body>& bodies, const Vec2& gravity = Vec2(0.0f, 0.0f))
 			: m_dimension(dimension)
 			, m_gravity(gravity)
-			, m_precision(2)
+			, m_precision(1)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
 			, m_swarm(m_grid.getCells(), 8)
@@ -183,7 +183,7 @@ namespace up
 				const float mass_factor_tot(1.0f / (m1 + m2));
 				const float mass_factor_1(m1 * mass_factor_tot);
 				const float mass_factor_2(m2 * mass_factor_tot);
-				const float delta_col(0.5f * (col_radius - col_axe.length()));
+				const float delta_col(0.35f * (col_radius - col_axe.length()));
 
 				col_axe.normalize();
 				b1.move(col_axe*(+delta_col * mass_factor_2));
