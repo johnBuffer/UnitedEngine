@@ -49,8 +49,8 @@ int main()
 	window.setVerticalSyncEnabled(true);
 
 	const float body_radius(8.0f);
-	up::Vec2 world_dimension(2000.0f, 20000.0f);
-	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 2000.0f });
+	up::Vec2 world_dimension(4000.0f, 4000.0f);
+	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
 	DisplayManager displayManager(window, solver);
 	displayManager.setZoom(0.5f);
@@ -76,9 +76,9 @@ int main()
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
 
-		if (displayManager.emit && bodies < 71900) {
+		if (displayManager.emit && bodies < 64000) {
 			for (uint8_t i(50); i--;) {
-				solver.addBody(up::Vec2(rand() % 2000, 10000+rand() % 1000));
+				solver.addBody(up::Vec2(rand() % 4000, rand() % 2000));
 			}
 
 			bodies += 50;
