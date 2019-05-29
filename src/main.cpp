@@ -66,7 +66,7 @@ int main()
 
 	sf::Clock clock;
 
-	//addSolidSegment(solver, 500, 1000, 1000, 1200, false);
+	//addSolidSegment(solver, 8000, 8000, 8000, 3500, false);
 	//addSolidSegment(solver, 500, 100, 700, 100);
 
 	uint32_t bodies(0);
@@ -80,7 +80,7 @@ int main()
 			uint32_t nb(20);
 			for (uint8_t i(nb); i--;) {
 				up::BodyPtr b= solver.addBody(up::Vec2(2.0f*body_radius, 2000 + i*2*body_radius));
-				b->setVelocity(up::Vec2(4*body_radius, 0));
+				b->setVelocity(up::Vec2(5*body_radius, 0));
 
 				//up::BodyPtr b= solver.addBody(up::Vec2(rand()%16000, rand()%8000));
 			}
