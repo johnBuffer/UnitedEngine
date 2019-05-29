@@ -15,12 +15,12 @@ namespace up
 	{
 	public:
 		CollisionSolver() = default;
-		CollisionSolver(const Vec2& dimension, float body_radius, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
+		CollisionSolver(const Vec2& dimension, float body_radius, std::vector<Body>& bodies, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
 			m_dimension(dimension),
 			m_gravity(gravity),
 			m_precision(1),
 			m_body_radius(body_radius),
-			m_grid(dimension, 2 * uint32_t(body_radius))
+			m_grid(dimension, 2 * uint32_t(body_radius), bodies)
 		{}
 
 		void update(fva::SwapArray<Body>& bodies, fva::SwapArray<SolidSegment>& segments, float dt)
@@ -36,10 +36,6 @@ namespace up
 
 				clock_local.restart();
 				m_grid.addBodies(bodies.getData());
-				/*m_grid.clear();
-				for (Body& b : bodies) {
-					m_grid.addBody(b);
-				}*/
 				grid_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
 				clock_local.restart();
@@ -47,7 +43,7 @@ namespace up
 				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
 				solveBodySegment(segments, bodies);
-				/*solveSegmentSegment(segments);*/
+				solveSegmentSegment(segments);
 				
 				solveBoundaryCollisions(bodies);
 			}

@@ -3,9 +3,10 @@
 #include <array>
 #include <vector>
 #include "physic_body.hpp"
+#include "segment.hpp"
 #include <thread>
-#include <mutex>
-#include <windows.h>
+#include "condition.hpp"
+
 
 namespace up
 {
@@ -98,16 +99,22 @@ struct CellRegister
 };
 
 
+template<uint8_t N>
+struct GridWorker;
+
+
 // Grid class
 template<uint8_t N>
 class Grid
 {
 public:
-	Grid(const Vec2& dimension, uint32_t cell_size) :
-		m_cell_size(cell_size),
-		m_width(uint32_t(dimension.x) / cell_size + 10),
-		m_height(uint32_t(dimension.y) / cell_size + 10),
-		m_non_empty()
+	Grid(const Vec2& dimension, uint32_t cell_size, std::vector<up::Body>& bodies)
+		: m_cell_size(cell_size)
+		, m_width(uint32_t(dimension.x) / cell_size + 10)
+		, m_height(uint32_t(dimension.y) / cell_size + 10)
+		, m_non_empty()
+		, m_condition1()
+		, m_worker1(*this, bodies, 0, 1, m_condition1)
 	{
 		m_non_empty.init(m_width * m_height);
 		m_cells.resize(m_width * m_height);
@@ -141,9 +148,8 @@ public:
 	void addBodies(std::vector<up::Body>& bodies)
 	{
 		clear();
-		for (up::Body& b : bodies) {
-			addBody(b);
-		}
+		m_condition1.notifyReady();
+		m_condition1.waitProcessed();
 	}
 
 	void addBody(Body& b)
@@ -198,23 +204,35 @@ private:
 
 	std::vector<GridCell<N>> m_cells;
 	CellRegister<N> m_non_empty;
+
+	Condition m_condition1;
+	//Condition m_condition2;
+	GridWorker<N> m_worker1;
+	//GridWorker<N> m_worker2;
 };
 
 template<uint8_t N>
 struct GridWorker
 {
-	GridWorker(Grid<N>& grid_, std::vector<up::Body>& data_, uint32_t id_, uint32_t step_)
+	GridWorker(Grid<N>& grid_, std::vector<up::Body>& data_, uint32_t id_, uint32_t step_, Condition& condition)
 		: grid(grid_)
 		, data(data_)
 		, id(id_)
 		, step(step_)
-	{}
+		, sync_condition(condition)
+	{
+		job_thread = std::thread(&GridWorker<10>::job, this);
+	}
 
 	void job()
 	{
-		const uint32_t size(data.size());
-		for (uint32_t i(id); i < size; i += step) {
-			grid.addBody(data[i]);
+		while (true) {
+			sync_condition.waitReady();
+			const uint32_t size(data.size());
+			for (uint32_t i(id); i < size; i += step) {
+				grid.addBody(data[i]);
+			}
+			sync_condition.notifyProcessed();
 		}
 	}
 
@@ -222,6 +240,12 @@ struct GridWorker
 	const uint32_t id;
 	const uint32_t step;
 	std::vector<up::Body>& data;
+
+	std::mutex mutex;
+	bool done;
+
+	Condition& sync_condition;
+	std::thread job_thread;
 };
 
 }

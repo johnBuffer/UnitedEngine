@@ -18,7 +18,7 @@ public:
 	UnitedSolver() = default;
 
 	UnitedSolver(const Vec2& dimension, float body_radius, const Vec2& gravity = Vec2(0.0f, 0.0f)) :
-		m_collision_solver(dimension, body_radius, gravity),
+		m_collision_solver(dimension, body_radius, m_bodies.getData(), gravity),
 		m_dimension(dimension)
 	{}
 
