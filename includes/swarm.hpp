@@ -23,6 +23,8 @@ public:
 		, m_idle_count(0U)
 		, m_done_count(0U)
 		, m_waiting_others(0U)
+		, m_mutex_processed()
+		, m_mutex_ready()
 	{
 		for (uint32_t i(0); i < count; ++i) {
 			m_workers.emplace_back(data, *this, i, m_count);
@@ -49,30 +51,25 @@ public:
 
 	void notifyReady()
 	{
-		{
-			while (m_waiting_others) {}
-			std::lock_guard<std::mutex> lk(m_mutex_ready);
-			m_ready = true;
-			m_processed = false;
-			m_others = false;
-			m_waiting_others = 0U;
-			m_done_count = 0U;
-		}
+		while (m_waiting_others) {}
+		
+		std::lock_guard<std::mutex> lg(m_mutex_ready);
+		m_ready = true;
+		m_processed = false;
+		m_others = false;
+		m_waiting_others = 0U;
+		m_done_count = 0U;
 
 		m_waiting_ready.notify_all();
 	}
 
 	void notifyWorkerDone()
 	{
-		m_mutex_ready.lock();
+		std::lock_guard<std::mutex> lg(m_mutex_ready);
 		++m_done_count;
-		std::cout << "Done " << m_done_count << " / " << m_count << std::endl;
 		if (m_done_count == m_count) {
 			m_processed = true;
-			m_mutex_ready.unlock();
-			m_waiting_ready.notify_one();
-		} else {
-			m_mutex_ready.unlock();
+			m_waiting_ready.notify_all();
 		}
 	}
 
@@ -84,9 +81,9 @@ public:
 
 	void waitOthers()
 	{
-		std::unique_lock<std::mutex> lk(m_mutex_ready);
+		std::unique_lock<std::mutex> lk(m_mutex_processed);
 		m_waiting_ready.wait(lk, [&]() {return m_others; });
-		std::cout << "Others OK" << std::endl;
+		//std::cout << "Others OK" << std::endl;
 		--m_waiting_others;
 	}
 
@@ -94,8 +91,8 @@ public:
 	{
 		std::unique_lock<std::mutex> lk(m_mutex_ready);
 		m_waiting_ready.wait(lk, [&]() {return m_processed; });
-
-		std::lock_guard<std::mutex> lg(m_mutex_ready);
+		//std::cout << "PROCESSED" << std::endl;
+		std::lock_guard<std::mutex> lg(m_mutex_processed);
 		m_ready = false;
 		m_others = true;
 		m_waiting_others = m_count;
