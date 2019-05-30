@@ -1,8 +1,9 @@
 #include "display_manager.hpp"
 #include <iostream>
 
-DisplayManager::DisplayManager(sf::RenderWindow& window, up::UnitedSolver& solver) :
+DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& window, up::UnitedSolver& solver) :
 	m_window(window),
+	m_target(target),
 	m_solver(solver),
 	m_event_manager(window),
 	m_zoom(1.0f),
@@ -51,7 +52,7 @@ void DisplayManager::draw(bool showInner)
 	rs_ground.transform.translate(m_windowOffsetX, m_windowOffsetY);
 	rs_ground.transform.scale(m_zoom, m_zoom);
 	rs_ground.transform.translate(-m_offsetX, -m_offsetY);
-    m_window.draw(ground, rs_ground);
+    m_target.draw(ground, rs_ground);
 
     // draw the guys
 	const fva::SwapArray<up::Body>& bodies_data = m_solver.getBodies();
@@ -107,7 +108,7 @@ void DisplayManager::draw(bool showInner)
 	rs.transform.scale(m_zoom, m_zoom);
 	rs.transform.translate(-m_offsetX, -m_offsetY);
 
-    m_window.draw(bodies, rs);
+    m_target.draw(bodies, rs);
 
 	drawConstraints(m_solver.getConstraints());
 
@@ -205,7 +206,7 @@ void DisplayManager::drawConstraints(const fva::SwapArray<up::Constraint>& const
 		++i;
 	}
 
-	m_window.draw(cva);
+	m_target.draw(cva);
 }
 
 void DisplayManager::drawPoint(const up::Vec2& point)
@@ -218,7 +219,7 @@ void DisplayManager::drawPoint(const up::Vec2& point)
 	c.setPosition(p.x, p.y);
 	c.setFillColor(sf::Color::Red);
 
-	m_window.draw(c);
+	m_target.draw(c);
 }
 
 void DisplayManager::drawSegment(const up::SolidSegment& segment)
@@ -233,6 +234,6 @@ void DisplayManager::drawSegment(const up::SolidSegment& segment)
 	va[0].position = sf::Vector2f(wb1p.x, wb1p.y);
 	va[1].position = sf::Vector2f(wb2p.x, wb2p.y);
 	
-	m_window.draw(va);
+	m_target.draw(va);
 }
 

@@ -42,7 +42,7 @@ public:
 		m_acceleration -= v * 30.0f;
 
 		// This prevent from too much compression
-		const float anti_pressure_factor(std::pow(1.0f / m_inertia, 4));
+		const float anti_pressure_factor(std::pow(1.0f / m_inertia, 2));
 
 		// Verlet integration
 		m_old_position = m_position;

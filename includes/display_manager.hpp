@@ -9,7 +9,7 @@
 class DisplayManager
 {
 public:
-    DisplayManager(sf::RenderWindow& window, up::UnitedSolver& collisionManager);
+    DisplayManager(sf::RenderTarget& window, sf::RenderWindow& ev_window, up::UnitedSolver& collisionManager);
 
     //offset mutators
     void setOffset(float x, float y) {m_offsetX=x; m_offsetY=y;};
@@ -54,7 +54,8 @@ public:
 
 private:
 	up::UnitedSolver& m_solver;
-    sf::RenderWindow& m_window;
+	sf::RenderTarget& m_target;
+	sf::RenderWindow& m_window;
     sf::Texture m_bodyTexture;
 
 	sfev::EventManager m_event_manager;

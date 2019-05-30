@@ -161,39 +161,47 @@ namespace up
 
 		void addBody(Body& b)
 		{
-			int32_t body_x = uint32_t(b.position().x) + 5;
-			int32_t body_y = uint32_t(b.position().y) + 5;
+			const float radius(b.radius());
+			const Vec2& position(b.position());
+			int32_t body_x = uint32_t(position.x);
+			int32_t body_y = uint32_t(position.y);
 
-			uint32_t grid_x = body_x / m_cell_size + 1;
-			uint32_t grid_y = body_y / m_cell_size + 1;
+			uint32_t grid_x = body_x / m_cell_size + 5;
+			uint32_t grid_y = body_y / m_cell_size + 5;
 			uint32_t mid_grid = m_cell_size / 2;
+
+			const float grid_left ((float(grid_x) - 5.0f)*m_cell_size);
+			const float grid_right((float(grid_x) - 5.0f + 1.0f)*m_cell_size);
+			const float grid_top  ((float(grid_x) - 5.0f)*m_cell_size);
+			const float grid_bot  ((float(grid_x) - 5.0f + 1.0f)*m_cell_size);
 
 			addToCell(grid_x, grid_y, b);
 
-			uint32_t in_cell_x = body_x % m_cell_size;
-			uint32_t in_cell_y = body_y % m_cell_size;
+			const float delta_top(position.y - grid_top);
+			const float delta_bot(grid_bot - position.y);
 
-			if (in_cell_x > mid_grid) {
-				addToCell(grid_x + 1, grid_y, b);
-				if (in_cell_y > mid_grid) {
-					addToCell(grid_x, grid_y + 1, b);
-					addToCell(grid_x + 1, grid_y + 1, b);
-				}
-				else {
-					addToCell(grid_x, grid_y - 1, b);
-					addToCell(grid_x + 1, grid_y - 1, b);
-				}
-			}
-			else {
+			if (position.x - grid_left < radius) {
 				addToCell(grid_x - 1, grid_y, b);
-				if (in_cell_y > mid_grid) {
-					addToCell(grid_x, grid_y + 1, b);
-					addToCell(grid_x - 1, grid_y + 1, b);
-				}
-				else {
-					addToCell(grid_x, grid_y - 1, b);
+				if (delta_top < radius) {
 					addToCell(grid_x - 1, grid_y - 1, b);
+					addToCell(grid_x, grid_y - 1, b);
+				} else if (delta_bot) {
+					addToCell(grid_x - 1, grid_y + 1, b);
+					addToCell(grid_x, grid_y + 1, b);
 				}
+			} else if (grid_right - position.x < radius) {
+				addToCell(grid_x + 1, grid_y, b);
+				if (delta_top < radius) {
+					addToCell(grid_x + 1, grid_y - 1, b);
+					addToCell(grid_x, grid_y - 1, b);
+				} else if (delta_bot < radius) {
+					addToCell(grid_x + 1, grid_y + 1, b);
+					addToCell(grid_x, grid_y + 1, b);
+				}
+			} else if (position.y - grid_top < radius) {
+				addToCell(grid_x, grid_y - 1, b);
+			} else if (grid_bot - position.y < radius) {
+				addToCell(grid_x, grid_y + 1, b);
 			}
 		}
 

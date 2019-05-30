@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "utils.hpp"
 #include "segment.hpp"
-
+#include "dynamic_blur.hpp"
 #include <iostream>
 
 void addBox(up::UnitedSolver& solver, float x, float y, float w, float h)
@@ -52,7 +52,10 @@ int main()
 	up::Vec2 world_dimension(16000.0f, 16000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
-	DisplayManager displayManager(window, solver);
+	sf::RenderTexture render_tex;
+	render_tex.create(win_width, win_height);
+
+	DisplayManager displayManager(render_tex, window, solver);
 	displayManager.setZoom(0.2f);
 	displayManager.setOffset(0.5f * world_dimension);
 
@@ -62,9 +65,10 @@ int main()
 	sf::Text text;
 	text.setFont(font);
 	text.setCharacterSize(20);
-	text.setFillColor(sf::Color::White);
+	text.setFillColor(sf::Color(250, 250, 250));
 
 	sf::Clock clock;
+	Blur blur(win_width, win_height, 0.5f);
 
 	//addSolidSegment(solver, 8000, 8000, 8000, 3500, false);
 	//addSolidSegment(solver, 500, 100, 700, 100);
@@ -75,6 +79,8 @@ int main()
 	{
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
+
+		clock.restart();
 
 		if (displayManager.emit && bodies < 100000) {
 			uint32_t nb(20);
@@ -101,19 +107,26 @@ int main()
 			solver.update(0.016f);
 		}
 
+		render_tex.clear(sf::Color::White);
 		window.clear(sf::Color::White);
 		
 		displayManager.draw(false);
 
+		render_tex.display();
+		window.draw(sf::Sprite(render_tex.getTexture()));
+		blur.setRegion(10, 10, 400, 150);
+		window.draw(blur.apply(render_tex.getTexture(), 3));
 		sf::RectangleShape rec(sf::Vector2f(400, 150));
 		rec.setPosition(10, 10);
-		rec.setFillColor(sf::Color::Black);
+		rec.setFillColor(sf::Color(50, 50, 50, 100));
 		window.draw(rec);
 
 		text.setString("Objects: " + to_string(bodies));
-		text.setPosition(20, 20);
+		text.setCharacterSize(28);
+		text.setPosition(20, 10);
 		window.draw(text);
 
+		text.setCharacterSize(20);
 		text.setString("Grid time : " + round(solver.getGridTime(), 2) + " ms");
 		text.setPosition(20, 45);
 		window.draw(text);
@@ -124,6 +137,10 @@ int main()
 
 		text.setString("Render time : " + round(displayManager.render_time, 2) + " ms");
 		text.setPosition(20, 95);
+		window.draw(text);
+
+		text.setString("Frame time : " + round(clock.getElapsedTime().asMilliseconds(), 2) + " ms");
+		text.setPosition(20, 120);
 		window.draw(text);
 		
 		window.display();
