@@ -20,7 +20,6 @@ class Swarm
 public:
 	Swarm(std::vector<T>& data, uint32_t count)
 		: m_count(count)
-		, m_ready(false)
 		, m_processed(false)
 	{
 		for (uint32_t i(0); i < count; ++i) {
@@ -48,11 +47,13 @@ public:
 
 	void notifyReady()
 	{
-		std::lock_guard<std::mutex> lk(m_mutex_ready);
-		m_ready = true;
-		m_processed = false;
-		m_done_count = 0U;
-
+		{
+			while (m_idle_count < m_count) { std::cout << "Waiting for threads" << std::endl; }
+			std::lock_guard<std::mutex> lk(m_mutex_ready);
+			m_processed = false;
+			m_done_count = 0U;
+			m_idle_count = 0U;
+		}
 		m_waiting_ready.notify_all();
 	}
 
@@ -62,8 +63,9 @@ public:
 		++m_done_count;
 		//std::cout << "Done: " << m_done_count << "/" << m_count << std::endl;
 		if (m_done_count == m_count) {
+			//std::cout << "DONE" << std::endl;
 			m_processed = true;
-			m_waiting_processed.notify_all();
+			//m_waiting_processed.notify_one();
 		}
 	}
 
@@ -75,19 +77,25 @@ public:
 	void waitReady()
 	{
 		std::unique_lock<std::mutex> lk(m_mutex_ready);
-		m_waiting_ready.wait(lk, [&]() {return m_ready; });
+		m_mutex.lock();
+		++m_idle_count;
+		//std::cout << m_idle_count << std::endl;
+		m_mutex.unlock();
+		m_waiting_ready.wait(lk);
 	}
 
 	void waitProcessed()
 	{
-		std::unique_lock<std::mutex> lk(m_mutex_processed);
-		m_waiting_processed.wait(lk, [&]() {return m_processed; });
-		m_ready = false;
+		while (!m_processed) {
+			//std::cout << m_processed << std::endl;
+		}
+		//std::cout << "PROCESSED" << std::endl;
 	}
 
 private:
-	bool m_ready, m_processed;
+	std::atomic<bool> m_processed;
 	uint32_t m_done_count;
+	uint32_t m_idle_count;
 
 	const uint32_t m_count;
 	std::vector<Worker<T>> m_workers;
@@ -96,6 +104,7 @@ private:
 	std::condition_variable m_waiting_processed;
 	std::mutex m_mutex_processed;
 	std::mutex m_mutex_ready;
+	std::mutex m_mutex;
 };
 
 
@@ -137,14 +146,10 @@ struct Worker
 		while (true) {
 			swarm->waitReady();
 
-			if (!running) {
-				break;
-			}
-
+			if (!running) { break; }
 			core(*data, id, step);
 			
 			swarm->notifyWorkerDone(*this);
-			swarm->waitProcessed();
 		}
 	}
 

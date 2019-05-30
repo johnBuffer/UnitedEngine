@@ -21,10 +21,10 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, std::vector<Body>& bodies, const Vec2& gravity = Vec2(0.0f, 0.0f))
 			: m_dimension(dimension)
 			, m_gravity(gravity)
-			, m_precision(1)
+			, m_precision(2)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
-			, m_swarm(m_grid.getCells(), 6)
+			, m_swarm(m_grid.getCells(), 12)
 		{
 			m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
 		}
@@ -85,8 +85,15 @@ namespace up
 
 		void applyGravity(fva::SwapArray<Body>& bodies)
 		{
+			const Vec2 p(8000, 8000);
+			const float force(900);
+
 			for (Body& b : bodies) {
 				b.accelerate(m_gravity);
+				/*Vec2 dir(p - b.position());
+				float length = dir.length();
+				dir.normalize();
+				b.accelerate(force * dir);*/
 			}
 		}
 
@@ -188,7 +195,7 @@ namespace up
 				b1.move(col_axe*(+delta_col * mass_factor_2));
 				b2.move(col_axe*(-delta_col * mass_factor_1));
 
-				const float cohesion(0.02f);
+				const float cohesion(0.015f);
 				b1.setVelocity(-cohesion*delta_v);
 				b2.setVelocity( cohesion*delta_v);
 

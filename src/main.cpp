@@ -49,12 +49,12 @@ int main()
 	window.setVerticalSyncEnabled(true);
 
 	const float body_radius(16.0f);
-	up::Vec2 world_dimension(16000.0f, 8000.0f);
+	up::Vec2 world_dimension(16000.0f, 16000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
 	DisplayManager displayManager(window, solver);
-	displayManager.setZoom(0.5f);
-	displayManager.setOffset(0.65f * world_dimension);
+	displayManager.setZoom(0.2f);
+	displayManager.setOffset(0.5f * world_dimension);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -79,8 +79,8 @@ int main()
 		if (displayManager.emit && bodies < 100000) {
 			uint32_t nb(20);
 			for (uint8_t i(nb); i--;) {
-				up::BodyPtr b= solver.addBody(up::Vec2(2.0f*body_radius, 2000 + i*2*body_radius));
-				b->setVelocity(up::Vec2(5*body_radius, 0));
+				up::BodyPtr b= solver.addBody(up::Vec2(2.0f*body_radius, 7000 + i*2*body_radius));
+				b->setVelocity(up::Vec2(2.5f*body_radius, 0));
 
 				//up::BodyPtr b= solver.addBody(up::Vec2(rand()%16000, rand()%8000));
 			}
@@ -120,6 +120,10 @@ int main()
 
 		text.setString("Collision time : " + round(solver.getCollisionTime(), 2) + " ms");
 		text.setPosition(20, 70);
+		window.draw(text);
+
+		text.setString("Render time : " + round(displayManager.render_time, 2) + " ms");
+		text.setPosition(20, 95);
 		window.draw(text);
 		
 		window.display();
