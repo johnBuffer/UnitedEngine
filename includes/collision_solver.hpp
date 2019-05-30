@@ -40,7 +40,6 @@ namespace up
 
 			clock_local.restart();
 			solveBoundaryCollisions(bodies);
-
 			m_grid.addBodies(bodies.getData());
 			grid_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
