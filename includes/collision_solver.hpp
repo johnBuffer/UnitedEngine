@@ -9,7 +9,7 @@
 #include "segment.hpp"
 #include "swarm.hpp"
 
-constexpr uint32_t GRID_CELL_SIZE = 20U;
+constexpr uint32_t GRID_CELL_SIZE = 10U;
 
 namespace up
 {
@@ -23,7 +23,7 @@ namespace up
 			, m_gravity(gravity)
 			, m_precision(1)
 			, m_body_radius(body_radius)
-			, m_grid(dimension, 4 * uint32_t(body_radius), bodies)
+			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
 			, m_swarm(m_grid.getCells(), 6)
 		{
 			m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
@@ -50,8 +50,8 @@ namespace up
 				m_swarm.waitProcessed();
 				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
-				solveBodySegment(segments, bodies);
-				solveSegmentSegment(segments);
+				//solveBodySegment(segments, bodies);
+				//solveSegmentSegment(segments);
 				
 				solveBoundaryCollisions(bodies);
 			}

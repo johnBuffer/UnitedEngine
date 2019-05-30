@@ -82,6 +82,11 @@ public:
 		return m_bodies;
 	}
 
+	std::vector<Body> getBodiesCopy()
+	{
+		return m_bodies.getData();
+	}
+
 	const fva::SwapArray<Constraint>& getConstraints() const
 	{
 		return m_constraints;
