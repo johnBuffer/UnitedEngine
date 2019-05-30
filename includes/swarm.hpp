@@ -20,7 +20,9 @@ class Swarm
 public:
 	Swarm(std::vector<T>& data, uint32_t count)
 		: m_count(count)
-		, m_processed(false)
+		, m_idle_count(0U)
+		, m_done_count(0U)
+		, m_waiting_others(0U)
 	{
 		for (uint32_t i(0); i < count; ++i) {
 			m_workers.emplace_back(data, *this, i, m_count);
@@ -48,54 +50,65 @@ public:
 	void notifyReady()
 	{
 		{
-			while (m_idle_count < m_count) { std::cout << "Waiting for threads" << std::endl; }
+			while (m_waiting_others) {}
 			std::lock_guard<std::mutex> lk(m_mutex_ready);
+			m_ready = true;
 			m_processed = false;
+			m_others = false;
+			m_waiting_others = 0U;
 			m_done_count = 0U;
-			m_idle_count = 0U;
 		}
+
 		m_waiting_ready.notify_all();
 	}
 
-	void notifyWorkerDone(Worker<T>& worker)
+	void notifyWorkerDone()
 	{
-		std::lock_guard<std::mutex> lk(m_mutex_processed);
+		m_mutex_ready.lock();
 		++m_done_count;
-		//std::cout << "Done: " << m_done_count << "/" << m_count << std::endl;
+		std::cout << "Done " << m_done_count << " / " << m_count << std::endl;
 		if (m_done_count == m_count) {
-			//std::cout << "DONE" << std::endl;
 			m_processed = true;
-			//m_waiting_processed.notify_one();
+			m_mutex_ready.unlock();
+			m_waiting_ready.notify_one();
+		} else {
+			m_mutex_ready.unlock();
 		}
-	}
-
-	bool done() const
-	{
-		return m_processed;
 	}
 
 	void waitReady()
 	{
 		std::unique_lock<std::mutex> lk(m_mutex_ready);
-		m_mutex.lock();
-		++m_idle_count;
-		//std::cout << m_idle_count << std::endl;
-		m_mutex.unlock();
-		m_waiting_ready.wait(lk);
+		m_waiting_ready.wait(lk, [&]() {return m_ready; });
+	}
+
+	void waitOthers()
+	{
+		std::unique_lock<std::mutex> lk(m_mutex_ready);
+		m_waiting_ready.wait(lk, [&]() {return m_others; });
+		std::cout << "Others OK" << std::endl;
+		--m_waiting_others;
 	}
 
 	void waitProcessed()
 	{
-		while (!m_processed) {
-			//std::cout << m_processed << std::endl;
-		}
-		//std::cout << "PROCESSED" << std::endl;
+		std::unique_lock<std::mutex> lk(m_mutex_ready);
+		m_waiting_ready.wait(lk, [&]() {return m_processed; });
+
+		std::lock_guard<std::mutex> lg(m_mutex_ready);
+		m_ready = false;
+		m_others = true;
+		m_waiting_others = m_count;
+		m_waiting_ready.notify_all();
 	}
 
 private:
-	std::atomic<bool> m_processed;
-	uint32_t m_done_count;
-	uint32_t m_idle_count;
+	bool m_ready;
+	bool m_processed;
+	bool m_others;
+	std::atomic<uint32_t> m_idle_count;
+	std::atomic<uint32_t> m_done_count;
+	std::atomic<uint32_t> m_waiting_others;
 
 	const uint32_t m_count;
 	std::vector<Worker<T>> m_workers;
@@ -104,7 +117,6 @@ private:
 	std::condition_variable m_waiting_processed;
 	std::mutex m_mutex_processed;
 	std::mutex m_mutex_ready;
-	std::mutex m_mutex;
 };
 
 
@@ -145,11 +157,10 @@ struct Worker
 	{
 		while (true) {
 			swarm->waitReady();
-
 			if (!running) { break; }
 			core(*data, id, step);
-			
-			swarm->notifyWorkerDone(*this);
+			swarm->notifyWorkerDone();
+			swarm->waitOthers();
 		}
 	}
 
