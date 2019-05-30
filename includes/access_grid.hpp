@@ -33,7 +33,6 @@ namespace up
 
 		void add(Body& b)
 		{
-			//std::lock_guard<std::mutex> lk(mutex);
 			if (item_count < N) {
 				items[item_count++] = &b;
 			}
@@ -42,6 +41,7 @@ namespace up
 		void add(SolidSegment& s)
 		{
 			segments.push_back(&s);
+			++segment_count;
 		}
 
 		void clear()
@@ -49,13 +49,17 @@ namespace up
 			for (uint8_t i(N); i--;) {
 				items[i] = nullptr;
 			}
+
+			segments.clear();
+
 			item_count = 0;
+			segment_count = 0;
 		}
 
 		std::array<Body*, N> items;
 		std::vector<SolidSegment*> segments;
 		uint8_t item_count;
-		//std::mutex mutex;
+		uint8_t segment_count;
 	};
 
 
@@ -74,7 +78,6 @@ namespace up
 
 		void add(GridCell<N>& gc)
 		{
-			//std::lock_guard<std::mutex> lk(mutex);
 			cells[size++] = &gc;
 		}
 
@@ -113,7 +116,7 @@ namespace up
 			, m_non_empty()
 			, m_swarm(bodies, 1)
 		{
-			m_non_empty.init(m_width * m_height);
+			//m_non_empty.init(m_width * m_height);
 			m_cells.resize(m_width * m_height);
 
 			m_swarm.setJob([this](std::vector<Body>& data, uint32_t id, uint32_t step) {addBodiesSwarm(data, id, step); });
@@ -122,10 +125,16 @@ namespace up
 		void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 		{
 			GridCell<N>& current_cell = m_cells[grid_cell_y + m_height * grid_cell_x];
-			if (!current_cell.item_count)
-				m_non_empty.add(current_cell);
+			/*if (!current_cell.item_count)
+				m_non_empty.add(current_cell);*/
 
 			current_cell.add(b);
+		}
+
+		void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, SolidSegment& s)
+		{
+			GridCell<N>& current_cell = m_cells[grid_cell_y + m_height * grid_cell_x];
+			current_cell.add(s);
 		}
 
 		GridCell<N>* getColliders(const Body& b)
@@ -155,25 +164,31 @@ namespace up
 		{
 			const std::size_t size(data.size());
 			for (std::size_t i(id); i < size; i += step) {
-				addBody(data[i]);
+				add(data[i]);
 			}
 		}
 
-		void addBody(Body& b)
+		void vec2ToGridCoord(const Vec2& v, uint32_t& grid_x, uint32_t& grid_y)
+		{
+			int32_t body_x = uint32_t(v.x);
+			int32_t body_y = uint32_t(v.y);
+
+			grid_x = body_x / m_cell_size + 5;
+			grid_y = body_y / m_cell_size + 5;
+		}
+
+		void add(Body& b)
 		{
 			const float radius(b.radius());
 			const Vec2& position(b.position());
-			int32_t body_x = uint32_t(position.x);
-			int32_t body_y = uint32_t(position.y);
+			
+			uint32_t grid_x, grid_y;
+			vec2ToGridCoord(position, grid_x, grid_y);
 
-			uint32_t grid_x = body_x / m_cell_size + 5;
-			uint32_t grid_y = body_y / m_cell_size + 5;
-			uint32_t mid_grid = m_cell_size / 2;
-
-			const float grid_left ((float(grid_x) - 5.0f)*m_cell_size);
+			const float grid_left((float(grid_x) - 5.0f)*m_cell_size);
 			const float grid_right((float(grid_x) - 5.0f + 1.0f)*m_cell_size);
-			const float grid_top  ((float(grid_x) - 5.0f)*m_cell_size);
-			const float grid_bot  ((float(grid_x) - 5.0f + 1.0f)*m_cell_size);
+			const float grid_top((float(grid_x) - 5.0f)*m_cell_size);
+			const float grid_bot((float(grid_x) - 5.0f + 1.0f)*m_cell_size);
 
 			addToCell(grid_x, grid_y, b);
 
@@ -205,6 +220,31 @@ namespace up
 			}
 		}
 
+		void add(SolidSegment& s)
+		{
+			const Vec2& start_position(s.getBody1Position());
+			const Vec2& end_position(s.getBody2Position());
+
+			const float delta_x = end_position.x - start_position.x;
+			const float delta_y = end_position.y - start_position.y;
+			const float delta_e = std::abs(delta_y / delta_x);
+			const float error = 0.0f;
+			const int32_t delta_y_sign = delta_y < 0.0f ? -1 : 1;
+
+			uint32_t x0, y0, x1, y1;
+			vec2ToGridCoord(start_position, x0, y0);
+			vec2ToGridCoord(end_position, x1, y1);
+			uint32_t y(y0);
+			for (int32_t x(x0); x <= x1; ++x) {
+				addToCell(x, y, s);
+				error += delta_e;
+				if (error >= 0.5f) {
+					y += delta_y_sign;
+					error -= 1.0;
+				}
+			}
+		}
+
 		CellRegister<N>& nonEmpty()
 		{
 			return m_non_empty;
@@ -212,7 +252,9 @@ namespace up
 
 		void clear()
 		{
-			m_non_empty.clear();
+			for (GridCell<N>& cell : m_cells) {
+				cell.clear();
+			}
 		}
 
 		std::vector<GridCell<N>>& getCells()
