@@ -8,6 +8,8 @@
 #include "segment.hpp"
 #include "dynamic_blur.hpp"
 #include <iostream>
+#include <transition.hpp>
+
 
 void addBox(up::UnitedSolver& solver, float x, float y, float w, float h)
 {
@@ -56,8 +58,6 @@ int main()
 	render_tex.create(win_width, win_height);
 
 	DisplayManager displayManager(render_tex, window, solver);
-	displayManager.setZoom(0.2f);
-	displayManager.setOffset(0.5f * world_dimension);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -67,12 +67,22 @@ int main()
 	text.setCharacterSize(20);
 	text.setFillColor(sf::Color(250, 250, 250));
 
-	sf::Clock clock;
+	sf::Clock clock, spawn_timer;
 	Blur blur(win_width, win_height, 0.5f);
 
 	//addSolidSegment(solver, 8000, 8000, 8000, 3500, false);
 	//addSolidSegment(solver, 500, 100, 700, 100);
 
+
+	trn::Transition<float> zoom(1.0f);
+	//zoom.setSpeed(3.0f);
+	trn::Transition<up::Vec2> offset(up::Vec2(200.0f, 15800));
+	//offset.setSpeed(3.0f);
+
+	bool double_flow(false);
+	uint32_t nb(1);
+	float delay(0.5f);
+	bool next(false);
 	uint32_t bodies(0);
 
 	while (window.isOpen())
@@ -82,16 +92,201 @@ int main()
 
 		clock.restart();
 
-		if (displayManager.emit && bodies < 100000) {
-			uint32_t nb(20);
-			for (uint8_t i(nb); i--;) {
-				up::BodyPtr b= solver.addBody(up::Vec2(2.0f*body_radius, 7000 + i*2*body_radius));
-				b->setVelocity(up::Vec2(2.5f*body_radius, 0));
+		if (displayManager.emit && bodies < 180000) {
+			
+			displayManager.setZoom(zoom);
+			displayManager.setOffset(offset);
 
-				//up::BodyPtr b= solver.addBody(up::Vec2(rand()%16000, rand()%8000));
+			if (spawn_timer.getElapsedTime().asSeconds() > delay) {
+				spawn_timer.restart();
+				for (uint8_t i(nb); i--;) {
+					if (bodies < 10) {
+						delay = 0.5f;
+						solver.addBody(up::Vec2(2.0f*body_radius + rand() % 2, 15900));
+					}
+					else if (!next && bodies == 10) {
+						next = true;
+						delay = 0.25f;
+						zoom = 0.9f;
+						offset = up::Vec2(400.0f, 15800.0f);
+					}
+					else if (next || bodies < 50) {
+						next = false;
+						solver.addBody(up::Vec2(2.0f*body_radius + rand() % 500, 15500));
+					}
+					else if (!next && bodies == 50) {
+						delay = 0.125f;
+						zoom = 0.8f;
+						offset = up::Vec2(500.0f, 15800.0f);
+						next = true;
+					}
+					else if (next || bodies < 100) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 15500));
+						b->setVelocity(up::Vec2(10.0f, 0.0f));
+					}
+					else if (!next && bodies == 100) {
+						delay = 0.1f;
+						nb = 2;
+						zoom = 0.75f;
+						offset = up::Vec2(600.0f, 15800.0f);
+						next = true;
+					}
+					else if (next || bodies < 200) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 15500 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(10.0f, 0.0f));
+					}
+					else if (!next && bodies == 200) {
+						delay = 0.1f;
+						nb = 4;
+						zoom = 0.6f;
+						offset = up::Vec2(800.0f, 15500.0f);
+						next = true;
+					}
+					else if (bodies < 400) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 15000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(10.0f, 0.0f));
+					}
+					else if (!next && bodies == 400) {
+						delay = 0.05f;
+						nb = 5;
+						zoom = 0.4f;
+						offset = up::Vec2(900.0f, 15200.0f);
+						next = true;
+					}
+					else if (bodies < 1000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 14500 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(15.0f, 0.0f));
+					}
+					else if (!next && bodies == 1000) {
+						delay = 0.05f;
+						nb = 8;
+						zoom = 0.3f;
+						offset = up::Vec2(1000.0f, 14800.0f);
+						next = true;
+					}
+					else if (bodies < 2000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 14000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(15.0f, 0.0f));
+					}
+					else if (!next && bodies == 2000) {
+						delay = 0.05f;
+						nb = 15;
+						zoom = 0.3f;
+						offset = up::Vec2(1600.0f, 14800.0f);
+						next = true;
+					}
+					else if (bodies < 4000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 14000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(15.0f, 0.0f));
+					}
+					else if (!next && bodies == 4010) {
+						delay = 0.04f;
+						nb = 16;
+						zoom = 0.2f;
+						offset = up::Vec2(2000.0f, 14800.0f);
+						next = true;
+					}
+					else if (bodies < 10000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 14000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(1.5f*body_radius, 0.0f));
+					}
+					else if (!next && bodies == 10010) {
+						delay = 0.02f;
+						nb = 17;
+						zoom = 0.1f;
+						offset = up::Vec2(4000.0f, 14800.0f);
+						next = true;
+					}
+					else if (bodies < 16000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 13000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(1.5f*body_radius, 0.0f));
+					}
+					else if (!next && bodies == 16011) {
+						delay = 0.01f;
+						nb = 20;
+						zoom = 0.1f;
+						offset = up::Vec2(4000.0f, 12000.0f);
+						next = true;
+					}
+					else if (bodies < 32000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 12000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(1.5f*body_radius, 0.0f));
+					}
+					else if (!next && bodies == 32011) {
+						delay = 0.00f;
+						nb = 20;
+						zoom = 0.07f;
+						offset = up::Vec2(6000.0f, 10000.0f);
+						next = true;
+					}
+					else if (bodies < 50000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 10000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(1.75f*body_radius, 0.0f));
+					}
+					else if (!next && bodies == 50011) {
+						delay = 0.00f;
+						nb = 40;
+						zoom = 0.055f;
+						offset = up::Vec2(6000.0f, 8000.0f);
+						next = true;
+					}
+					else if (bodies < 100000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 5000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(2.5f*body_radius, 0.0f));
+					}
+					else if (!next && bodies == 100019) {
+						delay = 0.00f;
+						nb = 40;
+						zoom = 0.055f;
+						offset = up::Vec2(8000.0f, 8000.0f);
+						next = true;
+						double_flow = true;
+					}
+					else if (bodies < 130000) {
+						next = false;
+						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 5000 - 2 * i*body_radius));
+						b->setVelocity(up::Vec2(2.5f*body_radius, 0.0f));
+
+						up::BodyPtr b1 = solver.addBody(up::Vec2(16000-2.0f*body_radius, 5000 - 2 * i*body_radius));
+						b1->setVelocity(up::Vec2(-2.5f*body_radius, 0.0f));
+					}
+					else if (!next && bodies == 130011) {
+						delay = 0.00f;
+						nb = 40;
+						offset = up::Vec2(8000.0f, 8000.0f);
+						next = true;
+						double_flow = false;
+					}
+					else if (bodies < 200000) {
+						next = false;
+						up::BodyPtr b1 = solver.addBody(up::Vec2(16000-2.0f*body_radius, 5000 - 2 * i*body_radius));
+						b1->setVelocity(up::Vec2(-2.5f*body_radius, 0.0f));
+					}
+					else {
+						std::cout << bodies << std::endl;
+						bodies = 20000000;
+					}
+				}
+
+				bodies += nb;
+				if (double_flow) {
+					bodies += nb;
+				}
 			}
-
-			bodies += nb;
+		}
+		else if (displayManager.emit) {
+			bodies = 180000;
 		}
 
 		displayManager.processEvents();
@@ -122,24 +317,20 @@ int main()
 		window.draw(rec);
 
 		text.setString("Objects: " + to_string(bodies));
-		text.setCharacterSize(28);
-		text.setPosition(20, 10);
+		text.setCharacterSize(36);
+		text.setPosition(25, 15);
 		window.draw(text);
 
 		text.setCharacterSize(20);
-		text.setString("Grid time : " + round(solver.getGridTime(), 2) + " ms");
-		text.setPosition(20, 45);
-		window.draw(text);
-
-		text.setString("Collision time : " + round(solver.getCollisionTime(), 2) + " ms");
+		text.setString("Physics time: " + round(solver.getCollisionTime() + solver.getGridTime(), 2) + " ms");
 		text.setPosition(20, 70);
 		window.draw(text);
 
-		text.setString("Render time : " + round(displayManager.render_time, 2) + " ms");
+		text.setString("Render time: " + round(displayManager.render_time, 2) + " ms");
 		text.setPosition(20, 95);
 		window.draw(text);
 
-		text.setString("Frame time : " + round(clock.getElapsedTime().asMilliseconds(), 2) + " ms");
+		text.setString("Frame time: " + round(clock.getElapsedTime().asMilliseconds(), 2) + " ms");
 		text.setPosition(20, 120);
 		window.draw(text);
 		

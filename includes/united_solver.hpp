@@ -82,6 +82,11 @@ public:
 		return m_bodies;
 	}
 
+	std::vector<Body>& getBodiesData()
+	{
+		return m_bodies.getData();
+	}
+
 	std::vector<Body> getBodiesCopy()
 	{
 		return m_bodies.getData();

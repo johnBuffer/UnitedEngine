@@ -73,7 +73,7 @@ namespace mtg
 		AccessGrid(const up::Vec2& dimension, uint32_t cell_size)
 			: m_body_count(0U)
 		{
-			const uint32_t cell_count(0U)
+			//const uint32_t cell_count(0U)
 			//for ()
 		}
 

@@ -10,6 +10,8 @@ DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& windo
 	m_offsetX(0.0f),
 	m_offsetY(0.0f),
 	speed_mode(false)
+	, m_swarm(solver.getBodiesData(), 8)
+	, m_va(sf::Quads, 0)
 {
 	m_windowOffsetX = m_window.getSize().x * 0.5f;
     m_windowOffsetY = m_window.getSize().y * 0.5f;
@@ -17,6 +19,8 @@ DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& windo
     m_bodyTexture.loadFromFile("circle.png");
 
 	m_show_pressure = false;
+
+	m_swarm.setJob([this](std::vector<up::Body>& data, uint32_t id, uint32_t step) {updateVertexArray(data, id, step); });
 }
 
 up::Vec2 DisplayManager::worldCoordToDisplayCoord(const up::Vec2& worldCoord)
@@ -57,50 +61,9 @@ void DisplayManager::draw(bool showInner)
     // draw the guys
 	const fva::SwapArray<up::Body>& bodies_data = m_solver.getBodies();
     int bodyCount = bodies_data.size();
-    sf::VertexArray bodies(sf::Quads, 4*bodyCount);
-	uint32_t i(0);
-    for (const up::Body& body : bodies_data)
-    {
-        float radius = body.radius()*1.0f;
-
-		const up::Vec2& position = body.position();
-
-		bodies[4 * i].position = sf::Vector2f(position.x - radius, position.y - radius);
-		bodies[4 * i + 1].position = sf::Vector2f(position.x + radius, position.y - radius);
-		bodies[4 * i + 2].position = sf::Vector2f(position.x + radius, position.y + radius);
-		bodies[4 * i + 3].position = sf::Vector2f(position.x - radius, position.y + radius);
-
-        bodies[4*i  ].texCoords = sf::Vector2f(0, 0);
-        bodies[4*i+1].texCoords = sf::Vector2f(512, 0);
-        bodies[4*i+2].texCoords = sf::Vector2f(512, 512);
-        bodies[4*i+3].texCoords = sf::Vector2f(0, 512);
-
-
-		if (!m_show_pressure)
-		{
-			const float pi = 3.1415926f;
-			float t = i / 1000.0f;
-			float r = sin(t);
-			float g = sin(t + 0.33f * 2 * pi);
-			float b = sin(t + 0.66f * 2 * pi);
-			sf::Color color(uint8_t(255*r*r), uint8_t(255*g*g), uint8_t(255*b*b));
-			bodies[4 * i].color = color;
-			bodies[4 * i + 1].color = color;
-			bodies[4 * i + 2].color = color;
-			bodies[4 * i + 3].color = color;
-		}
-		else
-		{
-			float pressure = std::min(body.mass()*5.0F, 255.0f);
-			sf::Color color(255, uint8_t(255 - pressure), uint8_t(255 - pressure));
-			bodies[4 * i].color = color;
-			bodies[4 * i + 1].color = color;
-			bodies[4 * i + 2].color = color;
-			bodies[4 * i + 3].color = color;
-		}
-
-		++i;
-	}
+	m_va.resize(4 * bodyCount);
+	m_swarm.notifyReady();
+	m_swarm.waitProcessed();
 
 	sf::RenderStates rs;
 	rs.texture = &m_bodyTexture;
@@ -108,7 +71,7 @@ void DisplayManager::draw(bool showInner)
 	rs.transform.scale(m_zoom, m_zoom);
 	rs.transform.translate(-m_offsetX, -m_offsetY);
 
-    m_target.draw(bodies, rs);
+    m_target.draw(m_va, rs);
 
 	drawConstraints(m_solver.getConstraints());
 
@@ -118,6 +81,57 @@ void DisplayManager::draw(bool showInner)
 	}
 
 	render_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
+}
+
+void DisplayManager::updateVertexArray(const std::vector<up::Body>& bodies, uint32_t id, uint32_t step)
+{
+	const uint32_t size(bodies.size());
+
+	if (!size) {
+		return;
+	}
+
+	uint32_t step_size(size / step);
+	uint32_t start_index(id * step_size);
+	uint32_t end_index(start_index + step_size);
+	if (id == step-1) {
+		end_index = size - 1;
+	}
+
+	for (uint32_t i(start_index); i<end_index; ++i) {
+		const up::Body& body(bodies[i]);
+		float radius = body.radius()*1.0f;
+		const up::Vec2& position = body.position();
+
+		m_va[4 * i].position = sf::Vector2f(position.x - radius, position.y - radius);
+		m_va[4 * i + 1].position = sf::Vector2f(position.x + radius, position.y - radius);
+		m_va[4 * i + 2].position = sf::Vector2f(position.x + radius, position.y + radius);
+		m_va[4 * i + 3].position = sf::Vector2f(position.x - radius, position.y + radius);
+
+		m_va[4 * i].texCoords = sf::Vector2f(0, 0);
+		m_va[4 * i + 1].texCoords = sf::Vector2f(512, 0);
+		m_va[4 * i + 2].texCoords = sf::Vector2f(512, 512);
+		m_va[4 * i + 3].texCoords = sf::Vector2f(0, 512);
+
+		const float pi = 3.1415926f;
+		float t = i / 10000.0f;
+		float r = sin(t);
+		float g = sin(t + 0.33f * 2 * pi);
+		float b = sin(t + 0.66f * 2 * pi);
+		sf::Color color(uint8_t(255 * r*r), uint8_t(255 * g*g), uint8_t(255 * b*b));
+		m_va[4 * i].color = color;
+		m_va[4 * i + 1].color = color;
+		m_va[4 * i + 2].color = color;
+		m_va[4 * i + 3].color = color;
+		/*} else {
+			float pressure = std::min(body.mass()*5.0F, 255.0f);
+			sf::Color color(255, uint8_t(255 - pressure), uint8_t(255 - pressure));
+			m_va[4 * i].color = color;
+			m_va[4 * i + 1].color = color;
+			m_va[4 * i + 2].color = color;
+			m_va[4 * i + 3].color = color;
+		}*/
+	}
 }
 
 void DisplayManager::processEvents()

@@ -24,7 +24,7 @@ namespace up
 			, m_precision(1)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
-			, m_swarm(m_grid.getCells(), 6)
+			, m_swarm(m_grid.getCells(), 8)
 		{
 			m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
 		}
@@ -45,10 +45,11 @@ namespace up
 
 			for (uint32_t i(0); i<m_precision; ++i) {
 				clock_local.restart();
+
 				m_swarm.notifyReady();
 				m_swarm.waitProcessed();
 				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
-
+				
 				//solveBodySegment(segments, bodies);
 				//solveSegmentSegment(segments);
 				
@@ -194,7 +195,7 @@ namespace up
 				b1.move(col_axe*(+delta_col * mass_factor_2));
 				b2.move(col_axe*(-delta_col * mass_factor_1));
 
-				const float cohesion(0.015f);
+				const float cohesion(1.0f);
 				b1.setVelocity(-cohesion*delta_v);
 				b2.setVelocity( cohesion*delta_v);
 

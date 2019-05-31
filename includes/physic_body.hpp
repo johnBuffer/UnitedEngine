@@ -82,7 +82,7 @@ public:
 	{
 		const Vec2 d(m_moving * delta);
 		m_position += d;
-		m_old_position += 0.1f * d;
+		//m_old_position += 0.1f * d;
 	}
 
 	void moveHard(const Vec2& delta)
