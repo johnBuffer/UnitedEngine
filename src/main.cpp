@@ -48,7 +48,7 @@ int main()
 	settings.antialiasingLevel = 4;
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
-	window.setVerticalSyncEnabled(true);
+	window.setVerticalSyncEnabled(false);
 
 	const float body_radius(16.0f);
 	up::Vec2 world_dimension(16000.0f, 16000.0f);
@@ -93,7 +93,7 @@ int main()
 		clock.restart();
 
 		if (displayManager.emit && bodies < 180000) {
-			
+
 			displayManager.setZoom(zoom);
 			displayManager.setOffset(offset);
 
@@ -258,7 +258,7 @@ int main()
 						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 5000 - 2 * i*body_radius));
 						b->setVelocity(up::Vec2(2.5f*body_radius, 0.0f));
 
-						up::BodyPtr b1 = solver.addBody(up::Vec2(16000-2.0f*body_radius, 5000 - 2 * i*body_radius));
+						up::BodyPtr b1 = solver.addBody(up::Vec2(16000 - 2.0f*body_radius, 5000 - 2 * i*body_radius));
 						b1->setVelocity(up::Vec2(-2.5f*body_radius, 0.0f));
 					}
 					else if (!next && bodies == 130011) {
@@ -270,7 +270,7 @@ int main()
 					}
 					else if (bodies < 200000) {
 						next = false;
-						up::BodyPtr b1 = solver.addBody(up::Vec2(16000-2.0f*body_radius, 5000 - 2 * i*body_radius));
+						up::BodyPtr b1 = solver.addBody(up::Vec2(16000 - 2.0f*body_radius, 5000 - 2 * i*body_radius));
 						b1->setVelocity(up::Vec2(-2.5f*body_radius, 0.0f));
 					}
 					else {
@@ -304,7 +304,7 @@ int main()
 
 		render_tex.clear(sf::Color::White);
 		window.clear(sf::Color::White);
-		
+
 		displayManager.draw(false);
 
 		render_tex.display();
@@ -333,7 +333,7 @@ int main()
 		text.setString("Frame time: " + round(clock.getElapsedTime().asMilliseconds(), 2) + " ms");
 		text.setPosition(20, 120);
 		window.draw(text);
-		
+
 		window.display();
 	}
 
