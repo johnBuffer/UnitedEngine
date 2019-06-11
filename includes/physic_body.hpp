@@ -39,7 +39,7 @@ public:
 		m_inertia = 1.0f + 0.1f * m_inertia + m_pressure / (v.length2() + 1.0f);
 
 		// Air friction
-		m_acceleration -= v * 16.0f;
+		m_acceleration -= v * 32.0f;
 
 		// This prevent from too much compression
 		const float anti_pressure_factor(std::pow(1.0f / m_inertia, 2));
