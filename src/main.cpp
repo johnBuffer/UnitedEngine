@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "utils.hpp"
 #include "segment.hpp"
-#include "dynamic_blur.hpp"
+#include <dynamic_blur.hpp>
 #include <iostream>
 #include <transition.hpp>
 

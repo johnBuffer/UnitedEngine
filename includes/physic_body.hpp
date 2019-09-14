@@ -19,7 +19,9 @@ public:
 		//m_old_pressure(0.0f),
 		m_radius(radius),
 		m_moving(1),
-		m_inertia(1.0f)
+		m_inertia(1.0f),
+		debug(false),
+		debug_colision(false)
 	{}
 	
 	Body& operator=(const Body& b)
@@ -134,6 +136,9 @@ public:
 	{
 		moveOld(-1.0f*v);
 	}
+
+	bool debug;
+	bool debug_colision;
 
 private:
 	Vec2 m_position;

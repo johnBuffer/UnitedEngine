@@ -200,11 +200,6 @@ void DisplayManager::processEvents()
 	}
 }
 
-up::Body* DisplayManager::getBodyAt(float x, float y)
-{
-	return nullptr;// m_collisionManager->getBodyAt(displayCoordToWorldCoord(up::Vec2(x, y)));
-}
-
 void DisplayManager::drawConstraints(const fva::SwapArray<up::Constraint>& constraints)
 {
 	sf::VertexArray cva(sf::Lines, constraints.size() * 2);

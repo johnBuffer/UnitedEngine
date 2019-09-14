@@ -69,6 +69,14 @@ namespace up
 			return m_body_radius;
 		}
 
+		up::BodyPtr getBodyAt(up::Vec2& position, fva::SwapArray<Body>& bodies)
+		{
+			for (up::Body& b : bodies) 
+			{
+				
+			}
+		}
+
 		bool test_pressure = false;
 		float total_update_time;
 		float collision_time;
