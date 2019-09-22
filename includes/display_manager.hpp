@@ -46,12 +46,18 @@ public:
 
 	bool clic;
 	bool emit;
+	bool update;
 	float render_time;
 	bool speed_mode;
 
 	sfev::EventManager& eventManager()
 	{
 		return m_event_manager;
+	}
+
+	const up::Vec2& getClicPosition() const
+	{
+		return up::Vec2(m_clic_position.x, m_clic_position.y);
 	}
 
 private:

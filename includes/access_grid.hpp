@@ -33,8 +33,16 @@ namespace up
 
 		void add(Body& b)
 		{
+			if (b.debug) {
+				debug = true;
+				for (int i(0); i < item_count; ++i) {
+					b.debug_colision = true;
+				}
+			}
+
 			if (item_count < N) {
 				items[item_count++] = &b;
+				b.debug_colision = debug;
 			}
 		}
 
@@ -54,12 +62,15 @@ namespace up
 
 			item_count = 0;
 			segment_count = 0;
+
+			debug = false;
 		}
 
 		std::array<Body*, N> items;
 		std::vector<SolidSegment*> segments;
 		uint8_t item_count;
 		uint8_t segment_count;
+		bool debug;
 	};
 
 

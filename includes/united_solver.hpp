@@ -102,6 +102,16 @@ public:
 		return m_segmets;
 	}
 
+	Body* getBodyAt(const up::Vec2& position)
+	{
+		return m_collision_solver.getBodyAt(position, m_bodies);
+	}
+
+	void resetDebug()
+	{
+		m_collision_solver.reset_debug(m_bodies);
+	}
+
 private:
 	const Vec2 m_dimension;
 	CollisionSolver m_collision_solver;

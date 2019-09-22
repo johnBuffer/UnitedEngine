@@ -23,8 +23,8 @@ namespace up
 			, m_gravity(gravity)
 			, m_precision(1)
 			, m_body_radius(body_radius)
-			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
-			, m_swarm(m_grid.getCells(), 8)
+			, m_grid(dimension, 8 * uint32_t(body_radius), bodies)
+			, m_swarm(m_grid.getCells(), 1)
 		{
 			m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
 		}
@@ -69,11 +69,24 @@ namespace up
 			return m_body_radius;
 		}
 
-		up::BodyPtr getBodyAt(up::Vec2& position, fva::SwapArray<Body>& bodies)
+		up::Body* getBodyAt(const up::Vec2& position, fva::SwapArray<Body>& bodies)
 		{
 			for (up::Body& b : bodies) 
 			{
-				
+				float dist = (position - b.position()).length();
+
+				if (dist < b.radius()) {
+					return &b;
+				}
+			}
+
+			return nullptr;
+		}
+
+		void reset_debug(fva::SwapArray<Body>& bodies)
+		{
+			for (Body& b : bodies) {
+				b.debug = false;
 			}
 		}
 
@@ -98,6 +111,7 @@ namespace up
 
 			for (Body& b : bodies) {
 				b.accelerate(m_gravity);
+				b.debug_colision = false;
 				/*Vec2 dir(p - b.position());
 				float length = dir.length();
 				dir.normalize();

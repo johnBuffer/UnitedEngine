@@ -73,7 +73,6 @@ int main()
 	//addSolidSegment(solver, 8000, 8000, 8000, 3500, false);
 	//addSolidSegment(solver, 500, 100, 700, 100);
 
-
 	trn::Transition<float> zoom(1.0f);
 	//zoom.setSpeed(3.0f);
 	trn::Transition<up::Vec2> offset(up::Vec2(200.0f, 15800));
@@ -93,203 +92,21 @@ int main()
 		clock.restart();
 
 		if (displayManager.emit && bodies < 180000) {
-
-			displayManager.setZoom(zoom);
-			displayManager.setOffset(offset);
-
-			if (spawn_timer.getElapsedTime().asSeconds() > delay) {
-				spawn_timer.restart();
-				for (uint8_t i(nb); i--;) {
-					if (bodies < 10) {
-						delay = 0.5f;
-						solver.addBody(up::Vec2(2.0f*body_radius + rand() % 2, 15900));
-					}
-					else if (!next && bodies == 10) {
-						next = true;
-						delay = 0.25f;
-						zoom = 0.9f;
-						offset = up::Vec2(400.0f, 15800.0f);
-					}
-					else if (next || bodies < 50) {
-						next = false;
-						solver.addBody(up::Vec2(2.0f*body_radius + rand() % 500, 15500));
-					}
-					else if (!next && bodies == 50) {
-						delay = 0.125f;
-						zoom = 0.8f;
-						offset = up::Vec2(500.0f, 15800.0f);
-						next = true;
-					}
-					else if (next || bodies < 100) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 15500));
-						b->setVelocity(up::Vec2(10.0f, 0.0f));
-					}
-					else if (!next && bodies == 100) {
-						delay = 0.1f;
-						nb = 2;
-						zoom = 0.75f;
-						offset = up::Vec2(600.0f, 15800.0f);
-						next = true;
-					}
-					else if (next || bodies < 200) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 15500 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(10.0f, 0.0f));
-					}
-					else if (!next && bodies == 200) {
-						delay = 0.1f;
-						nb = 4;
-						zoom = 0.6f;
-						offset = up::Vec2(800.0f, 15500.0f);
-						next = true;
-					}
-					else if (bodies < 400) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 15000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(10.0f, 0.0f));
-					}
-					else if (!next && bodies == 400) {
-						delay = 0.05f;
-						nb = 5;
-						zoom = 0.4f;
-						offset = up::Vec2(900.0f, 15200.0f);
-						next = true;
-					}
-					else if (bodies < 1000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 14500 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(15.0f, 0.0f));
-					}
-					else if (!next && bodies == 1000) {
-						delay = 0.05f;
-						nb = 8;
-						zoom = 0.3f;
-						offset = up::Vec2(1000.0f, 14800.0f);
-						next = true;
-					}
-					else if (bodies < 2000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 14000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(15.0f, 0.0f));
-					}
-					else if (!next && bodies == 2000) {
-						delay = 0.05f;
-						nb = 15;
-						zoom = 0.3f;
-						offset = up::Vec2(1600.0f, 14800.0f);
-						next = true;
-					}
-					else if (bodies < 4000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 14000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(15.0f, 0.0f));
-					}
-					else if (!next && bodies == 4010) {
-						delay = 0.04f;
-						nb = 16;
-						zoom = 0.2f;
-						offset = up::Vec2(2000.0f, 14800.0f);
-						next = true;
-					}
-					else if (bodies < 10000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 14000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(1.5f*body_radius, 0.0f));
-					}
-					else if (!next && bodies == 10010) {
-						delay = 0.02f;
-						nb = 17;
-						zoom = 0.1f;
-						offset = up::Vec2(4000.0f, 14800.0f);
-						next = true;
-					}
-					else if (bodies < 16000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 13000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(1.5f*body_radius, 0.0f));
-					}
-					else if (!next && bodies == 16011) {
-						delay = 0.01f;
-						nb = 20;
-						zoom = 0.1f;
-						offset = up::Vec2(4000.0f, 12000.0f);
-						next = true;
-					}
-					else if (bodies < 32000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 12000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(1.5f*body_radius, 0.0f));
-					}
-					else if (!next && bodies == 32011) {
-						delay = 0.00f;
-						nb = 20;
-						zoom = 0.07f;
-						offset = up::Vec2(6000.0f, 10000.0f);
-						next = true;
-					}
-					else if (bodies < 50000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 10000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(1.75f*body_radius, 0.0f));
-					}
-					else if (!next && bodies == 50011) {
-						delay = 0.00f;
-						nb = 40;
-						zoom = 0.055f;
-						offset = up::Vec2(6000.0f, 8000.0f);
-						next = true;
-					}
-					else if (bodies < 100000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 5000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(2.5f*body_radius, 0.0f));
-					}
-					else if (!next && bodies == 100019) {
-						delay = 0.00f;
-						nb = 40;
-						zoom = 0.055f;
-						offset = up::Vec2(8000.0f, 8000.0f);
-						next = true;
-						double_flow = true;
-					}
-					else if (bodies < 130000) {
-						next = false;
-						up::BodyPtr b = solver.addBody(up::Vec2(2.0f*body_radius, 5000 - 2 * i*body_radius));
-						b->setVelocity(up::Vec2(2.5f*body_radius, 0.0f));
-
-						up::BodyPtr b1 = solver.addBody(up::Vec2(16000 - 2.0f*body_radius, 5000 - 2 * i*body_radius));
-						b1->setVelocity(up::Vec2(-2.5f*body_radius, 0.0f));
-					}
-					else if (!next && bodies == 130011) {
-						delay = 0.00f;
-						nb = 40;
-						offset = up::Vec2(8000.0f, 8000.0f);
-						next = true;
-						double_flow = false;
-					}
-					else if (bodies < 200000) {
-						next = false;
-						up::BodyPtr b1 = solver.addBody(up::Vec2(16000 - 2.0f*body_radius, 5000 - 2 * i*body_radius));
-						b1->setVelocity(up::Vec2(-2.5f*body_radius, 0.0f));
-					}
-					else {
-						std::cout << bodies << std::endl;
-						bodies = 20000000;
-					}
-				}
-
-				bodies += nb;
-				if (double_flow) {
-					bodies += nb;
-				}
-			}
-		}
-		else if (displayManager.emit) {
-			bodies = 180000;
+			for (int i(0); i<100; ++i)
+				solver.addBody(up::Vec2(rand() % 16000, rand() % 1600));
 		}
 
 		displayManager.processEvents();
+
+		if (displayManager.clic) {
+			solver.resetDebug();
+			up::Vec2 clic_pos_display_coord = displayManager.getClicPosition();
+			up::Body* b(solver.getBodyAt(displayManager.displayCoordToWorldCoord(clic_pos_display_coord)));
+
+			if (b) {
+				b->debug = true;
+			}
+		}
 
 		if (displayManager.clic) {
 			displayManager.clic = false;
@@ -298,7 +115,7 @@ int main()
 			//addBox(solver, world_coord.x, world_coord.y, 100.0f, 100.0f);
 		}
 
-		if (1 || displayManager.emit) {
+		if (displayManager.update) {
 			solver.update(0.016f);
 		}
 
