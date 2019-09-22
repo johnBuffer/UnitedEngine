@@ -9,7 +9,7 @@
 #include "segment.hpp"
 #include "swarm.hpp"
 
-constexpr uint32_t GRID_CELL_SIZE = 12U;
+constexpr uint32_t GRID_CELL_SIZE = 8U;
 
 namespace up
 {
@@ -21,10 +21,10 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, std::vector<Body>& bodies, const Vec2& gravity = Vec2(0.0f, 0.0f))
 			: m_dimension(dimension)
 			, m_gravity(gravity)
-			, m_precision(1)
+			, m_precision(2)
 			, m_body_radius(body_radius)
-			, m_grid(dimension, 8 * uint32_t(body_radius), bodies)
-			, m_swarm(m_grid.getCells(), 1)
+			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
+			, m_swarm(m_grid.getCells(), 16)
 		{
 			m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
 		}
@@ -43,9 +43,10 @@ namespace up
 			m_grid.addBodies(bodies.getData());
 			grid_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
+			//m_grid.print_debug();
+
 			for (uint32_t i(0); i<m_precision; ++i) {
 				clock_local.restart();
-
 				m_swarm.notifyReady();
 				m_swarm.waitProcessed();
 				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
@@ -111,7 +112,7 @@ namespace up
 
 			for (Body& b : bodies) {
 				b.accelerate(m_gravity);
-				b.debug_colision = false;
+				//b.debug_colision = false;
 				/*Vec2 dir(p - b.position());
 				float length = dir.length();
 				dir.normalize();

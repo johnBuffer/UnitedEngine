@@ -48,9 +48,10 @@ int main()
 	settings.antialiasingLevel = 4;
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
-	window.setVerticalSyncEnabled(false);
+	window.setVerticalSyncEnabled(true);
+	//window.setFramerateLimit(60);
 
-	const float body_radius(16.0f);
+	const float body_radius(60.0f);
 	up::Vec2 world_dimension(16000.0f, 16000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
 
@@ -91,15 +92,16 @@ int main()
 
 		clock.restart();
 
-		if (displayManager.emit && bodies < 180000) {
+		if (displayManager.emit && bodies < 12000) {
 			for (int i(0); i<100; ++i)
-				solver.addBody(up::Vec2(rand() % 16000, rand() % 1600));
+				solver.addBody(up::Vec2(rand() % 16000, 5000+rand() % 1600));
+			bodies += 100;
 		}
 
 		displayManager.processEvents();
 
 		if (displayManager.clic) {
-			solver.resetDebug();
+			//solver.resetDebug();
 			up::Vec2 clic_pos_display_coord = displayManager.getClicPosition();
 			up::Body* b(solver.getBodyAt(displayManager.displayCoordToWorldCoord(clic_pos_display_coord)));
 

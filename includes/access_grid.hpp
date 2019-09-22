@@ -5,6 +5,7 @@
 #include "physic_body.hpp"
 #include "segment.hpp"
 #include "swarm.hpp"
+#include <iostream>
 
 
 namespace up
@@ -33,18 +34,25 @@ namespace up
 
 		void add(Body& b)
 		{
-			if (b.debug) {
+			/*if (b.debug) {
 				debug = true;
 				for (int i(0); i < item_count; ++i) {
-					b.debug_colision = true;
+					items[i]->debug_colision = true;
 				}
-			}
+			}*/
 
 			if (item_count < N) {
 				items[item_count++] = &b;
-				b.debug_colision = debug;
+				/*if (debug)
+					b.debug_colision = true;*/
 			}
 		}
+
+		/*void print_debug() const
+		{
+			if (debug)
+				std::cout << "Item count: " << uint32_t(item_count) << std::endl;
+		}*/
 
 		void add(SolidSegment& s)
 		{
@@ -63,14 +71,14 @@ namespace up
 			item_count = 0;
 			segment_count = 0;
 
-			debug = false;
+			//debug = false;
 		}
 
 		std::array<Body*, N> items;
 		std::vector<SolidSegment*> segments;
 		uint8_t item_count;
 		uint8_t segment_count;
-		bool debug;
+		//bool debug;
 	};
 
 
@@ -196,37 +204,37 @@ namespace up
 			uint32_t grid_x, grid_y;
 			vec2ToGridCoord(position, grid_x, grid_y);
 
-			const float grid_left((float(grid_x) - 5.0f)*m_cell_size);
-			const float grid_right((float(grid_x) - 5.0f + 1.0f)*m_cell_size);
-			const float grid_top((float(grid_x) - 5.0f)*m_cell_size);
-			const float grid_bot((float(grid_x) - 5.0f + 1.0f)*m_cell_size);
+			const float grid_left(float(grid_x)*m_cell_size);
+			const float grid_right(float(grid_x + 1)*m_cell_size);
+			const float grid_top(float(grid_y + 1)*m_cell_size);
+			const float grid_bot(float(grid_y)*m_cell_size);
 
 			addToCell(grid_x, grid_y, b);
 
 			const float delta_top(position.y - grid_top);
 			const float delta_bot(grid_bot - position.y);
 
-			if (position.x - grid_left < radius) {
+			if (position.x - grid_left <= radius) {
 				addToCell(grid_x - 1, grid_y, b);
-				if (delta_top < radius) {
+				if (delta_top <= radius) {
 					addToCell(grid_x - 1, grid_y - 1, b);
 					addToCell(grid_x, grid_y - 1, b);
 				} else if (delta_bot) {
 					addToCell(grid_x - 1, grid_y + 1, b);
 					addToCell(grid_x, grid_y + 1, b);
 				}
-			} else if (grid_right - position.x < radius) {
+			} else if (grid_right - position.x <= radius) {
 				addToCell(grid_x + 1, grid_y, b);
-				if (delta_top < radius) {
+				if (delta_top <= radius) {
 					addToCell(grid_x + 1, grid_y - 1, b);
 					addToCell(grid_x, grid_y - 1, b);
 				} else if (delta_bot < radius) {
 					addToCell(grid_x + 1, grid_y + 1, b);
 					addToCell(grid_x, grid_y + 1, b);
 				}
-			} else if (position.y - grid_top < radius) {
+			} else if (position.y - grid_top <= radius) {
 				addToCell(grid_x, grid_y - 1, b);
-			} else if (grid_bot - position.y < radius) {
+			} else if (grid_bot - position.y <= radius) {
 				addToCell(grid_x, grid_y + 1, b);
 			}
 		}
@@ -267,6 +275,13 @@ namespace up
 				cell.clear();
 			}
 		}
+
+		/*void print_debug() const
+		{
+			for (const GridCell<N>& cell : m_cells) {
+				cell.print_debug();
+			}
+		}*/
 
 		std::vector<GridCell<N>>& getCells()
 		{
