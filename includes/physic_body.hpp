@@ -16,10 +16,11 @@ public:
 		m_old_position(pos),
 		m_acceleration(),
 		pressure(0.0f),
-		//m_old_pressure(0.0f),
 		radius(radius_),
 		m_moving(1),
-		inertia(1.0f)
+		inertia(1.0f),
+		debug(false),
+		debug_collision(false)
 	{}
 	
 	Body& operator=(const Body& b)
@@ -36,7 +37,7 @@ public:
 	void update(float dt)
 	{
 		const Vec2 v(velocity());
-		inertia = 1.0f + 0.1f * inertia + pressure / (v.length2() + 1.0f);
+		inertia = 1.0f + 0.1f * inertia + pressure / (v.length() + 1.0f);
 
 		// Air friction
 		m_acceleration -= v * 32.0f;
@@ -82,7 +83,7 @@ public:
 	{
 		const Vec2 d(m_moving * delta);
 		m_position += d;
-		//m_old_position += 0.1f * d;
+		//m_old_position += std::min(inertia / 100.0f, 0.8f) * d;
 	}
 
 	void moveHard(const Vec2& delta)
@@ -128,6 +129,9 @@ public:
 	float radius;
 	float pressure;
 	float inertia;
+
+	bool debug;
+	bool debug_collision;
 
 private:
 	Vec2 m_position;

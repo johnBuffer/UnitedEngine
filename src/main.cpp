@@ -94,7 +94,7 @@ int main()
 
 		uint32_t n(1000);
 
-		if (displayManager.emit && bodies < 200000) {
+		if (displayManager.emit && bodies < 100000) {
 			for (int i(0); i < n; ++i)
 			{
 				solver.addBody(up::Vec2(rand() % 16000, 5000 + rand() % 1600));
@@ -109,12 +109,12 @@ int main()
 		displayManager.processEvents();
 
 		if (displayManager.clic) {
-			//solver.resetDebug();
+			solver.resetDebug();
 			up::Vec2 clic_pos_display_coord = displayManager.getClicPosition();
 			up::Body* b(solver.getBodyAt(displayManager.displayCoordToWorldCoord(clic_pos_display_coord)));
 
 			if (b) {
-				//b->debug = true;
+				b->debug = true;
 			}
 		}
 

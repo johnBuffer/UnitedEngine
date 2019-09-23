@@ -119,13 +119,13 @@ void DisplayManager::updateVertexArray(const std::vector<up::Body>& bodies, uint
 		float r = sin(t);
 		float g = sin(t + 0.33f * 2 * pi);
 		float b = sin(t + 0.66f * 2 * pi);
-		sf::Color color = sf::Color(r*r*255, g*g*255, b*b*255);
+		sf::Color color = sf::Color::White;// (r*r * 255, g*g * 255, b*b * 255);
 
-		/*if (body.debug) {
+		if (body.debug) {
 			color = sf::Color::Red;
-		} else if (body.debug_colision) {
+		} else if (body.debug_collision) {
 			color = sf::Color::Green;
-		}*/
+		}
 
 		m_va[4 * i + 0].color = color;
 		m_va[4 * i + 1].color = color;

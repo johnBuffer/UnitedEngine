@@ -34,17 +34,17 @@ namespace up
 
 		void add(Body& b)
 		{
-			/*if (b.debug) {
+			if (b.debug) {
 				debug = true;
 				for (int i(0); i < item_count; ++i) {
-					items[i]->debug_colision = true;
+					items[i]->debug_collision = true;
 				}
-			}*/
+			}
 
 			if (item_count < N) {
 				items[item_count++] = &b;
-				/*if (debug)
-					b.debug_colision = true;*/
+				if (debug)
+					b.debug_collision = true;
 			}
 		}
 
@@ -62,7 +62,7 @@ namespace up
 
 		void clear()
 		{
-			for (uint8_t i(N); i--;) {
+			for (uint16_t i(N); i--;) {
 				items[i] = nullptr;
 			}
 
@@ -71,14 +71,14 @@ namespace up
 			item_count = 0;
 			segment_count = 0;
 
-			//debug = false;
+			debug = false;
 		}
 
 		std::array<Body*, N> items;
 		std::vector<SolidSegment*> segments;
-		uint8_t item_count;
+		uint16_t item_count;
 		uint8_t segment_count;
-		//bool debug;
+		bool debug;
 	};
 
 
@@ -124,7 +124,7 @@ namespace up
 
 
 	// Grid class
-	template<uint8_t N>
+	template<uint32_t N>
 	class Grid
 	{
 	public:

@@ -13,7 +13,6 @@ constexpr uint32_t GRID_CELL_SIZE = 8U;
 
 namespace up
 {
-
 	class CollisionSolver
 	{
 	public:
@@ -21,7 +20,7 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, std::vector<Body>& bodies, const Vec2& gravity = Vec2(0.0f, 0.0f))
 			: m_dimension(dimension)
 			, m_gravity(gravity)
-			, m_precision(2)
+			, m_precision(1)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
 			, m_swarm(m_grid.getCells(), 16)
@@ -43,17 +42,11 @@ namespace up
 			m_grid.addBodies(bodies.getData());
 			grid_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
-			//m_grid.print_debug();
-
-			for (uint32_t i(0); i<m_precision; ++i) {
+			for (m_current_iteration = 0; m_current_iteration <m_precision; ++m_current_iteration) {
 				clock_local.restart();
 				m_swarm.notifyReady();
 				m_swarm.waitProcessed();
 				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
-				
-				//solveBodySegment(segments, bodies);
-				//solveSegmentSegment(segments);
-				
 				solveBoundaryCollisions(bodies);
 			}
 
@@ -86,7 +79,9 @@ namespace up
 
 		void reset_debug(fva::SwapArray<Body>& bodies)
 		{
-
+			for (auto& b : bodies) {
+				b.debug = false;
+			}
 		}
 
 		bool test_pressure = false;
@@ -102,11 +97,13 @@ namespace up
 		const Vec2 m_dimension;
 		const uint32_t m_precision;
 		const float m_body_radius;
+		uint32_t m_current_iteration;
 
 		void applyGravity(fva::SwapArray<Body>& bodies)
 		{
 			for (Body& b : bodies) {
 				b.accelerate(m_gravity);
+				b.debug_collision = false;
 			}
 		}
 
@@ -141,10 +138,21 @@ namespace up
 			uint32_t start_index(id * step_size);
 			uint32_t end_index(start_index + step_size);
 
-			for (uint32_t cell_id(step_size-1); cell_id--;) {
-				GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
-				const uint8_t size(cell.item_count);
-				solveCellCollisions(size, cell.items);
+			if (m_current_iteration % 2)
+			{
+				for (uint32_t cell_id(step_size - 1); cell_id--;) {
+					GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
+					const uint8_t size(cell.item_count);
+					solveCellCollisions(size, cell.items);
+				}
+			}
+			else
+			{
+				for (uint32_t cell_id(0); cell_id<step_size; ++cell_id) {
+					GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
+					const uint8_t size(cell.item_count);
+					solveCellCollisions(size, cell.items);
+				}
 			}
 		}
 
@@ -173,9 +181,9 @@ namespace up
 
 				const float m1(b1.inertia);
 				const float m2(b2.inertia);
-				const float mass_factor_tot(1.0f / (m1 + m2));
-				const float mass_factor_1(m1 * mass_factor_tot);
-				const float mass_factor_2(m2 * mass_factor_tot);
+				const float mass_tot(1.0f / (m1 + m2));
+				const float mass_factor_1(m1 * mass_tot);
+				const float mass_factor_2(m2 * mass_tot);
 				const float delta_col(0.5f * (col_radius - col_axe.length()));
 
 				col_axe.normalize();
