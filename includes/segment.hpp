@@ -96,7 +96,7 @@ public:
 
 		Vec2 col_vec(body_position - segment_closest_point);
 		const float distance(col_vec.length());
-		const float body_radius(body.radius());
+		const float body_radius(body.radius);
 		if (distance < 2 * body_radius && distance > 0.001f) {
 			const float delta(0.5f * (2.0f * body_radius - distance));
 			const float distFromB1((segment_closest_point - getBody1Position()).length());

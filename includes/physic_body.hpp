@@ -11,17 +11,15 @@ class Body
 {
 public:
 	Body() = default;
-	Body(const Vec2& pos, float radius) :
+	Body(const Vec2& pos, float radius_) :
 		m_position(pos),
 		m_old_position(pos),
 		m_acceleration(),
-		m_pressure(0.0f),
+		pressure(0.0f),
 		//m_old_pressure(0.0f),
-		m_radius(radius),
+		radius(radius_),
 		m_moving(1),
-		m_inertia(1.0f),
-		debug(false),
-		debug_colision(false)
+		inertia(1.0f)
 	{}
 	
 	Body& operator=(const Body& b)
@@ -29,8 +27,8 @@ public:
 		m_position     = b.m_position;
 		m_old_position = b.m_old_position;
 		m_acceleration = b.m_acceleration;
-		m_pressure     = b.m_pressure;
-		m_radius       = b.m_radius;
+		pressure     = b.pressure;
+		radius       = b.radius;
 
 		return *this;
 	}
@@ -38,21 +36,21 @@ public:
 	void update(float dt)
 	{
 		const Vec2 v(velocity());
-		m_inertia = 1.0f + 0.1f * m_inertia + m_pressure / (v.length2() + 1.0f);
+		inertia = 1.0f + 0.1f * inertia + pressure / (v.length2() + 1.0f);
 
 		// Air friction
 		m_acceleration -= v * 32.0f;
 
 		// This prevent from too much compression
-		const float anti_pressure_factor(std::pow(1.0f / m_inertia, 2));
+		const float anti_pressure_factor(std::pow(1.0f / inertia, 2));
 
 		// Verlet integration
 		m_old_position = m_position;
-		m_position +=float(m_moving) * (v + m_acceleration * anti_pressure_factor * dt * dt);
+		m_position += float(m_moving) * (v + m_acceleration * anti_pressure_factor * dt * dt);
 
 		// Reset temporary values
 		m_acceleration = {};
-		m_pressure = 0.0f;
+		pressure = 0.0f;
 	}
 
 	const Vec2& position() const
@@ -102,19 +100,9 @@ public:
 		m_acceleration += acceleration;
 	}
 
-	void addPressure(float pressure)
+	void addPressure(float pressure_)
 	{
-		m_pressure += pressure;
-	}
-
-	float radius() const
-	{
-		return m_radius;
-	}
-
-	float mass() const
-	{
-		return m_inertia;
+		pressure += pressure_;
 	}
 
 	void stop()
@@ -137,18 +125,15 @@ public:
 		moveOld(-1.0f*v);
 	}
 
-	bool debug;
-	bool debug_colision;
+	float radius;
+	float pressure;
+	float inertia;
 
 private:
 	Vec2 m_position;
 	Vec2 m_old_position;
 	Vec2 m_acceleration;
 
-	float m_radius;
-	float m_pressure;
-	//float m_old_pressure;
-	float m_inertia;
 	uint8_t m_moving;
 };
 

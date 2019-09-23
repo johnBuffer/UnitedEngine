@@ -10,7 +10,7 @@ DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& windo
 	m_offsetX(0.0f),
 	m_offsetY(0.0f),
 	speed_mode(false)
-	, m_swarm(solver.getBodiesData(), 8)
+	, m_swarm(solver.getBodiesData(), 16)
 	, m_va(sf::Quads, 0)
 	, update(true)
 {
@@ -101,31 +101,31 @@ void DisplayManager::updateVertexArray(const std::vector<up::Body>& bodies, uint
 
 	for (uint32_t i(start_index); i<end_index; ++i) {
 		const up::Body& body(bodies[i]);
-		float radius = body.radius()*1.0f;
+		float radius = body.radius;
 		const up::Vec2& position = body.position();
 
-		m_va[4 * i].position = sf::Vector2f(position.x - radius, position.y - radius);
+		m_va[4 * i + 0].position = sf::Vector2f(position.x - radius, position.y - radius);
 		m_va[4 * i + 1].position = sf::Vector2f(position.x + radius, position.y - radius);
 		m_va[4 * i + 2].position = sf::Vector2f(position.x + radius, position.y + radius);
 		m_va[4 * i + 3].position = sf::Vector2f(position.x - radius, position.y + radius);
 
-		m_va[4 * i].texCoords = sf::Vector2f(0, 0);
+		m_va[4 * i + 0].texCoords = sf::Vector2f(0, 0);
 		m_va[4 * i + 1].texCoords = sf::Vector2f(512, 0);
 		m_va[4 * i + 2].texCoords = sf::Vector2f(512, 512);
 		m_va[4 * i + 3].texCoords = sf::Vector2f(0, 512);
 
-		/*const float pi = 3.1415926f;
-		float t = i / 10000.0f;
+		const float pi = 3.1415926f;
+		float t = i / 1000.0f;
 		float r = sin(t);
 		float g = sin(t + 0.33f * 2 * pi);
-		float b = sin(t + 0.66f * 2 * pi);*/
-		sf::Color color = sf::Color::White;
+		float b = sin(t + 0.66f * 2 * pi);
+		sf::Color color = sf::Color(r*r*255, g*g*255, b*b*255);
 
-		if (body.debug) {
+		/*if (body.debug) {
 			color = sf::Color::Red;
 		} else if (body.debug_colision) {
 			color = sf::Color::Green;
-		}
+		}*/
 
 		m_va[4 * i + 0].color = color;
 		m_va[4 * i + 1].color = color;

@@ -198,7 +198,7 @@ namespace up
 
 		void add(Body& b)
 		{
-			const float radius(b.radius());
+			const float radius(b.radius);
 			const Vec2& position(b.position());
 			
 			uint32_t grid_x, grid_y;
