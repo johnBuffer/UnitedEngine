@@ -155,7 +155,7 @@ namespace up
 			}
 		}
 
-		void vec2ToGridCoord(const Vec2& v, uint32_t& grid_x, uint32_t& grid_y)
+		void vec2ToGridCoord(const Vec2& v, int32_t& grid_x, int32_t& grid_y)
 		{
 			grid_x = v.x / m_cell_size + 5;
 			grid_y = v.y / m_cell_size + 5;
@@ -166,7 +166,7 @@ namespace up
 			const float radius(b.radius);
 			const Vec2& position(b.position());
 			
-			uint32_t cell_x, cell_y;
+			int32_t cell_x, cell_y;
 			vec2ToGridCoord(position, cell_x, cell_y);
 
 			const float cell_left ((cell_x-5) * m_cell_size);
@@ -230,11 +230,15 @@ namespace up
 			const float seg_dy = dy / length;
 
 			/// cell_x and cell_y are the starting voxel's coordinates
-			int cell_x = x1 / m_cell_size;
-			int cell_y = y1 / m_cell_size;
+			int32_t cell_x;// = x1 / m_cell_size;
+			int32_t cell_y;// = y1 / m_cell_size;
 
-			const int32_t end_x = x2 / m_cell_size;
-			const int32_t end_y = y2 / m_cell_size;
+			vec2ToGridCoord(seg.getBody1Position(), cell_x, cell_y);
+
+			int32_t end_x;// = x2 / m_cell_size;
+			int32_t end_y;// = y2 / m_cell_size;
+
+			vec2ToGridCoord(seg.getBody2Position(), end_x, end_y);
 
 			/// step_x and step_y describe if cell_x and cell_y
 			/// are incremented or decremented during iterations
@@ -244,16 +248,16 @@ namespace up
 			/// Compute the value of t for first intersection in x and y
 			float t_max_x = 0;
 			if (step_x > 0)
-				t_max_x = (cell_x + 1)*m_cell_size - x1;
+				t_max_x = (cell_x - 4) * m_cell_size - x1;
 			else
-				t_max_x = cell_x * m_cell_size - x1;
+				t_max_x = (cell_x - 5) * m_cell_size - x1;
 			t_max_x /= seg_dx;
 
 			float t_max_y = 0;
 			if (step_y > 0)
-				t_max_y = (cell_y + 1)*m_cell_size - y1;
+				t_max_y = (cell_y - 4) * m_cell_size - y1;
 			else
-				t_max_y = cell_y * m_cell_size - y1;
+				t_max_y = (cell_y - 5) * m_cell_size - y1;
 			t_max_y /= seg_dy;
 
 			/// Compute how much (in units of t) we can move along the ray

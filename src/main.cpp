@@ -49,10 +49,10 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	//window.setVerticalSyncEnabled(true);
-	//window.setFramerateLimit(60);
+	window.setFramerateLimit(60);
 
 	const float body_radius(20.0f);
-	up::Vec2 world_dimension(12800.0f, 12800.0f);
+	up::Vec2 world_dimension(1280.0f, 1280.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 980.0f });
 
 	sf::RenderTexture render_tex;
@@ -97,7 +97,7 @@ int main()
 
 		clock.restart();
 
-		uint32_t n(100);
+		uint32_t n(10);
 
 		if (displayManager.emit && bodies < 200000) {
 			for (int i(0); i < n; ++i)
