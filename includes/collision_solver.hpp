@@ -188,7 +188,8 @@ namespace up
 
 			const float col_radius(2*m_body_radius);
 			Vec2 col_axe(b1.position() - b2.position());
-			if (col_axe.length2() < col_radius*col_radius)
+			const float length2(col_axe.length2());
+			if (length2 < col_radius*col_radius && length2 > 0.01f)
 			{
 				const Vec2 v1(b1.velocity());
 				const Vec2 v2(b2.velocity());

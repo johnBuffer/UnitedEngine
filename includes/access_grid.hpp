@@ -103,11 +103,7 @@ namespace up
 
 		void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
 		{
-			GridCell<N>& current_cell = m_cells[grid_cell_y + m_height * grid_cell_x];
-			/*if (!current_cell.item_count)
-				m_non_empty.add(current_cell);*/
-
-			current_cell.add(b);
+			getCellAt(grid_cell_x, grid_cell_y).add(b);
 		}
 
 		void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, SolidSegment& s)
@@ -156,8 +152,8 @@ namespace up
 
 		void vec2ToGridCoord(const Vec2& v, int32_t& grid_x, int32_t& grid_y)
 		{
-			grid_x = int32_t(v.x) / m_cell_size + 5;
-			grid_y = int32_t(v.y) / m_cell_size + 5;
+			grid_x = int32_t(v.x) / int32_t(m_cell_size) + 5;
+			grid_y = int32_t(v.y) / int32_t(m_cell_size) + 5;
 		}
 
 		void add(Body& b)
