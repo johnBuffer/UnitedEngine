@@ -9,7 +9,7 @@
 #include "segment.hpp"
 #include "swarm.hpp"
 
-constexpr uint32_t GRID_CELL_SIZE = 16U;
+constexpr uint32_t GRID_CELL_SIZE = 24U;
 
 namespace up
 {
@@ -206,7 +206,7 @@ namespace up
 				b1.move(col_axe*(+delta_col * mass_factor_2));
 				b2.move(col_axe*(-delta_col * mass_factor_1));
 
-				const float cohesion(0.025f);
+				const float cohesion(0.05f);
 				b1.setVelocity(-cohesion*delta_v);
 				b2.setVelocity( cohesion*delta_v);
 

@@ -20,7 +20,8 @@ public:
 		m_moving(1),
 		inertia(1.0f),
 		debug(false),
-		debug_collision(false)
+		debug_collision(false),
+		move_acc(0.0f)
 	{}
 	
 	Body& operator=(const Body& b)
@@ -37,10 +38,12 @@ public:
 	void update(float dt)
 	{
 		const Vec2 v(velocity());
-		inertia = 1.0f + 0.35f * inertia + pressure / (v.length2() + 1.0f);
+
+		inertia = 1.0f + move_acc / (v.length() + 1.0f);
+		move_acc *= 0.5f;
 
 		// Air friction
-		m_acceleration -= v * 32.0f;
+		m_acceleration -= v * 10.0f;
 
 		// This prevent from too much compression
 		const float anti_pressure_factor(std::pow(1.0f / inertia, 2));
@@ -83,6 +86,7 @@ public:
 	{
 		const Vec2 d(m_moving * delta);
 		m_position += d;
+		move_acc += std::abs(d.x) + std::abs(d.y);
 	}
 
 	void moveOld(const Vec2& delta)
@@ -123,6 +127,8 @@ public:
 	float radius;
 	float pressure;
 	float inertia;
+
+	float move_acc;
 
 	bool done;
 	bool debug;
