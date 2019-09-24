@@ -13,11 +13,11 @@
 
 void addBox(up::UnitedSolver& solver, float x, float y, float w, float h)
 {
-	const float radius(12.0f);
-	up::BodyPtr b1 = solver.addBody(up::Vec2(x, y), radius);
-	up::BodyPtr b2 = solver.addBody(up::Vec2(x + w, y), radius);
+	const float radius(20.0f);
+	up::BodyPtr b1 = solver.addBody(up::Vec2(x    , y    ), radius);
+	up::BodyPtr b2 = solver.addBody(up::Vec2(x + w, y    ), radius);
 	up::BodyPtr b3 = solver.addBody(up::Vec2(x + w, y + h), radius);
-	up::BodyPtr b4 = solver.addBody(up::Vec2(x, y + h), radius);
+	up::BodyPtr b4 = solver.addBody(up::Vec2(x    , y + h), radius);
 
 	up::SolidSegmentPtr segment1 = solver.addSolidSegment(b1, b2);
 	up::SolidSegmentPtr segment2 = solver.addSolidSegment(b2, b3);
@@ -30,7 +30,7 @@ void addBox(up::UnitedSolver& solver, float x, float y, float w, float h)
 
 void addSolidSegment(up::UnitedSolver& solver, float x1, float y1, float x2, float y2, bool moving = true)
 {
-	const float radius(8.0f);
+	const float radius(20.0f);
 	up::BodyPtr b1 = solver.addBody(up::Vec2(x1, y1), radius);
 	up::BodyPtr b2 = solver.addBody(up::Vec2(x2, y2), radius);
 
@@ -49,16 +49,19 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
 	//window.setVerticalSyncEnabled(true);
-	window.setFramerateLimit(60);
+	//window.setFramerateLimit(60);
 
 	const float body_radius(20.0f);
-	up::Vec2 world_dimension(16000.0f, 16000.0f);
-	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 900.0f });
+	up::Vec2 world_dimension(12800.0f, 12800.0f);
+	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 980.0f });
 
 	sf::RenderTexture render_tex;
 	render_tex.create(win_width, win_height);
 
 	DisplayManager displayManager(render_tex, window, solver);
+
+	up::BodyPtr b = solver.addBody(up::Vec2(50, 50));
+	b->moving(false);
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -71,8 +74,7 @@ int main()
 	sf::Clock clock, spawn_timer;
 	Blur blur(win_width, win_height, 0.5f);
 
-	//addSolidSegment(solver, 8000, 8000, 8000, 3500, false);
-	//addSolidSegment(solver, 500, 100, 700, 100);
+	//addSolidSegment(solver, 20, 100, 1100, 900, false);
 
 	trn::Transition<float> zoom(1.0f);
 	//zoom.setSpeed(3.0f);
@@ -90,14 +92,17 @@ int main()
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
 
+		if (displayManager.debug_mode)
+			b->setPosition(world_coord);
+
 		clock.restart();
 
-		uint32_t n(1000);
+		uint32_t n(100);
 
-		if (displayManager.emit && bodies < 100000) {
+		if (displayManager.emit && bodies < 200000) {
 			for (int i(0); i < n; ++i)
 			{
-				solver.addBody(up::Vec2(rand() % 16000, 5000 + rand() % 1600));
+				solver.addBody(up::Vec2(rand() % int(world_dimension.x), rand() % 200));
 				//auto b = solver.addBody(up::Vec2(7000 + body_radius * 2 * i, 16000 - body_radius));
 				//b->setVelocity(up::Vec2(5 - rand() % 10, -100.0f));
 
@@ -109,13 +114,16 @@ int main()
 		displayManager.processEvents();
 
 		if (displayManager.clic) {
-			solver.resetDebug();
 			up::Vec2 clic_pos_display_coord = displayManager.getClicPosition();
+			up::Vec2 clic_pos_world_coord = displayManager.displayCoordToWorldCoord(displayManager.getClicPosition());
+			/*solver.resetDebug();
 			up::Body* b(solver.getBodyAt(displayManager.displayCoordToWorldCoord(clic_pos_display_coord)));
 
 			if (b) {
 				b->debug = true;
-			}
+			}*/
+
+			addBox(solver, clic_pos_world_coord.x, clic_pos_world_coord.y, 200, 200);
 		}
 
 		if (displayManager.clic) {
@@ -130,7 +138,6 @@ int main()
 		}
 
 		render_tex.clear(sf::Color::White);
-		window.clear(sf::Color::White);
 
 		displayManager.draw(false);
 

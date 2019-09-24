@@ -20,7 +20,7 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, std::vector<Body>& bodies, const Vec2& gravity = Vec2(0.0f, 0.0f))
 			: m_dimension(dimension)
 			, m_gravity(gravity)
-			, m_precision(1)
+			, m_precision(2)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
 			, m_swarm(m_grid.getCells(), 16)
@@ -40,12 +40,20 @@ namespace up
 			clock_local.restart();
 			solveBoundaryCollisions(bodies);
 			m_grid.addBodies(bodies.getData());
+			m_grid.addSegments(segments.getData());
+			
 			grid_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 
 			for (m_current_iteration = 0; m_current_iteration <m_precision; ++m_current_iteration) {
 				clock_local.restart();
 				m_swarm.notifyReady();
 				m_swarm.waitProcessed();
+
+				solveSegmentsCollisions(m_grid.getCells());
+				
+				//naive_segments_bodies(segments.getData(), bodies.getData());
+				//naive_segments_segments(segments.getData());
+				
 				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 				solveBoundaryCollisions(bodies);
 			}
@@ -84,6 +92,11 @@ namespace up
 			}
 		}
 
+		const Grid<GRID_CELL_SIZE>& getGrid() const
+		{
+			return m_grid;
+		}
+
 		bool test_pressure = false;
 		float total_update_time;
 		float collision_time;
@@ -104,6 +117,7 @@ namespace up
 			for (Body& b : bodies) {
 				b.accelerate(m_gravity);
 				b.debug_collision = false;
+				b.done = false;
 			}
 		}
 
@@ -113,19 +127,19 @@ namespace up
 				Vec2 pos = b.position();
 				float radius = b.radius;
 				if (pos.x < radius) {
-					b.moveHard({ radius - pos.x, 0.0f });
-					b.stop();
+					b.move({ radius - pos.x, 0.0f });
+					//b.stop();
 				} else if (pos.x > m_dimension.x - radius) {
-					b.moveHard({ m_dimension.x - radius - pos.x, 0.0f });
-					b.stop();
+					b.move({ m_dimension.x - radius - pos.x, 0.0f });
+					//b.stop();
 				}
 
 				if (pos.y < radius) {
-					b.moveHard({ 0.0f, radius - pos.y });
-					b.stop();
+					b.move({ 0.0f, radius - pos.y });
+					//b.stop();
 				} else if (pos.y > m_dimension.y - radius) {
-					b.moveHard({ 0.0f, m_dimension.y - radius - pos.y });
-					b.stop();
+					b.move({ 0.0f, m_dimension.y - radius - pos.y });
+					//b.stop();
 				}
 			}
 		}
@@ -142,7 +156,7 @@ namespace up
 			{
 				for (uint32_t cell_id(step_size - 1); cell_id--;) {
 					GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
-					const uint8_t size(cell.item_count);
+					const uint32_t size(cell.item_count);
 					solveCellCollisions(size, cell.items);
 				}
 			}
@@ -150,7 +164,7 @@ namespace up
 			{
 				for (uint32_t cell_id(0); cell_id<step_size; ++cell_id) {
 					GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
-					const uint8_t size(cell.item_count);
+					const uint32_t size(cell.item_count);
 					solveCellCollisions(size, cell.items);
 				}
 			}
@@ -158,11 +172,13 @@ namespace up
 
 		void solveCellCollisions(uint32_t size, std::array<up::Body*, GRID_CELL_SIZE>& bodies)
 		{
-			for (uint8_t i(0); i < size; ++i) {
+			for (uint32_t i(0); i < size; ++i) {
 				Body& b1(*bodies[i]);
-				for (uint8_t k(i + 1); k < size; ++k) {
-					Body& b2(*bodies[k]);
-					solveBodiesCollision(b1, b2);
+				if (!b1.done) {
+					for (uint32_t k(i + 1); k < size; ++k) {
+						Body& b2(*bodies[k]);
+						solveBodiesCollision(b1, b2);
+					}
 				}
 			}
 		}
@@ -190,7 +206,7 @@ namespace up
 				b1.move(col_axe*(+delta_col * mass_factor_2));
 				b2.move(col_axe*(-delta_col * mass_factor_1));
 
-				const float cohesion(0.05f);
+				const float cohesion(0.025f);
 				b1.setVelocity(-cohesion*delta_v);
 				b2.setVelocity( cohesion*delta_v);
 
@@ -199,22 +215,50 @@ namespace up
 			}
 		}
 
-		void solveBodySegment(fva::SwapArray<SolidSegment>& segments, fva::SwapArray<Body>& bodies)
+		void solveSegmentsCollisions(std::vector<GridCell<GRID_CELL_SIZE>>& data)
 		{
-			for (SolidSegment& s : segments) {
-				for (Body& b : bodies) {
-					s.collideWith(b);
+			for (GridCell<GRID_CELL_SIZE>& cell : data) {
+				solveBodySegment(cell.segments, cell.items, cell.item_count);
+				//solveSegmentSegment(cell.segments);
+			}
+		}
+
+		void solveBodySegment(std::vector<SolidSegment*>& segments, std::array<up::Body*, GRID_CELL_SIZE>& bodies, uint32_t size)
+		{
+			for (SolidSegment* s : segments) {
+				for (uint32_t i(0); i < size; ++i) {
+					s->collideWith(*bodies[i]);
 				}
 			}
 		}
 
-		void solveSegmentSegment(fva::SwapArray<SolidSegment>& segments)
+		void solveSegmentSegment(std::vector<SolidSegment*>& segments)
+		{
+			for (SolidSegment* s1 : segments) {
+				for (SolidSegment* s2 : segments) {
+					if (s1 != s2) {
+						s1->collideWith(*s2);
+					}
+				}
+			}
+		}
+
+		void naive_segments_segments(std::vector<SolidSegment>& segments)
 		{
 			for (SolidSegment& s1 : segments) {
 				for (SolidSegment& s2 : segments) {
 					if (&s1 != &s2) {
 						s1.collideWith(s2);
 					}
+				}
+			}
+		}
+
+		void naive_segments_bodies(std::vector<SolidSegment>& segments, std::vector<up::Body>& bodies)
+		{
+			for (SolidSegment& s1 : segments) {
+				for (Body& b : bodies) {
+					s1.collideWith(b);
 				}
 			}
 		}

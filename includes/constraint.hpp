@@ -68,8 +68,8 @@ public:
 		} else {
 			const float force(m_strength*delta_length);
 			dir.normalize();
-			body1->moveHard((+force)*dir);
-			body2->moveHard((-force)*dir);
+			body1->move((+force)*dir);
+			body2->move((-force)*dir);
 		}
 	}
 

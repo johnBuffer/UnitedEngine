@@ -12,7 +12,7 @@ namespace up
 {
 
 	// GridCell class
-	template<int N>
+	template<uint32_t N>
 	struct GridCell
 	{
 		GridCell()
@@ -36,7 +36,7 @@ namespace up
 		{
 			if (b.debug) {
 				debug = true;
-				for (int i(0); i < item_count; ++i) {
+				for (uint32_t i(0); i < item_count; ++i) {
 					items[i]->debug_collision = true;
 				}
 			}
@@ -60,66 +60,27 @@ namespace up
 			++segment_count;
 		}
 
-		void clear()
+		void clear_bodies()
 		{
-			for (uint16_t i(N); i--;) {
+			for (uint32_t i(N); i--;) {
 				items[i] = nullptr;
 			}
 
-			segments.clear();
-
 			item_count = 0;
-			segment_count = 0;
-
 			debug = false;
+		}
+
+		void clear_segments()
+		{
+			segments.clear();
+			segment_count = 0;
 		}
 
 		std::array<Body*, N> items;
 		std::vector<SolidSegment*> segments;
-		uint16_t item_count;
+		uint32_t item_count;
 		uint8_t segment_count;
 		bool debug;
-	};
-
-
-	// CellRegister class
-	template<uint8_t N>
-	struct CellRegister
-	{
-		CellRegister() :
-			size(0)
-		{}
-
-		void init(uint32_t max_size)
-		{
-			cells.resize(max_size);
-		}
-
-		void add(GridCell<N>& gc)
-		{
-			cells[size++] = &gc;
-		}
-
-		void clear()
-		{
-			for (uint32_t i(0); i < size; ++i) {
-				cells[i]->clear();
-			}
-			size = 0;
-		}
-
-		typename std::vector<GridCell<N>*>::iterator begin()
-		{
-			return cells.begin();
-		}
-
-		typename std::vector<GridCell<N>*>::iterator end()
-		{
-			return cells.begin() + size;
-		}
-
-		uint32_t size;
-		std::vector<GridCell<N>*> cells;
 	};
 
 
@@ -132,7 +93,6 @@ namespace up
 			: m_cell_size(cell_size)
 			, m_width(uint32_t(dimension.x) / cell_size + 10)
 			, m_height(uint32_t(dimension.y) / cell_size + 10)
-			, m_non_empty()
 			, m_swarm(bodies, 1)
 		{
 			//m_non_empty.init(m_width * m_height);
@@ -158,8 +118,8 @@ namespace up
 
 		GridCell<N>* getColliders(const Body& b)
 		{
-			uint32_t body_x = uint32_t(b.position().x + 1.0f);
-			uint32_t body_y = uint32_t(b.position().y + 1.0f);
+			uint32_t body_x = uint32_t(b.position().x);
+			uint32_t body_y = uint32_t(b.position().y);
 
 			uint32_t grid_x = body_x / m_cell_size + 5;
 			uint32_t grid_y = body_y / m_cell_size + 5;
@@ -174,9 +134,17 @@ namespace up
 
 		void addBodies(std::vector<up::Body>& bodies)
 		{
-			clear();
+			clear_bodies();
 			m_swarm.notifyReady();
 			m_swarm.waitProcessed();
+		}
+
+		void addSegments(std::vector<up::SolidSegment>& segments)
+		{
+			clear_segments();
+			for (up::SolidSegment& seg : segments) {
+				add(seg);
+			}
 		}
 
 		void addBodiesSwarm(std::vector<Body>& data, uint32_t id, uint32_t step)
@@ -189,11 +157,8 @@ namespace up
 
 		void vec2ToGridCoord(const Vec2& v, uint32_t& grid_x, uint32_t& grid_y)
 		{
-			int32_t body_x = uint32_t(v.x);
-			int32_t body_y = uint32_t(v.y);
-
-			grid_x = body_x / m_cell_size + 5;
-			grid_y = body_y / m_cell_size + 5;
+			grid_x = v.x / m_cell_size + 5;
+			grid_y = v.y / m_cell_size + 5;
 		}
 
 		void add(Body& b)
@@ -201,78 +166,133 @@ namespace up
 			const float radius(b.radius);
 			const Vec2& position(b.position());
 			
-			uint32_t grid_x, grid_y;
-			vec2ToGridCoord(position, grid_x, grid_y);
+			uint32_t cell_x, cell_y;
+			vec2ToGridCoord(position, cell_x, cell_y);
 
-			const float grid_left(float(grid_x)*m_cell_size);
-			const float grid_right(float(grid_x + 1)*m_cell_size);
-			const float grid_top(float(grid_y + 1)*m_cell_size);
-			const float grid_bot(float(grid_y)*m_cell_size);
+			const float cell_left ((cell_x-5) * m_cell_size);
+			const float cell_right((cell_x-4) * m_cell_size);
+			const float cell_bot  ((cell_y-5) * m_cell_size);
+			const float cell_top  ((cell_y-4) * m_cell_size);
 
-			addToCell(grid_x, grid_y, b);
+			addToCell(cell_x, cell_y, b);
+			/*addToCell(cell_x+1, cell_y, b);
+			addToCell(cell_x-1, cell_y, b);
+			addToCell(cell_x + 1, cell_y + 1, b);
+			addToCell(cell_x + 1, cell_y - 1, b);
+			addToCell(cell_x - 1, cell_y + 1, b);
+			addToCell(cell_x - 1, cell_y - 1, b);
+			addToCell(cell_x, cell_y - 1, b);
+			addToCell(cell_x, cell_y + 1, b);*/
 
-			const float delta_top(position.y - grid_top);
-			const float delta_bot(grid_bot - position.y);
+			const float delta_bot(position.y - cell_bot);
+			const float delta_top(cell_top - position.y);
+			const float delta_left(position.x - cell_left);
+			const float delta_right(cell_right - position.x);
 
-			if (position.x - grid_left <= radius) {
-				addToCell(grid_x - 1, grid_y, b);
-				if (delta_top <= radius) {
-					addToCell(grid_x - 1, grid_y - 1, b);
-					addToCell(grid_x, grid_y - 1, b);
-				} else if (delta_bot) {
-					addToCell(grid_x - 1, grid_y + 1, b);
-					addToCell(grid_x, grid_y + 1, b);
-				}
-			} else if (grid_right - position.x <= radius) {
-				addToCell(grid_x + 1, grid_y, b);
-				if (delta_top <= radius) {
-					addToCell(grid_x + 1, grid_y - 1, b);
-					addToCell(grid_x, grid_y - 1, b);
+			if (delta_left < radius) {
+				addToCell(cell_x - 1, cell_y, b);
+				if (delta_top < radius) {
+					addToCell(cell_x - 1, cell_y + 1, b);
+					addToCell(cell_x    , cell_y + 1, b);
 				} else if (delta_bot < radius) {
-					addToCell(grid_x + 1, grid_y + 1, b);
-					addToCell(grid_x, grid_y + 1, b);
+					addToCell(cell_x - 1, cell_y - 1, b);
+					addToCell(cell_x    , cell_y - 1, b);
 				}
-			} else if (position.y - grid_top <= radius) {
-				addToCell(grid_x, grid_y - 1, b);
-			} else if (grid_bot - position.y <= radius) {
-				addToCell(grid_x, grid_y + 1, b);
+			} else if (delta_right < radius) {
+				addToCell(cell_x + 1, cell_y, b);
+				if (delta_top <= radius) {
+					addToCell(cell_x + 1, cell_y + 1, b);
+					addToCell(cell_x    , cell_y + 1, b);
+				} else if (delta_bot < radius) {
+					addToCell(cell_x + 1, cell_y - 1, b);
+					addToCell(cell_x    , cell_y - 1, b);
+				}
+			} else if (delta_top < radius) {
+				addToCell(cell_x, cell_y + 1, b);
+			} else if (delta_bot < radius) {
+				addToCell(cell_x, cell_y - 1, b);
 			}
 		}
 
-		void add(SolidSegment& s)
+		void add(SolidSegment& seg)
 		{
-			const Vec2& start_position(s.getBody1Position());
-			const Vec2& end_position(s.getBody2Position());
+			const float x1 = seg.getBody1Position().x;
+			const float x2 = seg.getBody2Position().x;
+			const float y1 = seg.getBody1Position().y;
+			const float y2 = seg.getBody2Position().y;
 
-			const float delta_x = end_position.x - start_position.x;
-			const float delta_y = end_position.y - start_position.y;
-			const float delta_e = std::abs(delta_y / delta_x);
-			const float error = 0.0f;
-			const int32_t delta_y_sign = delta_y < 0.0f ? -1 : 1;
+			const float dx(x2 - x1);
+			const float dy(y2 - y1);
 
-			uint32_t x0, y0, x1, y1;
-			vec2ToGridCoord(start_position, x0, y0);
-			vec2ToGridCoord(end_position, x1, y1);
-			uint32_t y(y0);
-			for (int32_t x(x0); x <= x1; ++x) {
-				addToCell(x, y, s);
-				error += delta_e;
-				if (error >= 0.5f) {
-					y += delta_y_sign;
-					error -= 1.0;
+			const float length = seg.getVec().length();
+
+			const float seg_dx = dx / length;
+			const float seg_dy = dy / length;
+
+			/// cell_x and cell_y are the starting voxel's coordinates
+			int cell_x = x1 / m_cell_size;
+			int cell_y = y1 / m_cell_size;
+
+			const int32_t end_x = x2 / m_cell_size;
+			const int32_t end_y = y2 / m_cell_size;
+
+			/// step_x and step_y describe if cell_x and cell_y
+			/// are incremented or decremented during iterations
+			int step_x = seg_dx < 0 ? -1 : 1;
+			int step_y = seg_dy < 0 ? -1 : 1;
+
+			/// Compute the value of t for first intersection in x and y
+			float t_max_x = 0;
+			if (step_x > 0)
+				t_max_x = (cell_x + 1)*m_cell_size - x1;
+			else
+				t_max_x = cell_x * m_cell_size - x1;
+			t_max_x /= seg_dx;
+
+			float t_max_y = 0;
+			if (step_y > 0)
+				t_max_y = (cell_y + 1)*m_cell_size - y1;
+			else
+				t_max_y = cell_y * m_cell_size - y1;
+			t_max_y /= seg_dy;
+
+			/// Compute how much (in units of t) we can move along the ray
+			/// before reaching the cell's width and height
+			float t_dx = std::abs(float(m_cell_size) / seg_dx);
+			float t_dy = std::abs(float(m_cell_size) / seg_dy);
+
+			while (1) {
+				addToCell(cell_x, cell_y, seg);
+
+				if (t_max_x < t_max_y) {
+					t_max_x += t_dx;
+					cell_x += step_x;
+				}
+				else {
+					t_max_y += t_dy;
+					cell_y += step_y;
+				}
+
+				if ((step_x > 0 && cell_x > end_x) || (step_x < 0 && cell_x < end_x)
+					|| (step_y > 0 && cell_y > end_y) || (step_y < 0 && cell_y < end_y)) {
+					break;
 				}
 			}
+
+			addToCell(cell_x, cell_y, seg);
 		}
 
-		CellRegister<N>& nonEmpty()
-		{
-			return m_non_empty;
-		}
-
-		void clear()
+		void clear_bodies()
 		{
 			for (GridCell<N>& cell : m_cells) {
-				cell.clear();
+				cell.clear_bodies();
+			}
+		}
+
+		void clear_segments()
+		{
+			for (GridCell<N>& cell : m_cells) {
+				cell.clear_segments();
 			}
 		}
 
@@ -288,13 +308,32 @@ namespace up
 			return m_cells;
 		}
 
+		const GridCell<N>& getCellAt(uint32_t grid_cell_x, uint32_t grid_cell_y) const
+		{
+			return m_cells[grid_cell_y + m_height * grid_cell_x];
+		}
+
+		GridCell<N>& getCellAt(uint32_t grid_cell_x, uint32_t grid_cell_y)
+		{
+			return m_cells[grid_cell_y + m_height * grid_cell_x];
+		}
+
+		up::Vec2 getSize() const
+		{
+			return up::Vec2(m_width, m_height);
+		}
+
+		uint32_t getCellSize() const
+		{
+			return m_cell_size;
+		}
+
 	private:
 		uint32_t m_cell_size;
 		uint32_t m_width;
 		uint32_t m_height;
 
 		std::vector<GridCell<N>> m_cells;
-		CellRegister<N> m_non_empty;
 		Swarm<up::Body> m_swarm;
 	};
 

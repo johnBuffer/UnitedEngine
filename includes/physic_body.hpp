@@ -83,12 +83,6 @@ public:
 	{
 		const Vec2 d(m_moving * delta);
 		m_position += d;
-		//m_old_position += std::min(inertia / 100.0f, 0.8f) * d;
-	}
-
-	void moveHard(const Vec2& delta)
-	{
-		m_position += m_moving*delta;
 	}
 
 	void moveOld(const Vec2& delta)
@@ -130,6 +124,7 @@ public:
 	float pressure;
 	float inertia;
 
+	bool done;
 	bool debug;
 	bool debug_collision;
 

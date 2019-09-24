@@ -107,6 +107,11 @@ public:
 		return m_collision_solver.getBodyAt(position, m_bodies);
 	}
 
+	const Grid<GRID_CELL_SIZE>& getGrid() const
+	{
+		return m_collision_solver.getGrid();
+	}
+
 	void resetDebug()
 	{
 		m_collision_solver.reset_debug(m_bodies);

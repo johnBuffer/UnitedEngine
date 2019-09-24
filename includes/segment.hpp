@@ -10,8 +10,9 @@ namespace up
 class SolidSegment
 {
 public:
-	SolidSegment(BodyPtr b1, BodyPtr b2) :
-		m_constraint(b1, b2)
+	SolidSegment(BodyPtr b1, BodyPtr b2)
+		: m_constraint(b1, b2)
+		, debug(false)
 	{}
 
 	const Vec2 getVec() const
@@ -150,6 +151,8 @@ public:
 			segment.moveAt(1.0f * closest_point_this.velocity(), dist);
 		}
 	}
+
+	bool debug;
 
 private:
 	Constraint m_constraint;

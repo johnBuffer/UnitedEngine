@@ -43,12 +43,14 @@ public:
 
 	void drawPoint(const up::Vec2& point);
 	void drawSegment(const up::SolidSegment& segment);
+	void drawGrid(const up::Grid<GRID_CELL_SIZE>& grid, const sf::RenderStates& state);
 
 	bool clic;
 	bool emit;
 	bool update;
 	float render_time;
 	bool speed_mode;
+	bool debug_mode;
 
 	sfev::EventManager& eventManager()
 	{

@@ -10,9 +10,10 @@ DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& windo
 	m_offsetX(0.0f),
 	m_offsetY(0.0f),
 	speed_mode(false)
-	, m_swarm(solver.getBodiesData(), 16)
+	, m_swarm(solver.getBodiesData(), 1)
 	, m_va(sf::Quads, 0)
 	, update(true)
+	, debug_mode(false)
 {
 	m_windowOffsetX = m_window.getSize().x * 0.5f;
     m_windowOffsetY = m_window.getSize().y * 0.5f;
@@ -76,10 +77,14 @@ void DisplayManager::draw(bool showInner)
 
 	drawConstraints(m_solver.getConstraints());
 
+
 	const auto& segments(m_solver.getSegments());
 	for (const up::SolidSegment& s : segments) {
 		drawSegment(s);
 	}
+
+	if (debug_mode)
+		drawGrid(m_solver.getGrid(), rs_ground);
 
 	render_time = clock.getElapsedTime().asMicroseconds() * 0.001f;
 }
@@ -96,7 +101,7 @@ void DisplayManager::updateVertexArray(const std::vector<up::Body>& bodies, uint
 	uint32_t start_index(id * step_size);
 	uint32_t end_index(start_index + step_size);
 	if (id == step-1) {
-		end_index = size - 1;
+		end_index = size;
 	}
 
 	for (uint32_t i(start_index); i<end_index; ++i) {
@@ -162,6 +167,7 @@ void DisplayManager::processEvents()
 			else if ((event.key.code == sf::Keyboard::Space)) update = !update;
 			else if ((event.key.code == sf::Keyboard::A)) m_show_pressure = !m_show_pressure;
 			else if ((event.key.code == sf::Keyboard::E)) emit = !emit;
+			else if ((event.key.code == sf::Keyboard::D)) debug_mode = !debug_mode;
 			else if ((event.key.code == sf::Keyboard::R))
 			{
 				m_offsetX = 0.0f;
@@ -257,3 +263,62 @@ void DisplayManager::drawSegment(const up::SolidSegment& segment)
 	m_target.draw(va);
 }
 
+void DisplayManager::drawGrid(const up::Grid<GRID_CELL_SIZE>& grid, const sf::RenderStates& state)
+{
+	const up::Vec2 grid_size(grid.getSize());
+	const float cell_size(grid.getCellSize());
+
+	sf::VertexArray va(sf::Quads, 4 * grid_size.x * grid_size.y);
+	for (int32_t x(0); x < grid_size.x; ++x) {
+		for (int32_t y(0); y < grid_size.y; ++y) {
+			va[4 * grid_size.y * x + 4 * y + 0].position = sf::Vector2f((x - 5) * cell_size, (y - 5) * cell_size);
+			va[4 * grid_size.y * x + 4 * y + 1].position = sf::Vector2f((x - 4) * cell_size, (y - 5) * cell_size);
+			va[4 * grid_size.y * x + 4 * y + 2].position = sf::Vector2f((x - 4) * cell_size, (y - 4) * cell_size);
+			va[4 * grid_size.y * x + 4 * y + 3].position = sf::Vector2f((x - 5) * cell_size, (y - 4) * cell_size);
+
+			sf::Color color(0, 0, 0, 0);
+			if (grid.getCellAt(x, y).segment_count) {
+				color.a = 128;
+				color.r = 255;
+			}
+
+			if (grid.getCellAt(x, y).item_count) {
+				color.a = 128;
+				color.g = 255;
+			}
+
+			va[4 * grid_size.y * x + 4 * y + 0].color = color;
+			va[4 * grid_size.y * x + 4 * y + 1].color = color;
+			va[4 * grid_size.y * x + 4 * y + 2].color = color;
+			va[4 * grid_size.y * x + 4 * y + 3].color = color;
+		}
+	}
+
+	m_target.draw(va, state);
+
+	const uint32_t h_count = grid_size.y + 1;
+	const uint32_t v_count = grid_size.x + 1;
+	const uint32_t line_count = h_count + v_count;
+	sf::VertexArray va_lines(sf::Lines, 2 * line_count);
+
+	sf::Color color = sf::Color(100, 100, 100);
+
+	for (int32_t x(0); x < v_count + 1; ++x) {
+		va_lines[2 * x + 0].position = sf::Vector2f((x-5)*cell_size, -5*cell_size);
+		va_lines[2 * x + 1].position = sf::Vector2f((x-5)*cell_size, (grid_size.y-5)*cell_size);
+
+		va_lines[2 * x + 0].color = color;
+		va_lines[2 * x + 1].color = color;
+	}
+
+	for (int32_t y(0); y < h_count; ++y) {
+		va_lines[2 * v_count + 2 * y + 0].position = sf::Vector2f(-5 * cell_size, (y-5)*cell_size);
+		va_lines[2 * v_count + 2 * y + 1].position = sf::Vector2f((grid_size.x-5)*cell_size, (y-5)*cell_size);
+
+		va_lines[2 * v_count + 2 * y + 0].color = color;
+		va_lines[2 * v_count + 2 * y + 1].color = color;
+	}
+
+	m_target.draw(va_lines, state);
+
+}
