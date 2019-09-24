@@ -37,7 +37,7 @@ public:
 	void update(float dt)
 	{
 		const Vec2 v(velocity());
-		inertia = 1.0f + 0.1f * inertia + pressure / (v.length() + 1.0f);
+		inertia = 1.0f + 0.35f * inertia + pressure / (v.length2() + 1.0f);
 
 		// Air friction
 		m_acceleration -= v * 32.0f;
@@ -127,6 +127,7 @@ public:
 	bool done;
 	bool debug;
 	bool debug_collision;
+	uint32_t check_count;
 
 private:
 	Vec2 m_position;

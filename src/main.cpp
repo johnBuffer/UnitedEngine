@@ -52,7 +52,7 @@ int main()
 	window.setFramerateLimit(60);
 
 	const float body_radius(20.0f);
-	up::Vec2 world_dimension(1280.0f, 1280.0f);
+	up::Vec2 world_dimension(12800.0f, 12800.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 980.0f });
 
 	sf::RenderTexture render_tex;
@@ -60,8 +60,8 @@ int main()
 
 	DisplayManager displayManager(render_tex, window, solver);
 
-	up::BodyPtr b = solver.addBody(up::Vec2(50, 50));
-	b->moving(false);
+	/*up::BodyPtr b = solver.addBody(up::Vec2(50, 50));
+	b->moving(false);*/
 
 	sf::Font font;
 	font.loadFromFile("font.ttf");
@@ -92,20 +92,18 @@ int main()
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
 		const up::Vec2 world_coord(displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y)));
 
-		if (displayManager.debug_mode)
-			b->setPosition(world_coord);
+		/*if (displayManager.debug_mode)
+			b->setPosition(world_coord);*/
 
 		clock.restart();
 
-		uint32_t n(10);
+		uint32_t n(1000);
 
-		if (displayManager.emit && bodies < 200000) {
-			for (int i(0); i < n; ++i)
-			{
-				solver.addBody(up::Vec2(rand() % int(world_dimension.x), rand() % 200));
+		if (displayManager.emit && bodies < 106700) {
+			for (int i(0); i < n; ++i) {
+				solver.addBody(up::Vec2(rand() % int32_t(world_dimension.x), rand() % 2000));
 				//auto b = solver.addBody(up::Vec2(7000 + body_radius * 2 * i, 16000 - body_radius));
 				//b->setVelocity(up::Vec2(5 - rand() % 10, -100.0f));
-
 			}
 			
 			bodies += n;

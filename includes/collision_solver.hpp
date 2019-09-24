@@ -9,7 +9,7 @@
 #include "segment.hpp"
 #include "swarm.hpp"
 
-constexpr uint32_t GRID_CELL_SIZE = 8U;
+constexpr uint32_t GRID_CELL_SIZE = 16U;
 
 namespace up
 {
@@ -22,7 +22,7 @@ namespace up
 			, m_gravity(gravity)
 			, m_precision(2)
 			, m_body_radius(body_radius)
-			, m_grid(dimension, 2 * uint32_t(body_radius), bodies)
+			, m_grid(dimension, 4 * uint32_t(body_radius), bodies)
 			, m_swarm(m_grid.getCells(), 16)
 		{
 			m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
@@ -50,9 +50,6 @@ namespace up
 				m_swarm.waitProcessed();
 
 				solveSegmentsCollisions(m_grid.getCells());
-				
-				//naive_segments_bodies(segments.getData(), bodies.getData());
-				//naive_segments_segments(segments.getData());
 				
 				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 				solveBoundaryCollisions(bodies);
@@ -118,6 +115,7 @@ namespace up
 				b.accelerate(m_gravity);
 				b.debug_collision = false;
 				b.done = false;
+				b.check_count = 0;
 			}
 		}
 
@@ -128,18 +126,18 @@ namespace up
 				float radius = b.radius;
 				if (pos.x < radius) {
 					b.move({ radius - pos.x, 0.0f });
-					//b.stop();
+					b.stop();
 				} else if (pos.x > m_dimension.x - radius) {
 					b.move({ m_dimension.x - radius - pos.x, 0.0f });
-					//b.stop();
+					b.stop();
 				}
 
 				if (pos.y < radius) {
 					b.move({ 0.0f, radius - pos.y });
-					//b.stop();
+					b.stop();
 				} else if (pos.y > m_dimension.y - radius) {
 					b.move({ 0.0f, m_dimension.y - radius - pos.y });
-					//b.stop();
+					b.stop();
 				}
 			}
 		}
@@ -174,11 +172,12 @@ namespace up
 		{
 			for (uint32_t i(0); i < size; ++i) {
 				Body& b1(*bodies[i]);
-				if (!b1.done) {
-					for (uint32_t k(i + 1); k < size; ++k) {
-						Body& b2(*bodies[k]);
-						solveBodiesCollision(b1, b2);
-					}
+				b1.check_count++;
+				for (uint32_t k(i + 1); k < size; ++k) {
+					Body& b2(*bodies[k]);
+					b2.check_count++;
+					solveBodiesCollision(b1, b2);
+					
 				}
 			}
 		}

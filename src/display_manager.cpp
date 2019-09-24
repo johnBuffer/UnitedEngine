@@ -124,7 +124,10 @@ void DisplayManager::updateVertexArray(const std::vector<up::Body>& bodies, uint
 		float r = sin(t);
 		float g = sin(t + 0.33f * 2 * pi);
 		float b = sin(t + 0.66f * 2 * pi);
-		sf::Color color = sf::Color::White;// (r*r * 255, g*g * 255, b*b * 255);
+
+		r = std::min(255.0f, body.inertia*10.0f);
+		sf::Color color = m_show_pressure ? sf::Color(r, 0, 0) : sf::Color::White;
+		//sf::Color color = sf::Color(r, 0, 0);
 
 		if (body.debug) {
 			color = sf::Color::Red;

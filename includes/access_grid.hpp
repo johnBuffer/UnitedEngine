@@ -112,8 +112,7 @@ namespace up
 
 		void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, SolidSegment& s)
 		{
-			GridCell<N>& current_cell = m_cells[grid_cell_y + m_height * grid_cell_x];
-			current_cell.add(s);
+			getCellAt(grid_cell_x, grid_cell_y).add(s);
 		}
 
 		GridCell<N>* getColliders(const Body& b)
@@ -157,8 +156,8 @@ namespace up
 
 		void vec2ToGridCoord(const Vec2& v, int32_t& grid_x, int32_t& grid_y)
 		{
-			grid_x = v.x / m_cell_size + 5;
-			grid_y = v.y / m_cell_size + 5;
+			grid_x = int32_t(v.x) / m_cell_size + 5;
+			grid_y = int32_t(v.y) / m_cell_size + 5;
 		}
 
 		void add(Body& b)
