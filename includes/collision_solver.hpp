@@ -9,7 +9,7 @@
 #include "segment.hpp"
 #include "swarm.hpp"
 
-constexpr uint32_t GRID_CELL_SIZE = 40U;
+constexpr uint32_t GRID_CELL_SIZE = 24U;
 
 namespace up
 {
@@ -20,12 +20,12 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, std::vector<Body>& bodies, const Vec2& gravity = Vec2(0.0f, 0.0f))
 			: m_dimension(dimension)
 			, m_gravity(gravity)
-			, m_precision(2)
+			, m_precision(4)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 6 * uint32_t(body_radius), bodies)
-			, m_swarm(m_grid.getCells(), 16)
+			, m_swarm(16)
 		{
-			m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
+			//m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
 		}
 
 		void update(fva::SwapArray<Body>& bodies, fva::SwapArray<SolidSegment>& segments, float dt)
@@ -46,8 +46,8 @@ namespace up
 
 			for (m_current_iteration = 0; m_current_iteration <m_precision; ++m_current_iteration) {
 				clock_local.restart();
-				m_swarm.notifyReady();
-				m_swarm.waitProcessed();
+				m_swarm.execute([this](uint32_t id, uint32_t worker_count) {solveCollisionsSwarm(id, worker_count, m_grid.getCells()); });
+				m_swarm.waitExecutionDone();
 
 				solveSegmentsCollisions(m_grid.getCells());
 				
@@ -102,7 +102,7 @@ namespace up
 	private:
 		Vec2 m_gravity;
 		Grid<GRID_CELL_SIZE> m_grid;
-		Swarm<GridCell<GRID_CELL_SIZE>> m_swarm;
+		swrm::Swarm m_swarm;
 
 		const Vec2 m_dimension;
 		const uint32_t m_precision;
@@ -142,11 +142,11 @@ namespace up
 			}
 		}
 
-		void solveCollisionsSwarm(std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step)
+		void solveCollisionsSwarm(uint32_t id, uint32_t worker_count, std::vector<GridCell<GRID_CELL_SIZE>>& data)
 		{
 			const std::size_t size(data.size());
 
-			uint32_t step_size(size / step);
+			uint32_t step_size(size / worker_count);
 			uint32_t start_index(id * step_size);
 			uint32_t end_index(start_index + step_size);
 

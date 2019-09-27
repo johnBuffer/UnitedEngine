@@ -51,8 +51,8 @@ int main()
 	//window.setVerticalSyncEnabled(true);
 	//window.setFramerateLimit(60);
 
-	const float body_radius(20.0f);
-	up::Vec2 world_dimension(12800.0f, 12800.0f);
+	const float body_radius(16.0f);
+	up::Vec2 world_dimension(12500.0f, 12500.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 980.0f });
 
 	sf::RenderTexture render_tex;
@@ -97,11 +97,11 @@ int main()
 
 		clock.restart();
 
-		uint32_t n(1000);
+		uint32_t n(100);
 
-		if (displayManager.emit && bodies < 200000) {
+		if (displayManager.emit && bodies < 120000) {
 			for (int i(0); i < n; ++i) {
-				solver.addBody(up::Vec2(rand() % int32_t(world_dimension.x), rand() % 2000));
+				solver.addBody(up::Vec2(rand() % int32_t(world_dimension.x), rand() % 200));
 				/*auto b = solver.addBody(up::Vec2(7000 + body_radius * 2 * i, 12800 - body_radius));
 				b->setVelocity(up::Vec2(5 - rand() % 10, -100.0f));*/
 				/*auto b = solver.addBody(up::Vec2(5000+ 2*i*body_radius, body_radius));

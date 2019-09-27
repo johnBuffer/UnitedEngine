@@ -91,6 +91,7 @@ public:
 	void     clear();
 
 	std::vector<T>& getData();
+	const std::vector<T>& getConstData() const;
 
 private:
 	std::vector<T>        m_data;
@@ -217,6 +218,12 @@ inline void SwapArray<T>::clear()
 
 template<class T>
 inline std::vector<T>& SwapArray<T>::getData()
+{
+	return m_data;
+}
+
+template<class T>
+inline const std::vector<T>& SwapArray<T>::getConstData() const
 {
 	return m_data;
 }

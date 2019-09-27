@@ -39,7 +39,7 @@ public:
 	{
 		const Vec2 v(velocity());
 
-		inertia = 1.0f + (pressure + move_acc) / (v.length() + 1.0f);
+		inertia = 1.0f + (move_acc) / (v.length() + 1.0f);
 		move_acc *= 0.5f;
 
 		// Air friction

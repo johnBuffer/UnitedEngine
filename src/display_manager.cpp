@@ -10,7 +10,7 @@ DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& windo
 	m_offsetX(0.0f),
 	m_offsetY(0.0f),
 	speed_mode(false)
-	, m_swarm(solver.getBodiesData(), 1)
+	, m_swarm(16)
 	, m_va(sf::Quads, 0)
 	, update(true)
 	, debug_mode(false)
@@ -22,7 +22,7 @@ DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& windo
 
 	m_show_pressure = false;
 
-	m_swarm.setJob([this](std::vector<up::Body>& data, uint32_t id, uint32_t step) {updateVertexArray(data, id, step); });
+	//m_swarm.setJob([this](std::vector<up::Body>& data, uint32_t id, uint32_t step) {updateVertexArray(data, id, step); });
 }
 
 up::Vec2 DisplayManager::worldCoordToDisplayCoord(const up::Vec2& worldCoord)
@@ -64,8 +64,8 @@ void DisplayManager::draw(bool showInner)
 	const fva::SwapArray<up::Body>& bodies_data = m_solver.getBodies();
     int bodyCount = bodies_data.size();
 	m_va.resize(4 * bodyCount);
-	m_swarm.notifyReady();
-	m_swarm.waitProcessed();
+	m_swarm.execute([&](uint32_t id, uint32_t worker_count) {updateVertexArray(bodies_data.getConstData(), id, worker_count); });
+	m_swarm.waitExecutionDone();
 
 	sf::RenderStates rs;
 	rs.texture = &m_bodyTexture;

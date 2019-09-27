@@ -5,6 +5,7 @@
 #include "united_solver.hpp"
 #include "event_manager.hpp"
 #include "segment.hpp"
+#include <swarm.hpp>
 
 class DisplayManager
 {
@@ -71,7 +72,7 @@ private:
 	sfev::EventManager m_event_manager;
 	
 	sf::VertexArray m_va;
-	Swarm<up::Body> m_swarm;
+	swrm::Swarm m_swarm;
 
 	bool m_mouse_button_pressed;
 	sf::Vector2i m_drag_clic_position, m_clic_position;

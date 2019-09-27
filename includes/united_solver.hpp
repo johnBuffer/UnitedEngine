@@ -126,6 +126,8 @@ private:
 	fva::SwapArray<Constraint> m_constraints;
 	fva::SwapArray<Anchor> m_anchors;
 	fva::SwapArray<SolidSegment> m_segmets;
+
+	friend CollisionSolver;
 };
 
 }

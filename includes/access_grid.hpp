@@ -4,7 +4,7 @@
 #include <vector>
 #include "physic_body.hpp"
 #include "segment.hpp"
-#include "swarm.hpp"
+#include <swarm.hpp>
 #include <iostream>
 
 
@@ -93,12 +93,8 @@ namespace up
 			: m_cell_size(cell_size)
 			, m_width(uint32_t(dimension.x) / cell_size + 10)
 			, m_height(uint32_t(dimension.y) / cell_size + 10)
-			, m_swarm(bodies, 1)
 		{
-			//m_non_empty.init(m_width * m_height);
 			m_cells.resize(m_width * m_height);
-
-			m_swarm.setJob([this](std::vector<Body>& data, uint32_t id, uint32_t step) {addBodiesSwarm(data, id, step); });
 		}
 
 		void addToCell(uint32_t grid_cell_x, uint32_t grid_cell_y, Body& b)
@@ -130,8 +126,9 @@ namespace up
 		void addBodies(std::vector<up::Body>& bodies)
 		{
 			clear_bodies();
-			m_swarm.notifyReady();
-			m_swarm.waitProcessed();
+			for (up::Body& b : bodies) {
+				add(b);
+			}
 		}
 
 		void addSegments(std::vector<up::SolidSegment>& segments)
@@ -139,14 +136,6 @@ namespace up
 			clear_segments();
 			for (up::SolidSegment& seg : segments) {
 				add(seg);
-			}
-		}
-
-		void addBodiesSwarm(std::vector<Body>& data, uint32_t id, uint32_t step)
-		{
-			const std::size_t size(data.size());
-			for (std::size_t i(id); i < size; i += step) {
-				add(data[i]);
 			}
 		}
 
@@ -333,7 +322,6 @@ namespace up
 		uint32_t m_height;
 
 		std::vector<GridCell<N>> m_cells;
-		Swarm<up::Body> m_swarm;
 	};
 
 
