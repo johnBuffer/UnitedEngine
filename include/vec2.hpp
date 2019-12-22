@@ -66,7 +66,7 @@ struct Vec2
 		y *= f;
 	}
 
-	float dot(const up::Vec2& v)
+	float dot(const up::Vec2& v) const
 	{
 		return x * v.x + y * v.y;
 	}

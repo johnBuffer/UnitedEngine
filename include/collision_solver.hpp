@@ -23,7 +23,7 @@ namespace up
 			, m_precision(4)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 6 * uint32_t(body_radius), bodies)
-			, m_swarm(16)
+			, m_swarm(1)
 		{
 			//m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
 		}
@@ -46,8 +46,8 @@ namespace up
 
 			for (m_current_iteration = 0; m_current_iteration <m_precision; ++m_current_iteration) {
 				clock_local.restart();
-				m_swarm.execute([this](uint32_t id, uint32_t worker_count) {solveCollisionsSwarm(id, worker_count, m_grid.getCells()); });
-				m_swarm.waitExecutionDone();
+				swrm::WorkGroup group = m_swarm.execute([this](uint32_t id, uint32_t worker_count) {solveCollisionsSwarm(id, worker_count, m_grid.getCells()); }, 1);
+				group.waitExecutionDone();
 
 				solveSegmentsCollisions(m_grid.getCells());
 				
@@ -150,16 +150,14 @@ namespace up
 			uint32_t start_index(id * step_size);
 			uint32_t end_index(start_index + step_size);
 
-			if (m_current_iteration % 2)
-			{
+			if (m_current_iteration % 2) {
 				for (uint32_t cell_id(step_size - 1); cell_id--;) {
 					GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
 					const uint32_t size(cell.item_count);
 					solveCellCollisions(size, cell.items);
 				}
 			}
-			else
-			{
+			else {
 				for (uint32_t cell_id(0); cell_id<step_size; ++cell_id) {
 					GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
 					const uint32_t size(cell.item_count);
@@ -206,12 +204,20 @@ namespace up
 				b1.move(col_axe*(+delta_col * mass_factor_2));
 				b2.move(col_axe*(-delta_col * mass_factor_1));
 
-				const float cohesion(0.5f);
+				float force_1 = std::max(-(b1.acceleration().dot(col_axe)), 0.0f);
+				float force_2 = std::max(  b2.acceleration().dot(col_axe) , 0.0f);
+
+				b1.force_sum += col_axe * force_2;
+				b2.force_sum += col_axe * force_1;
+
+				/*const float cohesion(0.5f);
 				b1.setVelocity(-(cohesion)*delta_v);
 				b2.setVelocity( (cohesion)*delta_v);
 
 				b1.addPressure(delta_col * prec_fact);
-				b2.addPressure(delta_col * prec_fact);
+				b2.addPressure(delta_col * prec_fact);*/
+				
+
 			}
 		}
 

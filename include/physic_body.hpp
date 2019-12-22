@@ -11,17 +11,20 @@ class Body
 {
 public:
 	Body() = default;
-	Body(const Vec2& pos, float radius_) :
-		m_position(pos),
-		m_old_position(pos),
-		m_acceleration(),
-		pressure(0.0f),
-		radius(radius_),
-		m_moving(1),
-		inertia(1.0f),
-		debug(false),
-		debug_collision(false),
-		move_acc(0.0f)
+	Body(const Vec2& pos, float radius_)
+		: m_position(pos)
+		, m_old_position(pos)
+		, m_acceleration()
+		, pressure(0.0f)
+		, radius(radius_)
+		, m_moving(1)
+		, inertia(1.0f)
+		, debug(false)
+		, debug_collision(false)
+		, move_acc(0.0f)
+		, force_sum(0.0f, 0.0f)
+		, last_force_sum(0.0f, 0.0f)
+		, friction(10.0f)
 	{}
 	
 	Body& operator=(const Body& b)
@@ -43,14 +46,14 @@ public:
 		move_acc *= 0.5f;
 
 		// Air friction
-		m_acceleration -= v * 10.0f;
+		m_acceleration -= v * friction;
 
 		// This prevent from too much compression
 		const float anti_pressure_factor(std::pow(1.0f / inertia, 2));
 
 		// Verlet integration
 		m_old_position = m_position;
-		m_position += float(m_moving) * (v + m_acceleration * anti_pressure_factor * dt * dt);
+		m_position += float(m_moving) * (v + m_acceleration * dt * dt);
 
 		// Reset temporary values
 		m_acceleration = {};
@@ -124,6 +127,9 @@ public:
 		moveOld(-1.0f*v);
 	}
 
+	Vec2 force_sum;
+	Vec2 last_force_sum;
+
 	float radius;
 	float pressure;
 	float inertia;
@@ -134,6 +140,7 @@ public:
 	bool debug;
 	bool debug_collision;
 	uint32_t check_count;
+	float friction;
 
 private:
 	Vec2 m_position;
