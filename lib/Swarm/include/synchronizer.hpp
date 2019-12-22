@@ -9,52 +9,45 @@ namespace swrm
 class Synchronizer
 {
 public:
-	static void createThreads(std::list<Worker>& workers)
+	static void lockAtReady(std::list<Worker*>& workers)
 	{
-		for (Worker& worker : workers) {
-			worker.createThread();
+		for (Worker* worker : workers) {
+			worker->lockReady();
 		}
 	}
 
-	static void lockAtReady(std::list<Worker>& workers)
+	static void unlockAtReady(std::list<Worker*>& workers)
 	{
-		for (Worker& worker : workers) {
-			worker.lockReady();
+		for (Worker* worker : workers) {
+			worker->unlockReady();
 		}
 	}
 
-	static void unlockAtReady(std::list<Worker>& workers)
+	static void lockAtDone(std::list<Worker*>& workers)
 	{
-		for (Worker& worker : workers) {
-			worker.unlockReady();
+		for (Worker* worker : workers) {
+			worker->lockDone();
 		}
 	}
 
-	static void lockAtDone(std::list<Worker>& workers)
+	static void unlockAtDone(std::list<Worker*>& workers)
 	{
-		for (Worker& worker : workers) {
-			worker.lockDone();
+		for (Worker* worker : workers) {
+			worker->unlockDone();
 		}
 	}
 
-	static void unlockAtDone(std::list<Worker>& workers)
+	static void stop(std::list<Worker*>& workers)
 	{
-		for (Worker& worker : workers) {
-			worker.unlockDone();
+		for (Worker* worker : workers) {
+			worker->stop();
 		}
 	}
 
-	static void stop(std::list<Worker>& workers)
+	static void join(std::list<Worker*>& workers)
 	{
-		for (Worker& worker : workers) {
-			worker.stop();
-		}
-	}
-
-	static void join(std::list<Worker>& workers)
-	{
-		for (Worker& worker : workers) {
-			worker.join();
+		for (Worker* worker : workers) {
+			worker->join();
 		}
 	}
 };

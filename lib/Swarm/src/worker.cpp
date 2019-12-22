@@ -2,20 +2,15 @@
 
 #include "swarm.hpp"
 
+
 namespace swrm
 {
 
-Worker::Worker()
-	: m_swarm(nullptr)
-	, m_id(0U)
-	, m_worker_count(0U)
-	, m_job(nullptr)
-{}
-
-Worker::Worker(Swarm* swarm, uint32_t worker_id)
+Worker::Worker(Swarm* swarm)
 	: m_swarm(swarm)
-	, m_id(worker_id)
-	, m_worker_count(swarm->getWorkerCount())
+	, m_group(nullptr)
+	, m_id(0)
+	, m_group_size(0)
 	, m_running(true)
 	, m_ready_mutex()
 	, m_done_mutex()
@@ -24,6 +19,7 @@ Worker::Worker(Swarm* swarm, uint32_t worker_id)
 
 void Worker::createThread()
 {
+	lockReady();
 	m_thread = std::thread(&Worker::run, this);
 }
 
@@ -36,7 +32,7 @@ void Worker::run()
 			break;
 		}
 		
-		m_job(m_id, m_worker_count);
+		m_job(m_id, m_group_size);
 
 		waitDone();
 	}
@@ -62,9 +58,12 @@ void Worker::unlockDone()
 	m_done_mutex.unlock();
 }
 
-void Worker::setJob(WorkerFunction job)
+void Worker::setJob(uint32_t id, ExecutionGroup* group)
 {
-	m_job = job;
+	m_id = id;
+	m_job = group->m_job;
+	m_group_size = group->m_group_size;
+	m_group = group;
 }
 
 void Worker::stop()
@@ -79,14 +78,14 @@ void Worker::join()
 
 void Worker::waitReady()
 {
-	m_swarm->notifyWorkerReady();
+	m_swarm->notifyWorkerReady(this);
 	lockReady();
 	unlockReady();
 }
 
 void Worker::waitDone()
 {
-	m_swarm->notifyWorkerDone();
+	m_group->notifyWorkerDone();
 	lockDone();
 	unlockDone();
 }

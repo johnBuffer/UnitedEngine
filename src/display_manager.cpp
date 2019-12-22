@@ -64,8 +64,8 @@ void DisplayManager::draw(bool showInner)
 	const fva::SwapArray<up::Body>& bodies_data = m_solver.getBodies();
     int bodyCount = bodies_data.size();
 	m_va.resize(4 * bodyCount);
-	m_swarm.execute([&](uint32_t id, uint32_t worker_count) {updateVertexArray(bodies_data.getConstData(), id, worker_count); });
-	m_swarm.waitExecutionDone();
+	auto group = m_swarm.execute([&](uint32_t id, uint32_t worker_count) {updateVertexArray(bodies_data.getConstData(), id, worker_count); });
+	group.waitExecutionDone();
 
 	sf::RenderStates rs;
 	rs.texture = &m_bodyTexture;

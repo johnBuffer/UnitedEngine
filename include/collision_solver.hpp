@@ -23,9 +23,8 @@ namespace up
 			, m_precision(4)
 			, m_body_radius(body_radius)
 			, m_grid(dimension, 6 * uint32_t(body_radius), bodies)
-			, m_swarm(1)
+			, m_swarm(16)
 		{
-			//m_swarm.setJob([this](std::vector<GridCell<GRID_CELL_SIZE>>& data, uint32_t id, uint32_t step) {solveCollisionsSwarm(data, id, step); });
 		}
 
 		void update(fva::SwapArray<Body>& bodies, fva::SwapArray<SolidSegment>& segments, float dt)
@@ -46,7 +45,7 @@ namespace up
 
 			for (m_current_iteration = 0; m_current_iteration <m_precision; ++m_current_iteration) {
 				clock_local.restart();
-				swrm::WorkGroup group = m_swarm.execute([this](uint32_t id, uint32_t worker_count) {solveCollisionsSwarm(id, worker_count, m_grid.getCells()); }, 1);
+				swrm::WorkGroup group = m_swarm.execute([this](uint32_t id, uint32_t worker_count) {solveCollisionsSwarm(id, worker_count, m_grid.getCells()); });
 				group.waitExecutionDone();
 
 				solveSegmentsCollisions(m_grid.getCells());

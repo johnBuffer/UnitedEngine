@@ -8,9 +8,12 @@
 #include <iostream>
 #include <chrono>
 #include <condition_variable>
+#include <memory>
 
 #include "worker.hpp"
 #include "synchronizer.hpp"
+#include "execution_group.hpp"
+#include "write_synchronizer.hpp"
 
 namespace swrm
 {
@@ -20,94 +23,64 @@ class Swarm
 public:
 	Swarm(uint32_t thread_count)
 		: m_thread_count(thread_count)
-		, m_done_count(0U)
 		, m_ready_count(0U)
-		, m_condition()
-		, m_condition_mutex()
 	{
 		for (uint32_t i(thread_count); i--;) {
-			m_workers.emplace_back(this, i);
+			createWorker();
 		}
 
-		Synchronizer::lockAtReady(m_workers);
-		Synchronizer::createThreads(m_workers);
+		while (m_ready_count < m_thread_count) {}
 	}
 
 	~Swarm()
 	{
 		Synchronizer::stop(m_workers);
-		Synchronizer::unlockAtDone(m_workers);
 		Synchronizer::unlockAtReady(m_workers);
 		Synchronizer::join(m_workers);
+		deleteWorkers();
 	}
 
-	uint32_t getWorkerCount() const {
-		return m_thread_count;
-	}
-
-	void execute(WorkerFunction function)
+	WorkGroup execute(WorkerFunction job, uint32_t group_size = 0)
 	{
-		for (Worker& worker : m_workers) {
-			worker.setJob(function);
+		if (group_size > m_available_workers.size()) {
+			return WorkGroup();
 		}
 
-		start();
+		if (!group_size) {
+			group_size = m_thread_count;
+		}
+
+		return WorkGroup(std::make_unique<ExecutionGroup>(job, group_size, m_available_workers));
 	}
 
-	void waitExecutionDone()
-	{
-		m_ready_count = 0U;
-		waitWorkersDone();
-		Synchronizer::lockAtReady(m_workers);
-		Synchronizer::unlockAtDone(m_workers);
-	}
 
 private:
 	const uint32_t m_thread_count;
 
-	std::atomic<uint32_t> m_done_count;
 	std::atomic<uint32_t> m_ready_count;
+	std::list<Worker*>  m_workers;
+	std::list<Worker*>  m_available_workers;
+	std::mutex m_mutex;
 
-	std::condition_variable m_condition;
-	std::mutex              m_condition_mutex;
-	std::list<Worker>       m_workers;
-
-	void start()
+	void createWorker()
 	{
-		m_done_count = 0U;
-		waitWorkersReady();
-		Synchronizer::lockAtDone(m_workers);
-		Synchronizer::unlockAtReady(m_workers);
+		Worker* new_worker = new Worker(this);
+		new_worker->createThread();
+		m_workers.push_back(new_worker);
 	}
 
-	void notifyWorkerDone()
+	void deleteWorkers()
 	{
-		{
-			std::lock_guard<std::mutex> lg(m_condition_mutex);
-			++m_done_count;
+		for (Worker* worker : m_workers) {
+			delete worker;
 		}
-		m_condition.notify_one();
 	}
 
-	void notifyWorkerReady()
+	void notifyWorkerReady(Worker* worker)
 	{
-		{
-			std::lock_guard<std::mutex> lg(m_condition_mutex);
-			++m_ready_count;
-		}
-		m_condition.notify_one();
-	}
-
-	void waitWorkersDone()
-	{
-		std::unique_lock<std::mutex> ul(m_condition_mutex);
-		m_condition.wait(ul, [&] { return m_done_count == m_thread_count; });
-	}
-
-	void waitWorkersReady()
-	{
-		std::unique_lock<std::mutex> ul(m_condition_mutex);
-		m_condition.wait(ul, [&] { return m_ready_count == m_thread_count; });
+		std::lock_guard<std::mutex> lg(m_mutex);
+		++m_ready_count;
+		m_available_workers.push_back(worker);
 	}
 
 	friend Worker;
