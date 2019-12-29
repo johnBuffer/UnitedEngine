@@ -125,25 +125,25 @@ namespace up
 				float radius = b.radius;
 				if (pos.x < radius) {
 					b.move({ radius - pos.x, 0.0f });
-					b.stop();
+					//b.stop();
 				} else if (pos.x > m_dimension.x - radius) {
 					b.move({ m_dimension.x - radius - pos.x, 0.0f });
-					b.stop();
+					//b.stop();
 				}
 
 				if (pos.y < radius) {
 					b.move({ 0.0f, radius - pos.y });
-					b.stop();
+					//b.stop();
 				} else if (pos.y > m_dimension.y - radius) {
 					b.move({ 0.0f, m_dimension.y - radius - pos.y });
-					b.stop();
+					//b.stop();
 				}
 			}
 		}
 
 		void solveCollisionsSwarm(uint32_t id, uint32_t worker_count, std::vector<GridCell<GRID_CELL_SIZE>>& data)
 		{
-			const std::size_t size(data.size());
+			const uint32_t size = static_cast<uint32_t>(data.size());
 
 			uint32_t step_size(size / worker_count);
 			uint32_t start_index(id * step_size);

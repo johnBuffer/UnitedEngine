@@ -153,20 +153,20 @@ namespace up
 			int32_t cell_x, cell_y;
 			vec2ToGridCoord(position, cell_x, cell_y);
 
-			const float cell_left ((cell_x-5) * m_cell_size);
-			const float cell_right((cell_x-4) * m_cell_size);
-			const float cell_bot  ((cell_y-5) * m_cell_size);
-			const float cell_top  ((cell_y-4) * m_cell_size);
-
-			addToCell(cell_x, cell_y, b);
-			/*addToCell(cell_x+1, cell_y, b);
-			addToCell(cell_x-1, cell_y, b);
+			addToCell(cell_x    , cell_y    , b);
+			/*addToCell(cell_x + 1, cell_y    , b);
+			addToCell(cell_x - 1, cell_y    , b);
 			addToCell(cell_x + 1, cell_y + 1, b);
 			addToCell(cell_x + 1, cell_y - 1, b);
 			addToCell(cell_x - 1, cell_y + 1, b);
 			addToCell(cell_x - 1, cell_y - 1, b);
-			addToCell(cell_x, cell_y - 1, b);
-			addToCell(cell_x, cell_y + 1, b);*/
+			addToCell(cell_x    , cell_y + 1, b);
+			addToCell(cell_x    , cell_y - 1, b);*/
+
+			const float cell_left ((cell_x-5) * m_cell_size);
+			const float cell_right((cell_x-4) * m_cell_size);
+			const float cell_bot  ((cell_y-5) * m_cell_size);
+			const float cell_top  ((cell_y-4) * m_cell_size);
 
 			const float delta_bot(position.y - cell_bot);
 			const float delta_top(cell_top - position.y);
