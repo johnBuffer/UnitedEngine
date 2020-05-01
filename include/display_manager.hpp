@@ -1,5 +1,4 @@
-#ifndef DISPLAYMANAGER_H_INCLUDED
-#define DISPLAYMANAGER_H_INCLUDED
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include "united_solver.hpp"
@@ -81,5 +80,3 @@ private:
 
 	bool m_show_pressure;
 };
-
-#endif // DISPLAYMANAGER_H_INCLUDED
