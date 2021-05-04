@@ -34,25 +34,10 @@ namespace up
 
 		void add(Body& b)
 		{
-			if (b.debug) {
-				debug = true;
-				for (uint32_t i(0); i < item_count; ++i) {
-					items[i]->debug_collision = true;
-				}
-			}
-
-			if (item_count < N) {
+			if (item_count < N - 1) {
 				items[item_count++] = &b;
-				if (debug)
-					b.debug_collision = true;
 			}
 		}
-
-		/*void print_debug() const
-		{
-			if (debug)
-				std::cout << "Item count: " << uint32_t(item_count) << std::endl;
-		}*/
 
 		void add(SolidSegment& s)
 		{

@@ -12,17 +12,17 @@
 
 int main()
 {
-	const uint32_t win_width = 1600;
-	const uint32_t win_height = 900;
+	const uint32_t win_width = 1920;
+	const uint32_t win_height = 1080;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
 
-	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Default, settings);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "UE2", sf::Style::Fullscreen, settings);
 	//window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(60);
 
 	const float body_radius(16.0f);
-	up::Vec2 world_dimension(2000.0f, 2000.0f);
+	up::Vec2 world_dimension(12860.0f, 16000.0f);
 	up::UnitedSolver solver(world_dimension, body_radius, { 0.0f, 980.0f });
 
 	sf::RenderTexture render_tex;
@@ -35,7 +35,7 @@ int main()
 
 	sf::Text text;
 	text.setFont(font);
-	text.setCharacterSize(20);
+	text.setCharacterSize(32);
 	text.setFillColor(sf::Color(250, 250, 250));
 
 	sf::Clock clock, spawn_timer;
@@ -46,7 +46,7 @@ int main()
 	float delay(0.5f);
 	bool next(false);
 	uint32_t bodies(0);
-
+	float acc_time = 0.0f;
 	while (window.isOpen())
 	{
 		const sf::Vector2i mouse_pos(sf::Mouse::getPosition(window));
@@ -54,21 +54,33 @@ int main()
 
 		clock.restart();
 
-		uint32_t n(1);
+		uint32_t n(400);
 
-		if (displayManager.emit && bodies < 120000) {
-			for (int i(0); i < n; ++i) {
-				solver.addBody(up::Vec2(rand() % int32_t(world_dimension.x), rand() % 200));
+		if (displayManager.emit && bodies < 200000) {
+			if (acc_time > 70.0f) {
+				const float spawn_width = n * 2.0f * body_radius;
+				for (int i(0); i < n; ++i) {
+					solver.addBody(up::Vec2(world_dimension.x * 0.5f - spawn_width *0.5f + i * 2.0f *body_radius + rand() % 2, 10.0f));
+				}
+				acc_time = 0.0f;
+				bodies += n;
 			}
-			
-			bodies += n;
+			if (displayManager.update) {
+				acc_time += 16.0f;
+			}
 		}
 
-		displayManager.processEvents();
+		displayManager.processEvents(window);
+
+		if (displayManager.explosion)
+		{
+			solver.addExplosion(world_coord);
+			displayManager.explosion = false;
+		}
 
 		if (displayManager.clic) {
 			up::Vec2 clic_pos_display_coord = displayManager.getClicPosition();
-			up::Vec2 clic_pos_world_coord = displayManager.displayCoordToWorldCoord(displayManager.getClicPosition());
+			up::Vec2 clic_pos_world_coord = displayManager.displayCoordToWorldCoord(up::Vec2(mouse_pos.x, mouse_pos.y));
 		}
 
 		if (displayManager.clic) {
@@ -79,35 +91,35 @@ int main()
 			solver.update(0.016f);
 		}
 
-		render_tex.clear(sf::Color::White);
+		render_tex.clear(sf::Color(80, 80, 80));
 
 		displayManager.draw(false);
 
 		render_tex.display();
 		window.draw(sf::Sprite(render_tex.getTexture()));
-		blur.setRegion(10, 10, 400, 150);
+		blur.setRegion(10, 10, 450, 170);
 		window.draw(blur.apply(render_tex.getTexture(), 3));
-		sf::RectangleShape rec(sf::Vector2f(400, 150));
+		sf::RectangleShape rec(sf::Vector2f(450, 170));
 		rec.setPosition(10, 10);
 		rec.setFillColor(sf::Color(50, 50, 50, 100));
 		window.draw(rec);
 
 		text.setString("Objects: " + to_string(bodies));
-		text.setCharacterSize(36);
+		text.setCharacterSize(32);
 		text.setPosition(25, 15);
 		window.draw(text);
 
-		text.setCharacterSize(20);
+		text.setCharacterSize(24);
 		text.setString("Physics time: " + round(solver.getCollisionTime() + solver.getGridTime(), 2) + " ms");
 		text.setPosition(20, 70);
 		window.draw(text);
 
-		text.setString("Render time: " + round(displayManager.render_time, 2) + " ms");
-		text.setPosition(20, 95);
+		text.setString("Render time : " + round(displayManager.render_time, 2) + " ms");
+		text.setPosition(20, 102);
 		window.draw(text);
 
-		text.setString("Frame time: " + round(clock.getElapsedTime().asMilliseconds(), 2) + " ms");
-		text.setPosition(20, 120);
+		text.setString("Frame time  : " + round(clock.getElapsedTime().asMilliseconds(), 2) + " ms");
+		text.setPosition(20, 134);
 		window.draw(text);
 
 		window.display();

@@ -16,12 +16,14 @@ DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& windo
 	, debug_mode(false)
 	, clic(false)
 	, m_mouse_button_pressed(false)
+	, explosion(false)
 {
 	m_windowOffsetX = m_window.getSize().x * 0.5f;
     m_windowOffsetY = m_window.getSize().y * 0.5f;
 
     m_bodyTexture.loadFromFile("res/circle.png");
 
+	image.loadFromFile("res/img.png");
 	m_show_pressure = false;
 }
 
@@ -120,40 +122,32 @@ void DisplayManager::updateVertexArray(const std::vector<up::Body>& bodies, uint
 		m_va[4 * i + 3].texCoords = sf::Vector2f(0, 512);
 
 		const float pi = 3.1415926f;
-		float t = i / 1000.0f;
+		float t = i / 10000.0f;
 		float r = sin(t);
 		float g = sin(t + 0.33f * 2 * pi);
 		float b = sin(t + 0.66f * 2 * pi);
 
-		sf::Color color = sf::Color(255*r*r, 255*g*g, 255*b*b);
+		const uint32_t line_with = 400;
+		const uint32_t lines_count = 200000 / line_with + 1;
+		const float x_ratio = (i % line_with) / float(line_with);
+		const float y_ratio = (i / line_with) / float(lines_count);
+
+		sf::Color color = image.getPixel(x_ratio * image.getSize().x, std::max(0.99f - y_ratio, 0.0f) * image.getSize().y);
+		//sf::Color color = sf::Color(255*r*r, 255*g*g, 255*b*b);
 
 		if (m_show_pressure) {
 			float r = std::min(255.0f, body.move_acc*10.0f);
 			color = sf::Color(r, 0, 0);
 		}
 
-		if (body.debug) {
-			color = sf::Color::Red;
-		} else if (body.debug_collision) {
-			color = sf::Color::Green;
-		}
-
 		m_va[4 * i + 0].color = color;
 		m_va[4 * i + 1].color = color;
 		m_va[4 * i + 2].color = color;
 		m_va[4 * i + 3].color = color;
-		/*} else {
-			float pressure = std::min(body.mass()*5.0F, 255.0f);
-			sf::Color color(255, uint8_t(255 - pressure), uint8_t(255 - pressure));
-			m_va[4 * i].color = color;
-			m_va[4 * i + 1].color = color;
-			m_va[4 * i + 2].color = color;
-			m_va[4 * i + 3].color = color;
-		}*/
 	}
 }
 
-void DisplayManager::processEvents()
+void DisplayManager::processEvents(sf::RenderWindow& window)
 {
 	sf::Vector2i mousePosition = sf::Mouse::getPosition(m_window);
 
@@ -174,6 +168,11 @@ void DisplayManager::processEvents()
 			else if ((event.key.code == sf::Keyboard::A)) m_show_pressure = !m_show_pressure;
 			else if ((event.key.code == sf::Keyboard::E)) emit = !emit;
 			else if ((event.key.code == sf::Keyboard::D)) debug_mode = !debug_mode;
+			else if ((event.key.code == sf::Keyboard::X)) explosion = true;
+			else if ((event.key.code == sf::Keyboard::M)) {
+				show_cursor = !show_cursor;
+				window.setMouseCursorVisible(show_cursor);
+			}
 			else if ((event.key.code == sf::Keyboard::R))
 			{
 				m_offsetX = 0.0f;

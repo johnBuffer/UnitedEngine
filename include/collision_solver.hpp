@@ -78,13 +78,6 @@ namespace up
 			return nullptr;
 		}
 
-		void reset_debug(fva::SwapArray<Body>& bodies)
-		{
-			for (auto& b : bodies) {
-				b.debug = false;
-			}
-		}
-
 		const Grid<GRID_CELL_SIZE>& getGrid() const
 		{
 			return m_grid;
@@ -109,9 +102,6 @@ namespace up
 		{
 			for (Body& b : bodies) {
 				b.accelerate(m_gravity);
-				b.debug_collision = false;
-				b.done = false;
-				b.check_count = 0;
 			}
 		}
 
@@ -148,14 +138,14 @@ namespace up
 
 			if (m_current_iteration % 2) {
 				for (uint32_t cell_id(step_size - 1); cell_id--;) {
-					GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
+					GridCell<GRID_CELL_SIZE>& cell = data[start_index + cell_id];
 					const uint32_t size(cell.item_count);
 					solveCellCollisions(size, cell.items);
 				}
 			}
 			else {
 				for (uint32_t cell_id(0); cell_id<step_size; ++cell_id) {
-					GridCell<GRID_CELL_SIZE>& cell(data[start_index + cell_id]);
+					GridCell<GRID_CELL_SIZE>& cell = data[start_index + cell_id];
 					const uint32_t size(cell.item_count);
 					solveCellCollisions(size, cell.items);
 				}
@@ -166,29 +156,20 @@ namespace up
 		{
 			for (uint32_t i(0); i < size; ++i) {
 				Body& b1(*bodies[i]);
-				b1.check_count++;
 				for (uint32_t k(i + 1); k < size; ++k) {
 					Body& b2(*bodies[k]);
-					b2.check_count++;
 					solveBodiesCollision(b1, b2);
-					
 				}
 			}
 		}
 
 		void solveBodiesCollision(Body& b1, Body& b2)
 		{
-			const float prec_fact(1.0f / float(m_precision));
-
 			const float col_radius(2*m_body_radius);
 			Vec2 col_axe(b1.position() - b2.position());
 			const float length2(col_axe.length2());
 			if (length2 < col_radius*col_radius && length2 > 0.01f)
 			{
-				const Vec2 v1(b1.velocity());
-				const Vec2 v2(b2.velocity());
-				const Vec2 delta_v(v1 - v2);
-
 				const float m1(b1.inertia);
 				const float m2(b2.inertia);
 				const float mass_tot(1.0f / (m1 + m2));
@@ -197,23 +178,15 @@ namespace up
 				const float delta_col(0.5f * (col_radius - col_axe.length()));
 
 				col_axe.normalize();
-				b1.move(col_axe*(+delta_col * mass_factor_2));
+				b1.move(col_axe*( delta_col * mass_factor_2));
 				b2.move(col_axe*(-delta_col * mass_factor_1));
 
-				float force_1 = std::max(-(b1.acceleration().dot(col_axe)), 0.0f);
-				float force_2 = std::max(  b2.acceleration().dot(col_axe) , 0.0f);
-
-				b1.force_sum += col_axe * force_2;
-				b2.force_sum += col_axe * force_1;
-
-				/*const float cohesion(0.5f);
+				const float cohesion(0.1f);
+				const Vec2 delta_v(b1.velocity() - b2.velocity());
 				b1.setVelocity(-(cohesion)*delta_v);
 				b2.setVelocity( (cohesion)*delta_v);
-
-				b1.addPressure(delta_col * prec_fact);
-				b2.addPressure(delta_col * prec_fact);*/
-				
-
+				b1.addPressure(delta_col);
+				b2.addPressure(delta_col);
 			}
 		}
 

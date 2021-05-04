@@ -29,7 +29,8 @@ public:
 
 	void updateVertexArray(const std::vector<up::Body>& bodies, uint32_t id, uint32_t step);
 
-	void processEvents();
+	void processEvents(sf::RenderWindow& window);
+	sf::Image image;
 
     // getters
     up::Vec2 getOffset() const {return up::Vec2(m_offsetX, m_offsetY);};
@@ -46,11 +47,13 @@ public:
 	void drawGrid(const up::Grid<GRID_CELL_SIZE>& grid, const sf::RenderStates& state);
 
 	bool clic;
-	bool emit;
+	bool emit = false;
 	bool update;
 	float render_time;
 	bool speed_mode;
 	bool debug_mode;
+	bool explosion;
+	bool show_cursor = true;
 
 	sfev::EventManager& eventManager()
 	{

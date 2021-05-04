@@ -112,9 +112,16 @@ public:
 		return m_collision_solver.getGrid();
 	}
 
-	void resetDebug()
+	void addExplosion(Vec2 pos)
 	{
-		m_collision_solver.reset_debug(m_bodies);
+		for (Body& b : m_bodies) {
+			Vec2 center_to_b = b.position() - pos;
+			const float length = center_to_b.length();
+			center_to_b.normalize();
+			const float force = 12000000.0f / (length * length + 1.0f);
+			b.accelerate(center_to_b * force);
+			b.setVelocity(center_to_b * force);
+		}
 	}
 
 private:
