@@ -20,9 +20,9 @@ namespace up
 		CollisionSolver(const Vec2& dimension, float body_radius, std::vector<Body>& bodies, const Vec2& gravity = Vec2(0.0f, 0.0f))
 			: m_dimension(dimension)
 			, m_gravity(gravity)
-			, m_precision(4)
+			, m_precision(1)
 			, m_body_radius(body_radius)
-			, m_grid(dimension, 6 * uint32_t(body_radius), bodies)
+			, m_grid(dimension, 4 * uint32_t(body_radius), bodies)
 			, m_swarm(16)
 		{
 		}
@@ -46,10 +46,7 @@ namespace up
 			for (m_current_iteration = 0; m_current_iteration <m_precision; ++m_current_iteration) {
 				clock_local.restart();
 				swrm::WorkGroup group = m_swarm.execute([this](uint32_t id, uint32_t worker_count) {solveCollisionsSwarm(id, worker_count, m_grid.getCells()); });
-				group.waitExecutionDone();
-
-				solveSegmentsCollisions(m_grid.getCells());
-				
+				group.waitExecutionDone();				
 				collision_time += clock_local.getElapsedTime().asMicroseconds() * 0.001f;
 				solveBoundaryCollisions(bodies);
 			}

@@ -1,28 +1,28 @@
 #include "display_manager.hpp"
 #include <iostream>
 
-DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& window, up::UnitedSolver& solver) :
-	m_window(window),
-	m_target(target),
-	m_solver(solver),
-	m_event_manager(window),
-	m_zoom(1.0f),
-	m_offsetX(0.0f),
-	m_offsetY(0.0f),
-	speed_mode(false)
+DisplayManager::DisplayManager(sf::RenderTarget& target, sf::RenderWindow& window, up::UnitedSolver& solver)
+	: m_window(window)
+	, m_target(target)
+	, m_solver(solver)
+	, m_event_manager(window)
+	, m_zoom(1.0f)
+	, m_offsetX(0.0f)
+	, m_offsetY(0.0f)
+	, speed_mode(false)
 	, m_swarm(16)
 	, m_va(sf::Quads, 0)
 	, update(true)
 	, debug_mode(false)
+	, clic(false)
+	, m_mouse_button_pressed(false)
 {
 	m_windowOffsetX = m_window.getSize().x * 0.5f;
     m_windowOffsetY = m_window.getSize().y * 0.5f;
 
-    m_bodyTexture.loadFromFile("circle.png");
+    m_bodyTexture.loadFromFile("res/circle.png");
 
 	m_show_pressure = false;
-
-	//m_swarm.setJob([this](std::vector<up::Body>& data, uint32_t id, uint32_t step) {updateVertexArray(data, id, step); });
 }
 
 up::Vec2 DisplayManager::worldCoordToDisplayCoord(const up::Vec2& worldCoord)

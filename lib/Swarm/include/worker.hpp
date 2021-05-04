@@ -4,6 +4,8 @@
 #include <thread>
 #include <mutex>
 #include <memory>
+#include <functional>
+
 
 namespace swrm
 {

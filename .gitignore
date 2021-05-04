@@ -5,3 +5,4 @@ build/
 *.depend
 *.cbp
 *.layout
+build/
