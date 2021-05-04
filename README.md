@@ -1,7 +1,7 @@
 # UnitedEngine
 Little physics engine designed for massive and fast simulations using Verlet integration
 
-**This project needs some deep refactoring, the code is very ugly**
+:warning:**This project needs some deep refactoring, the code is very ugly**:warning:
 
 # Example
 ![demo_img](https://github.com/johnBuffer/UnitedEngine/blob/master/img/example.png)
