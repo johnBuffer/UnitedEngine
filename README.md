@@ -6,3 +6,7 @@ Little physics engine designed for massive and fast simulations using Verlet int
 
 # Video
 [Video](https://www.youtube.com/watch?v=-r0wYJUGrrI&t=27s)
+
+# Build instruction
+
+You can check [here](https://github.com/johnBuffer/AntSimulator/blob/master/README.md#installation) for build instructions.
