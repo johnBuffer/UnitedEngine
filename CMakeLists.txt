@@ -5,6 +5,7 @@ find_package(OpenGL)
 
 file(GLOB source_files
 	"src/*.cpp"
+	"lib/Swarm/src/worker.cpp"
 )
 
 set(SOURCES ${source_files})
